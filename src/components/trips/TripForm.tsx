@@ -35,7 +35,7 @@ export default function TripForm() {
       }
       const { trip } = await res.json()
       toast.success('Reise erstellt!')
-      router.push(`/trips/${trip.id}`)
+      router.push(`/trips/${trip.id}?new=1`)
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Fehler')
     }

@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TeileniX – Neues Teilnehmer-Konzept</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Plus Jakarta Sans', sans-serif; background: #0a0c10; color: #fff; }
+
+/* ── TOP NAV ── */
+.nav {
+  position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 24px;
+  background: rgba(10,12,16,0.92); backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.nav h1 { font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.3); letter-spacing: 0.1em; text-transform: uppercase; margin-right: auto; }
+.nav-tag { padding: 5px 14px; border-radius: 100px; background: rgba(27,92,88,0.25); border: 1px solid rgba(27,92,88,0.5); color: #6ee8d8; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; }
+
+/* ── INTRO ── */
+.intro { padding: 56px 24px 48px; text-align: center; }
+.intro-pill { display: inline-flex; align-items: center; gap-6px; gap: 6px; padding: 5px 14px; border-radius: 100px; background: rgba(27,92,88,0.15); border: 1px solid rgba(27,92,88,0.3); font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #6ee8d8; margin-bottom: 20px; }
+.intro-pill span { width: 6px; height: 6px; background: #6ee8d8; border-radius: 50%; display: inline-block; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+.intro-title { font-size: clamp(28px, 5vw, 44px); font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; margin-bottom: 14px; color: #fff; }
+.intro-title em { font-style: normal; color: #6ee8d8; }
+.intro-sub { font-size: 15px; color: rgba(255,255,255,0.4); max-width: 500px; margin: 0 auto 40px; line-height: 1.65; }
+
+/* ── COMPARISON CARDS ── */
+.compare-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; max-width: 900px; margin: 0 auto 64px; padding: 0 24px; }
+.compare-card {
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 20px; padding: 20px;
+}
+.compare-label { font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.25); margin-bottom: 14px; }
+.compare-row { display: flex; align-items: center; gap: 12px; }
+.compare-before { flex: 1; padding: 10px 12px; border-radius: 10px; background: rgba(255,255,255,0.04); }
+.compare-before-text { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.3); text-decoration: line-through; line-height: 1.4; }
+.compare-arrow { font-size: 16px; color: rgba(255,255,255,0.2); flex-shrink: 0; }
+.compare-after { flex: 1; padding: 10px 12px; border-radius: 10px; background: rgba(27,92,88,0.2); border: 1px solid rgba(27,92,88,0.3); }
+.compare-after-text { font-size: 11px; font-weight: 700; color: #6ee8d8; line-height: 1.4; }
+.compare-icon { font-size: 20px; margin-bottom: 10px; }
+
+/* ── SECTION DIVIDER ── */
+.section-divider { text-align: center; padding: 8px 24px 40px; }
+.section-divider p { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.2); }
+
+/* ── PHONE GRID ── */
+.phones { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 320px)); gap: 32px; justify-content: center; padding: 0 24px 80px; }
+.phone-wrap { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.phone-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.2); }
+.phone {
+  border-radius: 32px; overflow: hidden; width: 100%; max-width: 300px;
+  background: #f2efe8;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.06), 0 32px 80px rgba(0,0,0,0.5);
+}
+
+/* ── SHARED PHONE COMPONENTS ── */
+.ph-header {
+  padding: 28px 18px 22px;
+  background: linear-gradient(150deg, #1b5c58 0%, #134844 100%);
+  position: relative; overflow: hidden;
+}
+.ph-header::before {
+  content: '';
+  position: absolute; width: 180px; height: 180px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(110,232,216,0.22) 0%, transparent 70%);
+  top: -50px; right: -30px; filter: blur(24px); pointer-events: none;
+}
+.ph-back { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.55); margin-bottom: 12px; position: relative; }
+.ph-back svg { width: 12px; height: 12px; stroke: currentColor; stroke-width: 2.5; fill: none; }
+.ph-eyebrow { font-size: 9px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.4); margin-bottom: 4px; position: relative; }
+.ph-name { font-size: 20px; font-weight: 800; color: #fff; letter-spacing: -0.03em; position: relative; }
+.ph-sub { font-size: 11px; color: rgba(255,255,255,0.45); margin-top: 3px; position: relative; }
+.ph-av { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.15); border: 1.5px solid rgba(255,255,255,0.25); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; color: #fff; flex-shrink: 0; }
+.ph-header-row { display: flex; justify-content: space-between; align-items: flex-start; position: relative; }
+.ph-body { background: #f2efe8; padding: 16px; }
+.ph-sec { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; color: #b5a890; margin-bottom: 8px; margin-top: 16px; }
+.ph-sec:first-child { margin-top: 0; }
+.ph-card {
+  background: #fff; border: 1px solid #ede8e0; border-radius: 14px;
+  padding: 12px 14px; margin-bottom: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 3px 8px rgba(0,0,0,0.05);
+}
+
+/* ── TABS ── */
+.ph-tabs { display: flex; background: #f2efe8; border-bottom: 1px solid #ede8e0; padding: 8px 10px 0; gap: 2px; overflow-x: auto; }
+.ph-tab { padding: 6px 10px 7px; border-radius: 8px 8px 0 0; font-size: 10px; font-weight: 700; white-space: nowrap; color: #9a9080; }
+.ph-tab.active { background: #1b5c58; color: #fff; }
+
+/* ── NAV BAR ── */
+.ph-nav { display: flex; justify-content: space-around; padding: 10px 16px 14px; background: #f2efe8; border-top: 1px solid #ede8e0; }
+.ph-ni { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.ph-ni-icon { width: 30px; height: 30px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+.ph-ni-icon.a { background: #1b5c58; }
+.ph-ni-lbl { font-size: 8px; font-weight: 700; color: #b5a890; text-transform: uppercase; letter-spacing: 0.05em; }
+.ph-ni-lbl.a { color: #1b5c58; }
+
+/* ── SCREEN 1: PROFILE ── */
+.prof-av-wrap { display: flex; align-items: center; gap: 14px; }
+.prof-av { width: 52px; height: 52px; border-radius: 50%; background: rgba(255,255,255,0.15); border: 2px solid rgba(255,255,255,0.25); display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 800; color: #fff; flex-shrink: 0; }
+.prof-input { width: 100%; border: 1.5px solid #ede8e0; border-radius: 10px; padding: 9px 12px; font-size: 13px; font-family: inherit; font-weight: 600; color: #1a1612; background: #fff; outline: none; }
+.prof-input:focus { border-color: #1b5c58; }
+.prof-signout { width: 100%; padding: 10px; border-radius: 10px; background: transparent; border: 1.5px solid #ede8e0; font-size: 12px; font-weight: 700; color: #9a9080; font-family: inherit; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 8px; }
+.prof-badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; background: #e8f2f0; border-radius: 100px; font-size: 9px; font-weight: 700; color: #1b5c58; margin-top: 10px; }
+
+/* ── SCREEN 2: PARTICIPANTS ── */
+.ptcp-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: #fff; border: 1px solid #ede8e0; border-radius: 12px; margin-bottom: 7px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+.ptcp-av { width: 36px; height: 36px; border-radius: 50%; background: #e8f2f0; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; color: #1b5c58; flex-shrink: 0; }
+.ptcp-av.group-av { background: linear-gradient(135deg, #1b5c58, #0d4440); color: #fff; position: relative; }
+.ptcp-name { font-size: 12px; font-weight: 700; color: #1a1612; flex: 1; }
+.ptcp-sub { font-size: 10px; color: #9a9080; margin-top: 1px; }
+.ptcp-meta { font-size: 10px; color: #9a9080; text-align: right; flex-shrink: 0; }
+.ptcp-group-badge { display: inline-flex; align-items: center; gap: 3px; padding: 2px 7px; background: #e8f2f0; border-radius: 100px; font-size: 9px; font-weight: 800; color: #1b5c58; }
+.invite-btn { width: 100%; padding: 10px; border-radius: 12px; background: transparent; border: 1.5px solid #1b5c58; font-size: 12px; font-weight: 700; color: #1b5c58; font-family: inherit; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 4px; }
+.group-link { text-align: center; margin-top: 8px; font-size: 10px; font-weight: 600; color: #9a9080; text-decoration: underline; }
+
+/* ── SCREEN 3: CREATE GROUP ── */
+.info-box { background: #e8f2f0; border: 1px solid rgba(27,92,88,0.2); border-radius: 10px; padding: 10px 12px; margin-bottom: 12px; font-size: 10px; color: #1b5c58; line-height: 1.5; font-weight: 600; }
+.grp-input { width: 100%; border: 1.5px solid #ede8e0; border-radius: 10px; padding: 9px 12px; font-size: 13px; font-family: inherit; font-weight: 700; color: #1a1612; background: #fff; outline: none; margin-bottom: 12px; }
+.grp-input:focus { border-color: #1b5c58; }
+.checkbox-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f5f1ea; }
+.checkbox-row:last-of-type { border: none; }
+.cb { width: 18px; height: 18px; border-radius: 5px; border: 2px solid #ede8e0; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+.cb.checked { background: #1b5c58; border-color: #1b5c58; }
+.cb.checked::after { content: '✓'; font-size: 11px; color: #fff; font-weight: 800; }
+.cb-name { font-size: 12px; font-weight: 600; color: #1a1612; flex: 1; }
+.cb-tag { font-size: 9px; padding: 2px 6px; background: #f5f1ea; border-radius: 100px; color: #9a9080; font-weight: 600; }
+.shares-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: #fff; border: 1px solid #ede8e0; border-radius: 10px; margin-top: 12px; margin-bottom: 14px; }
+.shares-label { font-size: 11px; font-weight: 600; color: #9a9080; }
+.shares-val { font-size: 15px; font-weight: 800; color: #1b5c58; }
+.cta-btn { width: 100%; padding: 11px; border-radius: 12px; background: #1b5c58; color: #fff; font-size: 12px; font-weight: 700; border: none; font-family: inherit; cursor: pointer; }
+
+/* ── SCREEN 4: EXPENSE FORM ── */
+.chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+.chip { padding: 6px 11px; border-radius: 100px; border: 1.5px solid #ede8e0; font-size: 10px; font-weight: 700; color: #9a9080; background: #fff; }
+.chip.active { background: #1b5c58; border-color: #1b5c58; color: #fff; }
+.toggle-wrap { display: flex; background: #ede8e0; border-radius: 8px; padding: 2px; margin-bottom: 10px; }
+.toggle-btn { flex: 1; padding: 5px; border-radius: 6px; font-size: 10px; font-weight: 700; border: none; background: transparent; color: #9a9080; font-family: inherit; cursor: pointer; }
+.toggle-btn.active { background: #fff; color: #1a1612; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.split-box { background: #fff; border: 1px solid #ede8e0; border-radius: 12px; overflow: hidden; }
+.split-row { display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; border-bottom: 1px solid #f5f1ea; }
+.split-row:last-child { border: none; }
+.split-name { font-size: 11px; font-weight: 600; color: #1a1612; }
+.split-badge { padding: 2px 8px; border-radius: 100px; background: #e8f2f0; color: #1b5c58; font-size: 9px; font-weight: 800; }
+.split-badge.single { background: #f5f1ea; color: #9a9080; }
+.split-total { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: #f9f7f4; border-top: 1px solid #ede8e0; font-size: 10px; }
+.split-total-label { color: #9a9080; font-weight: 600; }
+.split-total-val { color: #1b5c58; font-weight: 800; }
+
+/* ── DESCRIPTION BELOW PHONES ── */
+.phone-desc { max-width: 240px; text-align: center; }
+.phone-desc p { font-size: 10px; line-height: 1.5; color: rgba(255,255,255,0.25); }
+
+@media (max-width: 680px) {
+  .compare-grid { grid-template-columns: 1fr; }
+  .phones { grid-template-columns: minmax(280px, 300px); padding: 0 16px 60px; }
+  .intro { padding: 36px 16px 32px; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <h1>TeileniX — Konzept: Neues Teilnehmer-Modell</h1>
+  <div class="nav-tag">Entwurf</div>
+</nav>
+
+<!-- INTRO -->
+<div class="intro">
+  <div class="intro-pill"><span></span> Konzeptvorschlag</div>
+  <h2 class="intro-title">Einfacher.<br><em>Weniger Overhead.</em><br>Mehr Reise.</h2>
+  <p class="intro-sub">
+    Statt Gruppen beim Onboarding anzulegen, wird jeder Nutzer zunächst als Einzelperson behandelt.
+    Gruppen entstehen nur dann, wenn eine Reise es erfordert — direkt im Kontext der Reise.
+  </p>
+</div>
+
+<!-- COMPARISON -->
+<div class="compare-grid">
+  <div class="compare-card">
+    <div class="compare-icon">🚀</div>
+    <div class="compare-label">Onboarding</div>
+    <div class="compare-row">
+      <div class="compare-before"><div class="compare-before-text">Gruppe anlegen, Personenanzahl festlegen, Einladungscode teilen</div></div>
+      <div class="compare-arrow">→</div>
+      <div class="compare-after"><div class="compare-after-text">Mit Google anmelden, fertig. Direkt zur Reise.</div></div>
+    </div>
+  </div>
+  <div class="compare-card">
+    <div class="compare-icon">👤</div>
+    <div class="compare-label">Profil</div>
+    <div class="compare-row">
+      <div class="compare-before"><div class="compare-before-text">Gruppenname, Personenanzahl, Invite-Code, Mitgliederliste</div></div>
+      <div class="compare-arrow">→</div>
+      <div class="compare-after"><div class="compare-after-text">Nur Name & Account. Alles andere gehört zur Reise.</div></div>
+    </div>
+  </div>
+  <div class="compare-card">
+    <div class="compare-icon">✈️</div>
+    <div class="compare-label">Reise beitreten</div>
+    <div class="compare-row">
+      <div class="compare-before"><div class="compare-before-text">Gruppen-Code eingeben → Gruppe wählen → beitreten</div></div>
+      <div class="compare-arrow">→</div>
+      <div class="compare-after"><div class="compare-after-text">Reise-Link öffnen → ein Klick → dabei.</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- DIVIDER -->
+<div class="section-divider"><p>Screen-Mockups · So würde die App aussehen</p></div>
+
+<!-- PHONES -->
+<div class="phones">
+
+  <!-- SCREEN 1: PROFILE -->
+  <div class="phone-wrap">
+    <div class="phone-label">01 · Profil</div>
+    <div class="phone">
+      <div class="ph-header">
+        <div class="ph-header-row">
+          <div class="prof-av-wrap">
+            <div class="prof-av">AM</div>
+            <div>
+              <div class="ph-eyebrow">Mein Profil</div>
+              <div class="ph-name" style="font-size:17px;">Anna Müller</div>
+              <div class="ph-sub">anna@example.com</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="ph-body">
+        <div class="ph-sec">Anzeigename</div>
+        <div class="ph-card" style="padding:10px;">
+          <input class="prof-input" value="Anna Müller" readonly />
+        </div>
+        <div style="margin-top: 4px;">
+          <div class="prof-badge">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+            Kein Gruppen-Overhead
+          </div>
+        </div>
+        <div style="margin-top: 20px;">
+          <button class="prof-signout">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+            Abmelden
+          </button>
+        </div>
+      </div>
+      <div class="ph-nav">
+        <div class="ph-ni"><div class="ph-ni-icon a">✈️</div><div class="ph-ni-lbl">Reisen</div></div>
+        <div class="ph-ni"><div class="ph-ni-icon" style="background:#e8f2f0;">👤</div><div class="ph-ni-lbl a" style="color:#1b5c58;">Profil</div></div>
+      </div>
+    </div>
+    <div class="phone-desc"><p>Nur das Wesentliche. Keine Gruppenverwaltung im Profil.</p></div>
+  </div>
+
+  <!-- SCREEN 2: PARTICIPANTS TAB -->
+  <div class="phone-wrap">
+    <div class="phone-label">02 · Teilnehmer</div>
+    <div class="phone">
+      <div class="ph-header">
+        <div class="ph-back">
+          <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+          Reisen
+        </div>
+        <div class="ph-header-row">
+          <div>
+            <div class="ph-eyebrow">Reise</div>
+            <div class="ph-name" style="font-size:17px;">Kroatien 2025</div>
+          </div>
+          <div style="padding:4px 9px; background:rgba(255,255,255,0.15); border-radius:100px; font-size:10px; font-weight:700; color:#fff;">● Aktiv</div>
+        </div>
+      </div>
+      <div class="ph-tabs">
+        <div class="ph-tab">Übersicht</div>
+        <div class="ph-tab">Ausgaben</div>
+        <div class="ph-tab active">Teilnehmer</div>
+        <div class="ph-tab">Abrechnung</div>
+      </div>
+      <div class="ph-body">
+        <div class="ph-sec" style="margin-top:12px;">3 Teilnehmer</div>
+
+        <div class="ptcp-row">
+          <div class="ptcp-av">A</div>
+          <div style="flex:1;">
+            <div class="ptcp-name">Anna Müller <span style="font-size:9px;color:#9a9080;font-weight:500;">(du)</span></div>
+            <div class="ptcp-sub">Einzelperson</div>
+          </div>
+          <div class="ptcp-meta">1 Anteil</div>
+        </div>
+
+        <div class="ptcp-row">
+          <div class="ptcp-av group-av">S</div>
+          <div style="flex:1;">
+            <div class="ptcp-name">Familie Schmidt</div>
+            <div style="margin-top:2px;"><span class="ptcp-group-badge">
+              <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+              Gruppe · 3 Personen
+            </span></div>
+          </div>
+          <div class="ptcp-meta">3 Anteile</div>
+        </div>
+
+        <div class="ptcp-row">
+          <div class="ptcp-av">T</div>
+          <div style="flex:1;">
+            <div class="ptcp-name">Thomas Klein</div>
+            <div class="ptcp-sub">Einzelperson</div>
+          </div>
+          <div class="ptcp-meta">1 Anteil</div>
+        </div>
+
+        <button class="invite-btn" style="margin-top:10px;">
+          + Teilnehmer einladen
+        </button>
+        <div class="group-link">Teilnehmer zu Gruppe zusammenfassen</div>
+      </div>
+    </div>
+    <div class="phone-desc"><p>Jeder Nutzer tritt als Einzelperson bei. Gruppen entstehen auf Wunsch im Trip-Kontext.</p></div>
+  </div>
+
+  <!-- SCREEN 3: CREATE GROUP -->
+  <div class="phone-wrap">
+    <div class="phone-label">03 · Gruppe erstellen</div>
+    <div class="phone">
+      <div class="ph-header">
+        <div class="ph-back">
+          <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+          Teilnehmer
+        </div>
+        <div class="ph-name" style="font-size:17px; position:relative;">Gruppe erstellen</div>
+      </div>
+      <div class="ph-body">
+        <div class="info-box">
+          Fasse Teilnehmer zusammen, die Kosten gemeinsam tragen – z.B. ein Pärchen, eine Familie oder Reisende ohne eigenes App-Konto.
+        </div>
+
+        <div class="ph-sec">Gruppenname</div>
+        <input class="grp-input" value="Familie Müller" readonly />
+
+        <div class="ph-sec">Mitglieder auswählen</div>
+        <div style="background:#fff; border:1px solid #ede8e0; border-radius:12px; padding:4px 12px;">
+          <div class="checkbox-row">
+            <div class="cb checked"></div>
+            <div class="cb-name">Anna Müller</div>
+            <span class="cb-tag">du</span>
+          </div>
+          <div class="checkbox-row">
+            <div class="cb checked"></div>
+            <div class="cb-name">Klaus Müller</div>
+            <span class="cb-tag">Gast</span>
+          </div>
+          <div class="checkbox-row">
+            <div class="cb"></div>
+            <div class="cb-name">Thomas Klein</div>
+            <span class="cb-tag"></span>
+          </div>
+        </div>
+
+        <div class="shares-row">
+          <div>
+            <div class="shares-label">Anteile dieser Gruppe</div>
+            <div style="font-size:9px;color:#b5a890;margin-top:1px;">= Anzahl Mitglieder</div>
+          </div>
+          <div class="shares-val">2</div>
+        </div>
+
+        <button class="cta-btn">Gruppe erstellen</button>
+      </div>
+    </div>
+    <div class="phone-desc"><p>Gruppen entstehen nur bei Bedarf – und nur innerhalb einer Reise.</p></div>
+  </div>
+
+  <!-- SCREEN 4: EXPENSE FORM -->
+  <div class="phone-wrap">
+    <div class="phone-label">04 · Ausgabe erfassen</div>
+    <div class="phone">
+      <div class="ph-header">
+        <div class="ph-back">
+          <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+          Ausgaben
+        </div>
+        <div class="ph-name" style="font-size:17px; position:relative;">Ausgabe hinzufügen</div>
+      </div>
+      <div class="ph-body">
+        <div class="ph-sec">Bezahlt von</div>
+        <div class="chips">
+          <div class="chip">Anna M.</div>
+          <div class="chip active">Fam. Schmidt</div>
+          <div class="chip">T. Klein</div>
+        </div>
+
+        <div class="ph-sec">Aufteilung</div>
+        <div class="toggle-wrap">
+          <button class="toggle-btn active">Alle gleich</button>
+          <button class="toggle-btn">Individuell</button>
+        </div>
+
+        <div class="split-box">
+          <div class="split-row">
+            <div>
+              <div class="split-name">Anna Müller</div>
+            </div>
+            <span class="split-badge single">1 Anteil</span>
+          </div>
+          <div class="split-row" style="background:#f9fffe;">
+            <div>
+              <div class="split-name" style="font-weight:700;color:#1b5c58;">Familie Schmidt</div>
+            </div>
+            <span class="split-badge">3 Anteile</span>
+          </div>
+          <div class="split-row">
+            <div>
+              <div class="split-name">Thomas Klein</div>
+            </div>
+            <span class="split-badge single">1 Anteil</span>
+          </div>
+          <div class="split-total">
+            <span class="split-total-label">5 Anteile gesamt</span>
+            <span class="split-total-val">je Anteil: 12,40 €</span>
+          </div>
+        </div>
+
+        <button class="cta-btn" style="margin-top:14px;">Ausgabe speichern</button>
+      </div>
+    </div>
+    <div class="phone-desc"><p>Aufteilung basiert auf Anteilen – Gruppen bekommen automatisch mehr Anteile.</p></div>
+  </div>
+
+</div>
+
+</body>
+</html>

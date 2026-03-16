@@ -13,35 +13,36 @@ export default function TripTabNav({ tripId, isEnded }: TripTabNavProps) {
   const pathname = usePathname()
   const base = `/trips/${tripId}`
 
-  const tabs = [
-    { href: base, label: 'Übersicht', exact: true },
-    { href: `${base}/expenses`, label: 'Ausgaben', exact: false },
-    { href: `${base}/stats`, label: 'Statistiken', exact: false },
-    { href: `${base}/settlement`, label: 'Abrechnung', exact: false },
+  const tabs: { href: string; label: string; exact: boolean; dot?: boolean; hidden?: boolean }[] = [
+    { href: base,                   label: 'Übersicht',   exact: true  },
+    { href: `${base}/expenses`,     label: 'Ausgaben',    exact: false },
+    { href: `${base}/stats`,        label: 'Statistiken', exact: false },
+    { href: `${base}/settlement`,   label: 'Abrechnung',  exact: false, dot: isEnded },
+    { href: `${base}/participants`, label: 'Einstellungen', exact: false },
   ]
 
   return (
-    <nav className="flex gap-1 bg-gray-100 rounded-xl p-1 overflow-x-auto">
-      {tabs.map(tab => {
+    <div className="flex gap-1 overflow-x-auto pb-0.5 scrollbar-none">
+      {tabs.filter(t => !t.hidden).map(tab => {
         const isActive = tab.exact ? pathname === tab.href : pathname.startsWith(tab.href)
         return (
           <Link
             key={tab.href}
             href={tab.href}
             className={cn(
-              'flex-shrink-0 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap',
+              'flex-shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[13px] font-semibold transition-colors whitespace-nowrap',
               isActive
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'bg-primary text-white'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted'
             )}
           >
             {tab.label}
-            {tab.href.includes('settlement') && isEnded && (
-              <span className="ml-1.5 inline-flex items-center justify-center w-2 h-2 bg-primary rounded-full" />
+            {tab.dot && (
+              <span className={cn('w-1.5 h-1.5 rounded-full flex-shrink-0', isActive ? 'bg-white/70' : 'bg-primary')} />
             )}
           </Link>
         )
       })}
-    </nav>
+    </div>
   )
 }

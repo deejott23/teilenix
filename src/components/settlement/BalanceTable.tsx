@@ -1,16 +1,16 @@
 import { formatCurrency } from '@/lib/formatting'
-import type { FamilyBalance } from '@/types/app'
+import type { SettlementBalance } from '@/types/app'
 import { cn } from '@/lib/utils'
 
 interface BalanceTableProps {
-  balances: FamilyBalance[]
+  balances: SettlementBalance[]
 }
 
 export default function BalanceTable({ balances }: BalanceTableProps) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-      <div className="grid grid-cols-4 bg-gray-50 px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">
-        <span className="col-span-1">Familie</span>
+    <div className="bg-card card-shadow rounded-2xl overflow-hidden">
+      <div className="grid grid-cols-4 bg-muted px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+        <span className="col-span-1">Teilnehmer</span>
         <span className="text-right">Bezahlt</span>
         <span className="text-right">Anteil</span>
         <span className="text-right">Saldo</span>
@@ -21,19 +21,19 @@ export default function BalanceTable({ balances }: BalanceTableProps) {
         const isNegative = balance.netBalanceCents < 0
         return (
           <div
-            key={balance.familyId}
+            key={balance.participantId}
             className={cn(
               'grid grid-cols-4 px-4 py-3 text-sm',
-              index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
+              index % 2 === 0 ? 'bg-card' : 'bg-muted/40'
             )}
           >
-            <span className="font-medium text-gray-800 truncate col-span-1 pr-2">
-              {balance.familyName}
+            <span className="font-medium text-foreground truncate col-span-1 pr-2">
+              {balance.participantName}
             </span>
-            <span className="text-right text-gray-600">
+            <span className="text-right text-muted-foreground">
               {formatCurrency(balance.totalPaidCents)}
             </span>
-            <span className="text-right text-gray-600">
+            <span className="text-right text-muted-foreground">
               {formatCurrency(balance.totalOwedCents)}
             </span>
             <span
@@ -41,7 +41,7 @@ export default function BalanceTable({ balances }: BalanceTableProps) {
                 'text-right font-semibold',
                 isPositive && 'text-primary',
                 isNegative && 'text-red-500',
-                !isPositive && !isNegative && 'text-gray-400'
+                !isPositive && !isNegative && 'text-muted-foreground/50'
               )}
             >
               {isPositive ? '+' : ''}{formatCurrency(balance.netBalanceCents)}

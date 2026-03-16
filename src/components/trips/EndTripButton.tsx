@@ -40,7 +40,7 @@ export default function EndTripButton({ tripId }: { tripId: string }) {
         size="sm"
         variant="outline"
         onClick={() => setOpen(true)}
-        className="gap-1.5 text-gray-600 border-gray-300"
+        className="gap-1.5 text-muted-foreground border-border"
       >
         <CheckCircle className="w-4 h-4" />
         Reise beenden
@@ -51,7 +51,7 @@ export default function EndTripButton({ tripId }: { tripId: string }) {
           <DialogHeader>
             <DialogTitle>Reise beenden?</DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-gray-500 py-2">
+          <p className="text-sm text-muted-foreground py-2">
             Wenn du die Reise beendest, können keine neuen Ausgaben mehr hinzugefügt werden.
             Die Abrechnung wird erstellt und ist für alle Mitreisenden sichtbar.
           </p>

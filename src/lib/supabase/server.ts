@@ -1,13 +1,22 @@
 import { createServerClient } from '@supabase/ssr'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
+import type { Database } from '@/types/database'
 
-// Note: Until Supabase types are auto-generated with `supabase gen types typescript`,
-// we use `any` to avoid false type errors. Explicit casts are used where needed.
+// Service role client — bypasses RLS, only use in server-side API routes
+// Never import this in Client Components or expose to the browser
+export function createAdminClient() {
+  return createSupabaseClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  )
+}
+
 export async function createClient() {
   const cookieStore = await cookies()
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return createServerClient<any>(
+  return createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {

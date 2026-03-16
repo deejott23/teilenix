@@ -4,8 +4,6 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import Link from 'next/link'
 import { Plane, Users } from 'lucide-react'
 
@@ -13,47 +11,24 @@ interface JoinTripClientProps {
   trip: {
     id: string
     name: string
-    description: string | null
-    start_date: string | null
-    end_date: string | null
+    status: string
+    participant_count: number
   }
-  familyMember: {
-    family_id: string
-    families: { name: string; default_shares: number } | null
-  } | null
   alreadyJoined: boolean
 }
 
-export default function JoinTripClient({ trip, familyMember, alreadyJoined }: JoinTripClientProps) {
+export default function JoinTripClient({ trip, alreadyJoined }: JoinTripClientProps) {
   const router = useRouter()
-  const [shares, setShares] = useState(
-    familyMember?.families?.default_shares ?? 2
-  )
   const [loading, setLoading] = useState(false)
 
   if (alreadyJoined) {
     return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4">
-        <p className="text-4xl mb-3">✅</p>
-        <h1 className="text-xl font-bold text-gray-900 mb-2">Bereits dabei!</h1>
-        <p className="text-gray-500 text-sm mb-4">Deine Familie ist schon in dieser Reise.</p>
+      <div className="min-h-screen flex flex-col items-center justify-center text-center px-4 bg-background">
+        <div className="text-5xl mb-4">✅</div>
+        <h1 className="text-xl font-bold text-foreground mb-2">Bereits dabei!</h1>
+        <p className="text-muted-foreground text-sm mb-6">Du bist dieser Reise bereits beigetreten.</p>
         <Link href={`/trips/${trip.id}`}>
-          <Button>Zur Reise</Button>
-        </Link>
-      </div>
-    )
-  }
-
-  if (!familyMember) {
-    return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4">
-        <p className="text-4xl mb-3">👥</p>
-        <h1 className="text-xl font-bold text-gray-900 mb-2">Erstelle zuerst eine Familie</h1>
-        <p className="text-gray-500 text-sm mb-4">
-          Du brauchst eine Familie, bevor du einer Reise beitreten kannst.
-        </p>
-        <Link href="/onboarding">
-          <Button>Familie erstellen</Button>
+          <Button className="rounded-xl font-semibold">Zur Reise</Button>
         </Link>
       </div>
     )
@@ -62,14 +37,14 @@ export default function JoinTripClient({ trip, familyMember, alreadyJoined }: Jo
   const handleJoin = async () => {
     setLoading(true)
     try {
-      const res = await fetch(`/api/trips/${trip.id}/join`, {
+      const joinRes = await fetch(`/api/trips/${trip.id}/join`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ shares }),
+        body: JSON.stringify({}),
       })
-      if (!res.ok) {
-        const err = await res.json()
-        throw new Error(err.error ?? 'Fehler')
+      if (!joinRes.ok) {
+        const err = await joinRes.json()
+        throw new Error(err.error ?? 'Beitreten fehlgeschlagen')
       }
       toast.success(`Du bist "${trip.name}" beigetreten!`)
       router.push(`/trips/${trip.id}`)
@@ -81,51 +56,37 @@ export default function JoinTripClient({ trip, familyMember, alreadyJoined }: Jo
   }
 
   return (
-    <div className="min-h-[80vh] flex flex-col items-center justify-center px-4">
-      <div className="w-full max-w-sm">
-        {/* Trip info */}
-        <div className="bg-gradient-to-r from-primary/10 to-emerald-50 rounded-2xl p-5 mb-6 text-center">
-          <div className="inline-flex items-center justify-center w-14 h-14 bg-white rounded-xl shadow-sm mb-3">
-            <Plane className="w-6 h-6 text-primary" />
+    <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-background">
+      <div className="w-full max-w-sm space-y-4">
+
+        {/* Trip header */}
+        <div className="bg-white rounded-[18px] card-shadow p-5 text-center">
+          <div className="inline-flex items-center justify-center w-14 h-14 bg-primary/10 rounded-2xl mb-3">
+            <Plane className="w-6 h-6 text-primary" strokeWidth={2} />
           </div>
-          <h1 className="text-xl font-bold text-gray-900">{trip.name}</h1>
-          {trip.description && (
-            <p className="text-sm text-gray-500 mt-1">{trip.description}</p>
-          )}
+          <h1 className="text-xl font-bold text-foreground">{trip.name}</h1>
+          <div className="flex items-center justify-center gap-2 mt-2">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600 text-[11px] font-semibold">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              Einladung offen
+            </span>
+          </div>
+          <div className="flex items-center justify-center gap-1.5 text-sm text-muted-foreground mt-2">
+            <Users className="w-4 h-4" strokeWidth={2} />
+            <span>{trip.participant_count} {trip.participant_count === 1 ? 'Teilnehmer' : 'Teilnehmer'} dabei</span>
+          </div>
         </div>
 
-        {/* Join form */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-4">
-          <div className="flex items-center gap-2">
-            <Users className="w-4 h-4 text-gray-400" />
-            <p className="text-sm text-gray-700">
-              Beitreten als <span className="font-semibold">{familyMember.families?.name}</span>
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="shares">Anzahl Anteile (Personenanzahl)</Label>
-            <Input
-              id="shares"
-              type="number"
-              min={1}
-              max={20}
-              value={shares}
-              onChange={e => setShares(parseInt(e.target.value) || 1)}
-            />
-            <p className="text-xs text-gray-400">
-              Standard aus deiner Familie: {familyMember.families?.default_shares} Personen
-            </p>
-          </div>
-
-          <Button
-            onClick={handleJoin}
-            disabled={loading}
-            className="w-full"
-          >
-            {loading ? 'Wird beigetreten...' : 'Reise beitreten'}
+        {/* Join button */}
+        <div className="bg-white rounded-[18px] card-shadow p-5 space-y-4">
+          <p className="text-sm text-muted-foreground text-center">
+            Tritt dieser Reise bei, um Ausgaben einzusehen und hinzuzufügen.
+          </p>
+          <Button onClick={handleJoin} disabled={loading} className="w-full rounded-xl font-semibold">
+            {loading ? 'Wird beigetreten…' : 'Jetzt beitreten'}
           </Button>
         </div>
+
       </div>
     </div>
   )

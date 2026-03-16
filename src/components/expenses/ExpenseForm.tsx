@@ -8,56 +8,92 @@ import { toast } from 'sonner'
 import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import SplitOverrideEditor from './SplitOverrideEditor'
-import CategoryIcon from './CategoryIcon'
-import { categoryLabels } from '@/lib/formatting'
-import { parseToCents, todayISO } from '@/lib/formatting'
-import type { TripFamilyWithFamily, ExpenseSplitInput } from '@/types/app'
-import type { ExpenseCategory } from '@/types/database'
+import { categoryLabels, categoryEmoji, parseToCents, todayISO } from '@/lib/formatting'
+import type { TripParticipant, ExpenseSplitInput, ExpenseFormData } from '@/types/app'
+import type { ExpenseCategory } from '@/types/app'
+import type { CustomCategory } from '@/components/trips/TripCategorySettings'
 
-const categories: ExpenseCategory[] = [
+const ALL_STANDARD_CATEGORIES: ExpenseCategory[] = [
   'food', 'transport', 'accommodation', 'activities', 'shopping', 'health', 'other'
 ]
+
+function parseCustomCats(raw: string[]): CustomCategory[] {
+  return raw.flatMap(s => { try { return [JSON.parse(s) as CustomCategory] } catch { return [] } })
+}
 
 const formSchema = z.object({
   title: z.string().min(1, 'Titel erforderlich').max(100),
   amount: z.string().min(1, 'Betrag erforderlich'),
   category: z.string(),
   expenseDate: z.string(),
-  paidByFamilyId: z.string(),
+  paidByParticipantId: z.string(),
 })
 
 type FormData = z.infer<typeof formSchema>
 
 interface ExpenseFormProps {
   tripId: string
-  tripFamilies: TripFamilyWithFamily[]
-  myFamilyId: string
+  participants: TripParticipant[]
+  myParticipantId: string
+  expenseId?: string
+  initialData?: ExpenseFormData
+  enabledCategories?: string[]
+  customCategoriesRaw?: string[]
 }
 
-export default function ExpenseForm({ tripId, tripFamilies, myFamilyId }: ExpenseFormProps) {
+export default function ExpenseForm({ tripId, participants, myParticipantId, expenseId, initialData, enabledCategories, customCategoriesRaw = [] }: ExpenseFormProps) {
+  const customCats = parseCustomCats(customCategoriesRaw)
+  const standardVisible = enabledCategories
+    ? ALL_STANDARD_CATEGORIES.filter(c => enabledCategories.includes(c))
+    : ALL_STANDARD_CATEGORIES
+  // Custom categories are always visible (they are created intentionally)
+  const enabledCustom = enabledCategories
+    ? customCats.filter(c => enabledCategories.includes(c.key))
+    : customCats
   const router = useRouter()
-  const [selectedCategory, setSelectedCategory] = useState<ExpenseCategory>('other')
-  const [splitMode, setSplitMode] = useState<'all' | 'custom'>('all')
-  const [splits, setSplits] = useState<ExpenseSplitInput[]>(
-    tripFamilies.map(tf => ({
-      familyId: tf.family_id,
-      familyName: tf.families.name,
-      shares: tf.shares,
+  const isEdit = !!expenseId
+
+  // Only show participants that are not assigned to a group (grouped members are represented by their group)
+  const billableParticipants = participants.filter(p => !p.group_id)
+
+  const [selectedCategory, setSelectedCategory] = useState<string>(
+    initialData?.category ?? 'other'
+  )
+  const [splitMode, setSplitMode] = useState<'all' | 'custom'>(
+    initialData?.splitMode === 'custom' ? 'custom' : 'all'
+  )
+
+  // Merge billable participants with existing splits from initialData
+  const [splits, setSplits] = useState<ExpenseSplitInput[]>(() => {
+    if (initialData?.splits && initialData.splits.length > 0) {
+      return billableParticipants.map(p => {
+        const existing = initialData.splits.find(s => s.participantId === p.id)
+        return existing ?? {
+          participantId: p.id,
+          participantName: p.name,
+          shares: p.shares,
+          included: false,
+        }
+      })
+    }
+    return billableParticipants.map(p => ({
+      participantId: p.id,
+      participantName: p.name,
+      shares: p.shares,
       included: true,
     }))
-  )
+  })
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      title: '',
-      amount: '',
-      category: 'other',
-      expenseDate: todayISO(),
-      paidByFamilyId: myFamilyId,
+      title:               initialData?.title          ?? '',
+      amount:              initialData?.amountEuros    ?? '',
+      category:            initialData?.category       ?? 'other',
+      expenseDate:         initialData?.expenseDate    ?? todayISO(),
+      paidByParticipantId: initialData?.paidByParticipantId ?? myParticipantId,
     },
   })
 
@@ -69,21 +105,24 @@ export default function ExpenseForm({ tripId, tripFamilies, myFamilyId }: Expens
     }
 
     const activeSplits = splitMode === 'all'
-      ? splits.map(s => ({ familyId: s.familyId, shares: s.shares }))
-      : splits.filter(s => s.included).map(s => ({ familyId: s.familyId, shares: s.shares }))
+      ? splits.map(s => ({ participantId: s.participantId, shares: s.shares }))
+      : splits.filter(s => s.included).map(s => ({ participantId: s.participantId, shares: s.shares }))
 
     if (activeSplits.length === 0) {
-      toast.error('Mindestens eine Familie muss beteiligt sein')
+      toast.error('Mindestens ein Teilnehmer muss beteiligt sein')
       return
     }
 
     try {
-      const res = await fetch('/api/expenses', {
-        method: 'POST',
+      const url    = isEdit ? `/api/expenses/${expenseId}` : '/api/expenses'
+      const method = isEdit ? 'PATCH' : 'POST'
+
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           tripId,
-          paidByFamilyId: data.paidByFamilyId,
+          paidByParticipantId: data.paidByParticipantId,
           title: data.title,
           amountCents,
           category: selectedCategory,
@@ -99,7 +138,7 @@ export default function ExpenseForm({ tripId, tripFamilies, myFamilyId }: Expens
         throw new Error(err.error ?? 'Fehler')
       }
 
-      toast.success('Ausgabe gespeichert!')
+      toast.success(isEdit ? 'Ausgabe aktualisiert!' : 'Ausgabe gespeichert!')
       router.push(`/trips/${tripId}/expenses`)
       router.refresh()
     } catch (e: unknown) {
@@ -107,131 +146,146 @@ export default function ExpenseForm({ tripId, tripFamilies, myFamilyId }: Expens
     }
   }
 
+  const fieldLabel = 'text-[11px] font-bold uppercase tracking-widest text-muted-foreground mb-1.5 block'
+
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+
       {/* Title */}
-      <div className="space-y-2">
-        <Label htmlFor="title">Titel *</Label>
+      <div>
+        <label htmlFor="title" className={fieldLabel}>Bezeichnung</label>
         <Input
           id="title"
           placeholder="z.B. Abendessen am Hafen"
+          className="h-10"
           {...form.register('title')}
         />
         {form.formState.errors.title && (
-          <p className="text-sm text-destructive">{form.formState.errors.title.message}</p>
+          <p className="text-xs text-destructive mt-1">{form.formState.errors.title.message}</p>
         )}
       </div>
 
       {/* Amount */}
-      <div className="space-y-2">
-        <Label htmlFor="amount">Betrag *</Label>
+      <div>
+        <label htmlFor="amount" className={fieldLabel}>Betrag</label>
         <div className="relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-medium">€</span>
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-semibold text-sm">€</span>
           <Input
             id="amount"
             type="text"
             inputMode="decimal"
             placeholder="0,00"
-            className="pl-8 text-lg font-semibold"
+            className="pl-7 h-10 text-base font-bold"
             {...form.register('amount')}
           />
         </div>
         {form.formState.errors.amount && (
-          <p className="text-sm text-destructive">{form.formState.errors.amount.message}</p>
+          <p className="text-xs text-destructive mt-1">{form.formState.errors.amount.message}</p>
         )}
       </div>
 
-      {/* Category */}
-      <div className="space-y-2">
-        <Label>Kategorie</Label>
-        <div className="grid grid-cols-4 gap-2">
-          {categories.map(cat => (
+      {/* Category — compact emoji strip */}
+      <div>
+        <label className={fieldLabel}>
+          Kategorie
+          <span className="ml-1.5 text-primary normal-case tracking-normal font-semibold">
+            · {categoryLabels[selectedCategory as ExpenseCategory] ?? enabledCustom.find(c => c.key === selectedCategory)?.label ?? selectedCategory}
+          </span>
+        </label>
+        <div className="flex flex-wrap gap-2">
+          {standardVisible.map(cat => (
             <button
               key={cat}
               type="button"
               onClick={() => setSelectedCategory(cat)}
-              className={`flex flex-col items-center gap-1 p-2 rounded-xl border-2 transition-all ${
+              title={categoryLabels[cat]}
+              className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0 transition-all ${
                 selectedCategory === cat
-                  ? 'border-primary bg-primary/5'
-                  : 'border-gray-100 hover:border-gray-200'
+                  ? 'bg-primary text-primary-foreground shadow-sm scale-105'
+                  : 'bg-muted text-foreground hover:bg-muted/80'
               }`}
             >
-              <CategoryIcon category={cat} size="sm" />
-              <span className="text-xs text-gray-600 leading-tight text-center">
-                {categoryLabels[cat].split(' ')[0]}
-              </span>
+              {categoryEmoji[cat]}
+            </button>
+          ))}
+          {enabledCustom.map(cat => (
+            <button
+              key={cat.key}
+              type="button"
+              onClick={() => setSelectedCategory(cat.key)}
+              title={cat.label}
+              className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0 transition-all ${
+                selectedCategory === cat.key
+                  ? 'bg-primary text-primary-foreground shadow-sm scale-105'
+                  : 'bg-muted text-foreground hover:bg-muted/80'
+              }`}
+            >
+              {cat.emoji}
             </button>
           ))}
         </div>
       </div>
 
       {/* Date */}
-      <div className="space-y-2">
-        <Label htmlFor="expenseDate">Datum</Label>
+      <div>
+        <label htmlFor="expenseDate" className={fieldLabel}>Datum</label>
         <Input
           id="expenseDate"
           type="date"
+          className="h-10 text-sm"
           {...form.register('expenseDate')}
         />
       </div>
 
-      {/* Paid by */}
-      <div className="space-y-2">
-        <Label>Bezahlt von</Label>
+      {/* Paid by — full width below date */}
+      <div>
+        <label className={fieldLabel}>Bezahlt von</label>
         <div className="flex flex-wrap gap-2">
-          {tripFamilies.map(tf => (
+          {billableParticipants.map(p => (
             <button
-              key={tf.family_id}
+              key={p.id}
               type="button"
-              onClick={() => form.setValue('paidByFamilyId', tf.family_id)}
-              className={`px-3 py-1.5 rounded-xl border-2 text-sm font-medium transition-all ${
-                form.watch('paidByFamilyId') === tf.family_id
+              onClick={() => form.setValue('paidByParticipantId', p.id)}
+              className={`px-3 py-2 rounded-xl border text-sm font-semibold transition-all ${
+                form.watch('paidByParticipantId') === p.id
                   ? 'border-primary bg-primary/10 text-primary'
-                  : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                  : 'border-border text-muted-foreground hover:border-primary/40'
               }`}
             >
-              {tf.families.name}
+              {p.name}
             </button>
           ))}
         </div>
       </div>
 
       {/* Split mode */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <Label>Aufteilung</Label>
-          <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
-            <button
-              type="button"
-              onClick={() => setSplitMode('all')}
-              className={`px-3 py-1 rounded-md text-sm font-medium transition-all ${
-                splitMode === 'all'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-500'
-              }`}
-            >
-              Alle
-            </button>
-            <button
-              type="button"
-              onClick={() => setSplitMode('custom')}
-              className={`px-3 py-1 rounded-md text-sm font-medium transition-all ${
-                splitMode === 'custom'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-500'
-              }`}
-            >
-              Individuell
-            </button>
+      <div>
+        <div className="flex items-center justify-between mb-2">
+          <label className={fieldLabel + ' mb-0'}>Aufteilung</label>
+          <div className="flex gap-0.5 bg-muted rounded-lg p-0.5">
+            {(['all', 'custom'] as const).map(mode => (
+              <button
+                key={mode}
+                type="button"
+                onClick={() => setSplitMode(mode)}
+                className={`px-3 py-1 rounded-md text-xs font-semibold transition-all ${
+                  splitMode === mode
+                    ? 'bg-card text-foreground shadow-sm'
+                    : 'text-muted-foreground'
+                }`}
+              >
+                {mode === 'all' ? 'Alle' : 'Individuell'}
+              </button>
+            ))}
           </div>
         </div>
 
         {splitMode === 'all' ? (
-          <div className="bg-gray-50 rounded-xl p-3 space-y-2">
+          <div className="bg-muted rounded-xl px-3 py-2 space-y-1.5">
             {splits.map(split => (
-              <div key={split.familyId} className="flex items-center justify-between text-sm">
-                <span className="text-gray-700">{split.familyName}</span>
-                <Badge variant="secondary">{split.shares} Anteile</Badge>
+              <div key={split.participantId} className="flex items-center justify-between text-sm">
+                <span className="text-foreground font-medium">{split.participantName}</span>
+                <Badge variant="secondary" className="text-xs">{split.shares} Anteile</Badge>
               </div>
             ))}
           </div>
@@ -242,10 +296,10 @@ export default function ExpenseForm({ tripId, tripFamilies, myFamilyId }: Expens
 
       <Button
         type="submit"
-        className="w-full"
+        className="w-full h-11 font-semibold"
         disabled={form.formState.isSubmitting}
       >
-        {form.formState.isSubmitting ? 'Wird gespeichert...' : 'Ausgabe speichern'}
+        {form.formState.isSubmitting ? 'Wird gespeichert...' : isEdit ? 'Änderungen speichern' : 'Ausgabe speichern'}
       </Button>
     </form>
   )

@@ -5,7 +5,7 @@ import { formatCurrency, categoryLabels } from '@/lib/formatting'
 import SpendingByCategoryChart from '@/components/stats/SpendingByCategoryChart'
 import LeaderboardCard from '@/components/stats/LeaderboardCard'
 import SpendingOverTimeChart from '@/components/stats/SpendingOverTimeChart'
-import type { ExpenseWithSplits, TripFamilyWithFamily } from '@/types/app'
+import type { ExpenseWithSplits, TripParticipant } from '@/types/app'
 
 export default async function StatsPage({
   params,
@@ -17,19 +17,13 @@ export default async function StatsPage({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: tripFamiliesRaw } = await supabase
-    .from('trip_families')
+  const { data: participantsRaw } = await supabase
+    .from('trip_participants')
     .select('*')
     .eq('trip_id', tripId)
 
-  const familyIds = ((tripFamiliesRaw ?? []) as { family_id: string }[]).map(tf => tf.family_id)
-  const { data: familiesRaw } = familyIds.length > 0
-    ? await supabase.from('families').select('*').in('id', familyIds)
-    : { data: [] }
-  const familiesMap = new Map(((familiesRaw ?? []) as { id: string }[]).map(f => [f.id, f]))
-
-  const tripFamilies = ((tripFamiliesRaw ?? []) as { id: string; trip_id: string; family_id: string; shares: number; joined_at: string }[])
-    .map(tf => ({ ...tf, families: familiesMap.get(tf.family_id) })) as unknown as TripFamilyWithFamily[]
+  const participants = (participantsRaw ?? []) as TripParticipant[]
+  const participantMap = new Map(participants.map(p => [p.id, p]))
 
   const { data: expensesRaw } = await supabase
     .from('expenses')
@@ -49,17 +43,19 @@ export default async function StatsPage({
     splitsByExpense.set(s.expense_id, arr)
   })
 
-  type ExpenseRow = { id: string; category: string; amount_cents: number; expense_date: string; paid_by_family: string }
+  type ExpenseRow = { id: string; category: string; amount_cents: number; expense_date: string; paid_by_participant_id: string }
   const expenseRows = (expensesRaw ?? []) as unknown as ExpenseRow[]
 
   const expenses = expenseRows.map(e => ({
     ...e,
-    expense_splits: splitsByExpense.get(e.id) ?? [],
-    families: familiesMap.get(e.paid_by_family) ?? { name: 'Unbekannt' },
-    profiles: { display_name: 'Unbekannt' },
+    expense_splits: ((splitsByExpense.get(e.id) ?? []) as { participant_id: string }[]).map(s => ({
+      ...s,
+      participant: participantMap.get(s.participant_id) ?? { id: s.participant_id, name: 'Unbekannt', shares: 1 },
+    })),
+    participant: participantMap.get(e.paid_by_participant_id) ?? { id: e.paid_by_participant_id, name: 'Unbekannt', shares: 1 },
   })) as unknown as ExpenseWithSplits[]
 
-  const settlement = computeSettlement(expenses, tripFamilies)
+  const settlement = computeSettlement(expenses, participants)
 
   // Category spending
   const categoryTotals = new Map<string, number>()
@@ -83,53 +79,53 @@ export default async function StatsPage({
   // Leaderboard
   const mostGenerous = [...settlement.balances].sort((a, b) => b.totalPaidCents - a.totalPaidCents)
   const mostDebt = [...settlement.balances].sort((a, b) => a.netBalanceCents - b.netBalanceCents)
-  const mostExpenses = tripFamilies.map(tf => ({
-    familyId: tf.family_id,
-    familyName: tf.families.name,
-    count: expenseRows.filter(e => e.paid_by_family === tf.family_id).length,
+  const mostExpenses = participants.map(p => ({
+    participantId: p.id,
+    participantName: p.name,
+    count: expenseRows.filter(e => e.paid_by_participant_id === p.id).length,
   })).sort((a, b) => b.count - a.count)
 
   return (
     <div className="space-y-6">
-      <div className="bg-gradient-to-r from-primary/10 to-emerald-50 rounded-2xl p-5 text-center">
-        <p className="text-sm text-gray-500 mb-1">Gesamtausgaben</p>
-        <p className="text-3xl font-bold text-gray-900">{formatCurrency(settlement.totalSpentCents)}</p>
-        <p className="text-sm text-gray-400 mt-1">{expenseRows.length} Ausgaben</p>
+      <div className="bg-card card-shadow rounded-2xl p-5 text-center">
+        <p className="text-sm text-muted-foreground mb-1">Gesamtausgaben</p>
+        <p className="text-3xl font-bold text-foreground">{formatCurrency(settlement.totalSpentCents)}</p>
+        <p className="text-sm text-muted-foreground/60 mt-1">{expenseRows.length} Ausgaben</p>
       </div>
 
       {categoryData.length > 0 && (
         <div>
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">Nach Kategorie</h3>
+          <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-3">Nach Kategorie</h3>
           <SpendingByCategoryChart data={categoryData} />
         </div>
       )}
 
       {timeData.length > 1 && (
         <div>
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">Ausgaben über Zeit</h3>
+          <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-3">Ausgaben über Zeit</h3>
           <SpendingOverTimeChart data={timeData} />
         </div>
       )}
 
       <div>
-        <h3 className="text-sm font-semibold text-gray-700 mb-3">🏆 Bestenliste</h3>
+        <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-3">Bestenliste</h3>
         <div className="space-y-3">
           <LeaderboardCard
-            title="Großzügigste Familie"
+            title="Großzügigster Teilnehmer"
             emoji="💸"
             items={mostGenerous.map(b => ({
-              label: b.familyName,
+              label: b.participantName,
               value: formatCurrency(b.totalPaidCents),
-              highlight: mostGenerous[0]?.familyId === b.familyId,
+              highlight: mostGenerous[0]?.participantId === b.participantId,
             }))}
           />
           <LeaderboardCard
             title="Meiste Ausgaben erfasst"
             emoji="📋"
             items={mostExpenses.map(b => ({
-              label: b.familyName,
+              label: b.participantName,
               value: `${b.count} Ausgaben`,
-              highlight: mostExpenses[0]?.familyId === b.familyId,
+              highlight: mostExpenses[0]?.participantId === b.participantId,
             }))}
           />
           {mostDebt[0]?.netBalanceCents < 0 && (
@@ -137,7 +133,7 @@ export default async function StatsPage({
               title="Größte Schulden"
               emoji="🔴"
               items={mostDebt.filter(b => b.netBalanceCents < 0).map(b => ({
-                label: b.familyName,
+                label: b.participantName,
                 value: formatCurrency(Math.abs(b.netBalanceCents)),
                 highlight: false,
               }))}

@@ -1,16 +1,12 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
-import Link from 'next/link'
-import { Plus, Share2, Users } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import BalanceSummaryCard from '@/components/dashboard/BalanceSummaryCard'
-import FamilyBalanceRow from '@/components/dashboard/FamilyBalanceRow'
-import TripInvitePanel from '@/components/trips/TripInvitePanel'
+import ParticipantBalanceRow from '@/components/dashboard/ParticipantBalanceRow'
 import EndTripButton from '@/components/trips/EndTripButton'
 import { computeSettlement } from '@/lib/settlement'
-import { formatCurrency } from '@/lib/formatting'
-import type { ExpenseWithSplits, TripFamilyWithFamily } from '@/types/app'
+import { formatCurrency, formatDate } from '@/lib/formatting'
+import { Calendar, Users } from 'lucide-react'
+import type { ExpenseWithSplits, TripParticipant } from '@/types/app'
 
 export default async function TripOverviewPage({
   params,
@@ -18,6 +14,7 @@ export default async function TripOverviewPage({
   params: Promise<{ tripId: string }>
 }) {
   const { tripId } = await params
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -30,22 +27,17 @@ export default async function TripOverviewPage({
 
   if (!trip) notFound()
 
-  // Get trip families
-  const { data: tripFamiliesRaw } = await supabase
-    .from('trip_families')
+  // Participants in this trip
+  const { data: participantsRaw } = await supabase
+    .from('trip_participants')
     .select('*')
     .eq('trip_id', tripId)
+    .order('joined_at', { ascending: true })
 
-  const familyIds = ((tripFamiliesRaw ?? []) as { family_id: string }[]).map(tf => tf.family_id)
-  const { data: familiesRaw } = familyIds.length > 0
-    ? await supabase.from('families').select('*').in('id', familyIds)
-    : { data: [] }
-  const familiesMap = new Map(((familiesRaw ?? []) as { id: string }[]).map(f => [f.id, f]))
+  const participants = (participantsRaw ?? []) as TripParticipant[]
+  const participantMap = new Map(participants.map(p => [p.id, p]))
 
-  const tripFamilies = ((tripFamiliesRaw ?? []) as { id: string; trip_id: string; family_id: string; shares: number; joined_at: string }[])
-    .map(tf => ({ ...tf, families: familiesMap.get(tf.family_id) })) as unknown as TripFamilyWithFamily[]
-
-  // Get expenses
+  // Expenses
   const { data: expensesRaw } = await supabase
     .from('expenses')
     .select('*')
@@ -63,48 +55,56 @@ export default async function TripOverviewPage({
     splitsByExpense.set(s.expense_id, arr)
   })
 
-  const expenses = ((expensesRaw ?? []) as { id: string; paid_by_family: string; paid_by_user: string }[])
+  const expenses = ((expensesRaw ?? []) as { id: string; paid_by_participant_id: string }[])
     .map(e => ({
       ...e,
-      expense_splits: splitsByExpense.get(e.id) ?? [],
-      families: familiesMap.get(e.paid_by_family) ?? { name: 'Unbekannt' },
-      profiles: { display_name: 'Unbekannt' },
+      expense_splits: ((splitsByExpense.get(e.id) ?? []) as { participant_id: string }[]).map(s => ({
+        ...s,
+        participant: participantMap.get(s.participant_id) ?? { id: s.participant_id, name: 'Unbekannt', shares: 1 },
+      })),
+      participant: participantMap.get(e.paid_by_participant_id) ?? { id: e.paid_by_participant_id, name: 'Unbekannt', shares: 1 },
     })) as unknown as ExpenseWithSplits[]
 
-  // User's family
-  const { data: memberData } = await supabase
-    .from('family_members')
-    .select('family_id')
-    .eq('user_id', user.id)
-    .maybeSingle()
+  // My participant entry
+  const myParticipant = participants.find(p => p.user_id === user.id)
+  const myParticipantId = myParticipant?.id ?? ''
 
-  const myFamilyId = (memberData?.family_id as string) ?? ''
+  const settlement  = computeSettlement(expenses, participants)
+  const myBalance   = settlement.balances.find(b => b.participantId === myParticipantId)
+  const isActive    = trip.status === 'active'
 
-  const settlement = computeSettlement(expenses, tripFamilies)
-  const myBalance = settlement.balances.find(b => b.familyId === myFamilyId)
+  const dateRange = trip.start_date && trip.end_date
+    ? `${formatDate(trip.start_date as string)} – ${formatDate(trip.end_date as string)}`
+    : trip.start_date ? `ab ${formatDate(trip.start_date as string)}` : null
 
   return (
     <div className="space-y-5">
+
+      {/* Trip meta strip */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Badge
-            className={
-              trip.status === 'active'
-                ? 'bg-primary/10 text-primary border-0 hover:bg-primary/20'
-                : 'bg-gray-100 text-gray-600 border-0'
-            }
-          >
-            {trip.status === 'active' ? 'Aktive Reise' : 'Abgeschlossen'}
-          </Badge>
-          <span className="text-sm text-gray-500">
-            {tripFamilies.length} Familie{tripFamilies.length !== 1 ? 'n' : ''}
+        <div className="flex items-center gap-3 text-sm text-muted-foreground">
+          {dateRange && (
+            <span className="flex items-center gap-1.5">
+              <Calendar className="w-3.5 h-3.5" strokeWidth={2} />
+              {dateRange}
+            </span>
+          )}
+          <span className="flex items-center gap-1.5">
+            <Users className="w-3.5 h-3.5" strokeWidth={2} />
+            {participants.length} Teilnehmer
           </span>
         </div>
-        {trip.status === 'active' && trip.created_by === user.id && (
-          <EndTripButton tripId={tripId} />
-        )}
+
+        <div className="flex items-center gap-2">
+          <span className={`px-2.5 py-1 rounded-full text-[11px] font-semibold ${
+            isActive ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
+          }`}>
+            {isActive ? '● Aktiv' : 'Abgeschlossen'}
+          </span>
+        </div>
       </div>
 
+      {/* My balance */}
       {myBalance && (
         <BalanceSummaryCard
           balance={myBalance}
@@ -112,43 +112,47 @@ export default async function TripOverviewPage({
         />
       )}
 
-      {trip.status === 'active' && (
-        <Link href={`/trips/${tripId}/expenses/new`}>
-          <Button className="w-full gap-2">
-            <Plus className="w-4 h-4" />
-            Ausgabe hinzufügen
-          </Button>
-        </Link>
+      {/* No expenses yet */}
+      {expenses.length === 0 && (
+        <div className="bg-card rounded-[18px] card-shadow p-8 text-center">
+          <div className="text-4xl mb-3">🧾</div>
+          <p className="font-semibold text-foreground mb-1">Noch keine Ausgaben</p>
+          <p className="text-sm text-muted-foreground">
+            {isActive ? 'Tippe unten auf „Ausgabe" um die erste einzutragen.' : 'Diese Reise hat keine Ausgaben.'}
+          </p>
+        </div>
       )}
 
-      <div>
-        <div className="flex items-center gap-2 mb-3">
-          <Users className="w-4 h-4 text-gray-400" />
-          <h2 className="text-sm font-semibold text-gray-700">Familien-Übersicht</h2>
-          <span className="ml-auto text-xs text-gray-400">
-            Gesamt: {formatCurrency(settlement.totalSpentCents)}
-          </span>
-        </div>
-        <div className="space-y-2">
-          {settlement.balances.map(balance => (
-            <FamilyBalanceRow
-              key={balance.familyId}
-              balance={balance}
-              isOwnFamily={balance.familyId === myFamilyId}
-            />
-          ))}
-        </div>
-      </div>
-
-      {trip.status === 'active' && (
-        <div>
-          <div className="flex items-center gap-2 mb-3">
-            <Share2 className="w-4 h-4 text-gray-400" />
-            <h2 className="text-sm font-semibold text-gray-700">Andere einladen</h2>
+      {/* Participants + balances */}
+      {settlement.balances.length > 0 && (
+        <section>
+          <div className="flex items-center justify-between mb-3 px-0.5">
+            <h2 className="text-[12px] font-bold text-muted-foreground uppercase tracking-widest">
+              Teilnehmer
+            </h2>
+            <span className="text-[12px] font-semibold text-muted-foreground">
+              {formatCurrency(settlement.totalSpentCents)} gesamt
+            </span>
           </div>
-          <TripInvitePanel inviteCode={trip.invite_code as string} tripId={tripId} />
+          <div className="space-y-2.5">
+            {settlement.balances.map(balance => (
+              <ParticipantBalanceRow
+                key={balance.participantId}
+                balance={balance}
+                isOwnParticipant={balance.participantId === myParticipantId}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* End trip — only for creator, at the bottom */}
+      {isActive && trip.created_by === user.id && (
+        <div className="pt-2">
+          <EndTripButton tripId={tripId} />
         </div>
       )}
+
     </div>
   )
 }

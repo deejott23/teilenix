@@ -17,18 +17,18 @@ export default function SpendingOverTimeChart({ data }: SpendingOverTimeChartPro
   }))
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-4">
+    <div className="bg-card card-shadow rounded-2xl p-4">
       <ResponsiveContainer width="100%" height={200}>
         <LineChart data={chartData} margin={{ top: 5, right: 5, left: -10, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+          <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.92 0.016 78)" />
           <XAxis
             dataKey="date"
-            tick={{ fontSize: 10, fill: '#9ca3af' }}
+            tick={{ fontSize: 10, fill: 'oklch(0.60 0.022 75)' }}
             tickLine={false}
             axisLine={false}
           />
           <YAxis
-            tick={{ fontSize: 10, fill: '#9ca3af' }}
+            tick={{ fontSize: 10, fill: 'oklch(0.60 0.022 75)' }}
             tickFormatter={(v: number) => `€${v}`}
             tickLine={false}
             axisLine={false}
@@ -41,9 +41,9 @@ export default function SpendingOverTimeChart({ data }: SpendingOverTimeChartPro
           <Line
             type="monotone"
             dataKey="cumulativeDisplay"
-            stroke="#22c55e"
+            stroke="#1b5c58"
             strokeWidth={2.5}
-            dot={{ fill: '#22c55e', strokeWidth: 0, r: 3 }}
+            dot={{ fill: '#1b5c58', strokeWidth: 0, r: 3 }}
             activeDot={{ r: 5 }}
           />
         </LineChart>

@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { updateTripSchema } from '@/lib/validations/trip'
 
@@ -13,13 +13,7 @@ export async function GET(
 
   const { data: trip, error } = await supabase
     .from('trips')
-    .select(`
-      *,
-      trip_families (
-        id, shares, joined_at,
-        families ( id, name, default_shares, invite_code )
-      )
-    `)
+    .select('*')
     .eq('id', tripId)
     .single()
 
@@ -49,8 +43,12 @@ export async function PATCH(
   if (parsed.data.startDate !== undefined) updates.start_date = parsed.data.startDate
   if (parsed.data.endDate !== undefined) updates.end_date = parsed.data.endDate
   if (parsed.data.status !== undefined) updates.status = parsed.data.status
+  if (parsed.data.enabledCategories !== undefined) updates.enabled_categories = parsed.data.enabledCategories
+  if (parsed.data.customCategories !== undefined) updates.custom_categories = parsed.data.customCategories
 
-  const { data: trip, error } = await supabase
+  // Use admin client to bypass RLS for trip settings update
+  const admin = createAdminClient()
+  const { data: trip, error } = await admin
     .from('trips')
     .update(updates)
     .eq('id', tripId)
@@ -58,7 +56,7 @@ export async function PATCH(
     .select()
     .single()
 
-  if (error) return NextResponse.json({ error: 'Aktualisierung fehlgeschlagen' }, { status: 500 })
+  if (error || !trip) return NextResponse.json({ error: 'Aktualisierung fehlgeschlagen' }, { status: 500 })
 
   return NextResponse.json({ trip })
 }
@@ -72,7 +70,8 @@ export async function DELETE(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Nicht angemeldet' }, { status: 401 })
 
-  const { error } = await supabase
+  const admin = createAdminClient()
+  const { error } = await admin
     .from('trips')
     .delete()
     .eq('id', tripId)

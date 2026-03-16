@@ -12,21 +12,22 @@ export default async function AppLayout({
 
   if (!user) redirect('/login')
 
-  // Check if user has a family – if not, redirect to onboarding
-  const { data: familyMember } = await supabase
-    .from('family_members')
-    .select('family_id')
-    .eq('user_id', user.id)
-    .maybeSingle()
+  const displayName = (user.user_metadata?.full_name as string | undefined)
+    ?? (user.user_metadata?.name as string | undefined)
+    ?? user.email?.split('@')[0]
+    ?? 'Meine'
 
-  // Get current URL to avoid redirect loops on onboarding page
-  // Note: We use a simple check; the page itself handles the routing
-  const needsOnboarding = !familyMember
+  // SECURITY DEFINER function: upserts profile only (no family/group creation)
+  await supabase.rpc('auto_setup_user', {
+    p_display_name: displayName,
+    p_email: user.email ?? '',
+    p_avatar_url: (user.user_metadata?.avatar_url as string | undefined) ?? '',
+  })
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20 md:pb-0 md:pl-64">
-      <AppNav userId={user.id} needsOnboarding={needsOnboarding} />
-      <main className="max-w-2xl mx-auto px-4 py-6 md:max-w-3xl">
+    <div className="min-h-screen bg-background pb-[72px] md:pb-0 md:pl-60">
+      <AppNav userId={user.id} needsOnboarding={false} />
+      <main className="max-w-2xl mx-auto px-4 py-7 md:max-w-3xl">
         {children}
       </main>
     </div>

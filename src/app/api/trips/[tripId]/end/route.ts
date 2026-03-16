@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(
@@ -10,7 +10,8 @@ export async function POST(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Nicht angemeldet' }, { status: 401 })
 
-  const { data: trip, error } = await supabase
+  const admin = createAdminClient()
+  const { data: trip, error } = await admin
     .from('trips')
     .update({ status: 'ended' })
     .eq('id', tripId)

@@ -1,56 +1,58 @@
 import Link from 'next/link'
-import { ChevronRight, Calendar } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
+import { ArrowRight, Calendar } from 'lucide-react'
 import { formatDate } from '@/lib/formatting'
 import type { Trip } from '@/types/app'
+import { cn } from '@/lib/utils'
 
 interface TripCardProps {
   trip: Trip
-  familyId: string
 }
+
+const EMOJIS = ['🌴', '🏔️', '🗺️', '🌅', '⛵', '🏖️', '🌍', '🏕️']
+const pickEmoji = (name: string) => EMOJIS[name.charCodeAt(0) % EMOJIS.length]
 
 export default function TripCard({ trip }: TripCardProps) {
   const dateRange = trip.start_date && trip.end_date
     ? `${formatDate(trip.start_date)} – ${formatDate(trip.end_date)}`
-    : trip.start_date
-    ? `ab ${formatDate(trip.start_date)}`
-    : null
+    : trip.start_date ? `ab ${formatDate(trip.start_date)}` : null
+  const active = trip.status === 'active'
 
   return (
-    <Link href={`/trips/${trip.id}`}>
-      <div className="bg-white rounded-2xl border border-gray-100 p-4 flex items-center gap-4 hover:border-primary/30 hover:shadow-sm transition-all">
-        {/* Icon */}
-        <div className="w-12 h-12 bg-gradient-to-br from-primary/20 to-emerald-100 rounded-xl flex items-center justify-center flex-shrink-0">
-          <span className="text-xl">✈️</span>
+    <Link href={`/trips/${trip.id}`} className="block group">
+      <div className="bg-card rounded-2xl card-shadow group-hover:card-shadow-hover transition-shadow p-4 flex items-center gap-4">
+        <div className={cn(
+          'w-12 h-12 rounded-xl flex items-center justify-center text-2xl flex-shrink-0 transition-transform duration-200 group-hover:scale-105',
+          active ? 'bg-primary/10' : 'bg-muted'
+        )}>
+          {pickEmoji(trip.name)}
         </div>
 
-        {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-0.5">
-            <h3 className="font-semibold text-gray-900 truncate">{trip.name}</h3>
-            {trip.status === 'ended' && (
-              <Badge variant="secondary" className="text-xs flex-shrink-0">
-                Abgeschlossen
-              </Badge>
-            )}
-            {trip.status === 'active' && (
-              <Badge className="text-xs flex-shrink-0 bg-primary/10 text-primary hover:bg-primary/20 border-0">
+            <h3 className="font-semibold text-foreground text-[15px] truncate">{trip.name}</h3>
+            {active ? (
+              <span className="flex-shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 text-[10px] font-bold">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                 Aktiv
-              </Badge>
+              </span>
+            ) : (
+              <span className="flex-shrink-0 px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-[10px] font-semibold">
+                Fertig
+              </span>
             )}
           </div>
           {dateRange && (
-            <div className="flex items-center gap-1 text-xs text-gray-400">
-              <Calendar className="w-3 h-3" />
-              <span>{dateRange}</span>
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Calendar className="w-3 h-3" strokeWidth={2} />
+              {dateRange}
             </div>
-          )}
-          {trip.description && (
-            <p className="text-xs text-gray-400 truncate mt-0.5">{trip.description}</p>
           )}
         </div>
 
-        <ChevronRight className="w-4 h-4 text-gray-300 flex-shrink-0" />
+        <ArrowRight
+          className="w-4 h-4 text-muted-foreground/30 group-hover:text-primary group-hover:translate-x-0.5 transition-all flex-shrink-0"
+          strokeWidth={2}
+        />
       </div>
     </Link>
   )

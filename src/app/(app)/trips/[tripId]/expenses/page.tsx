@@ -1,10 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
-import { Plus } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import ExpenseList from '@/components/expenses/ExpenseList'
-import type { ExpenseWithSplits } from '@/types/app'
+import type { ExpenseWithSplits, TripParticipant } from '@/types/app'
 
 export default async function ExpensesPage({
   params,
@@ -22,6 +19,18 @@ export default async function ExpensesPage({
     .eq('id', tripId)
     .single()
 
+  // Load participants for context
+  const { data: participantsRaw } = await supabase
+    .from('trip_participants')
+    .select('*')
+    .eq('trip_id', tripId)
+
+  const participants = (participantsRaw ?? []) as TripParticipant[]
+  const participantMap = new Map(participants.map(p => [p.id, p]))
+
+  const myParticipant = participants.find(p => p.user_id === user.id)
+  const myParticipantId = myParticipant?.id ?? ''
+
   const { data: expensesRaw } = await supabase
     .from('expenses')
     .select('*')
@@ -34,18 +43,6 @@ export default async function ExpensesPage({
     ? await supabase.from('expense_splits').select('*').in('expense_id', expenseIds)
     : { data: [] }
 
-  const familyIds = [...new Set(((expensesRaw ?? []) as { paid_by_family: string }[]).map(e => e.paid_by_family))]
-  const { data: familiesRaw } = familyIds.length > 0
-    ? await supabase.from('families').select('*').in('id', familyIds)
-    : { data: [] }
-  const familiesMap = new Map(((familiesRaw ?? []) as { id: string }[]).map(f => [f.id, f]))
-
-  const userIds = [...new Set(((expensesRaw ?? []) as { paid_by_user: string }[]).map(e => e.paid_by_user))]
-  const { data: profilesRaw } = userIds.length > 0
-    ? await supabase.from('profiles').select('*').in('id', userIds)
-    : { data: [] }
-  const profilesMap = new Map(((profilesRaw ?? []) as { id: string }[]).map(p => [p.id, p]))
-
   const splitsByExpense = new Map<string, unknown[]>()
   ;((splitsRaw ?? []) as { expense_id: string }[]).forEach(s => {
     const arr = splitsByExpense.get(s.expense_id) ?? []
@@ -53,36 +50,21 @@ export default async function ExpensesPage({
     splitsByExpense.set(s.expense_id, arr)
   })
 
-  const expenses = ((expensesRaw ?? []) as { id: string; paid_by_family: string; paid_by_user: string }[])
+  const expenses = ((expensesRaw ?? []) as { id: string; paid_by_participant_id: string }[])
     .map(e => ({
       ...e,
-      expense_splits: splitsByExpense.get(e.id) ?? [],
-      families: familiesMap.get(e.paid_by_family) ?? { name: 'Unbekannt' },
-      profiles: profilesMap.get(e.paid_by_user) ?? { display_name: 'Unbekannt' },
+      expense_splits: ((splitsByExpense.get(e.id) ?? []) as { participant_id: string }[]).map(s => ({
+        ...s,
+        participant: participantMap.get(s.participant_id) ?? { id: s.participant_id, name: 'Unbekannt', shares: 1 },
+      })),
+      participant: participantMap.get(e.paid_by_participant_id) ?? { id: e.paid_by_participant_id, name: 'Unbekannt', shares: 1 },
     })) as unknown as ExpenseWithSplits[]
-
-  const { data: memberData } = await supabase
-    .from('family_members')
-    .select('family_id')
-    .eq('user_id', user.id)
-    .maybeSingle()
-
-  const myFamilyId = (memberData?.family_id as string) ?? ''
 
   return (
     <div className="space-y-4">
-      {trip?.status === 'active' && (
-        <Link href={`/trips/${tripId}/expenses/new`}>
-          <Button className="w-full gap-2">
-            <Plus className="w-4 h-4" />
-            Ausgabe hinzufügen
-          </Button>
-        </Link>
-      )}
-
       <ExpenseList
         expenses={expenses}
-        myFamilyId={myFamilyId}
+        myParticipantId={myParticipantId}
         tripId={tripId}
         canEdit={trip?.status === 'active'}
       />

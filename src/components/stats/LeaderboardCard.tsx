@@ -18,8 +18,8 @@ export default function LeaderboardCard({ title, emoji, items }: LeaderboardCard
   const medals = ['🥇', '🥈', '🥉']
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-4">
-      <h4 className="font-semibold text-gray-800 text-sm mb-3 flex items-center gap-2">
+    <div className="bg-card card-shadow rounded-2xl p-4">
+      <h4 className="font-semibold text-foreground text-sm mb-3 flex items-center gap-2">
         <span>{emoji}</span>
         {title}
       </h4>
@@ -29,19 +29,19 @@ export default function LeaderboardCard({ title, emoji, items }: LeaderboardCard
             key={item.label}
             className={cn(
               'flex items-center justify-between py-2 px-3 rounded-xl',
-              item.highlight && index === 0 ? 'bg-primary/5' : 'bg-gray-50'
+              item.highlight && index === 0 ? 'bg-primary/5' : 'bg-muted/60'
             )}
           >
             <div className="flex items-center gap-2">
               <span>{medals[index] ?? `#${index + 1}`}</span>
               <span className={cn(
                 'text-sm font-medium',
-                item.highlight ? 'text-primary' : 'text-gray-700'
+                item.highlight ? 'text-primary' : 'text-foreground'
               )}>
                 {item.label}
               </span>
             </div>
-            <span className="text-sm font-semibold text-gray-800">{item.value}</span>
+            <span className="text-sm font-semibold text-foreground">{item.value}</span>
           </div>
         ))}
       </div>

@@ -1,20 +1,26 @@
 'use client'
 
 import { useState } from 'react'
-import { Copy, Check, Link } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Copy, Check, Mail, MessageCircle } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface TripInvitePanelProps {
   inviteCode: string
-  tripId: string
+  tripName: string
 }
 
-export default function TripInvitePanel({ inviteCode, tripId }: TripInvitePanelProps) {
+export default function TripInvitePanel({ inviteCode, tripName }: TripInvitePanelProps) {
   const [copied, setCopied] = useState(false)
+
   const joinUrl = typeof window !== 'undefined'
     ? `${window.location.origin}/join/${inviteCode}`
     : `/join/${inviteCode}`
+
+  const emailSubject = encodeURIComponent(`Einladung zur Reise: ${tripName}`)
+  const emailBody = encodeURIComponent(
+    `Hallo!\n\nIch lade dich ein, an unserer Reise "${tripName}" in TeileniX teilzunehmen.\n\nKlick einfach auf diesen Link:\n${joinUrl}\n\nOder gib den Code ${inviteCode} direkt in der App ein.\n\nBis bald!`
+  )
+  const whatsappText = encodeURIComponent(`Hey! Komm bei unserer Reise "${tripName}" mit 🗺️ Klick hier: ${joinUrl}`)
 
   const copyLink = async () => {
     await navigator.clipboard.writeText(joinUrl)
@@ -23,37 +29,47 @@ export default function TripInvitePanel({ inviteCode, tripId }: TripInvitePanelP
     setTimeout(() => setCopied(false), 2000)
   }
 
-  const copyCode = async () => {
-    await navigator.clipboard.writeText(inviteCode)
-    toast.success('Code kopiert!')
-  }
-
   return (
-    <div className="bg-gradient-to-r from-primary/5 to-emerald-50 border border-primary/20 rounded-2xl p-4 space-y-3">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-xs text-gray-500 mb-1">Einladungscode</p>
-          <button
-            onClick={copyCode}
-            className="font-mono text-xl font-bold tracking-widest text-primary hover:text-primary/80 transition-colors"
-          >
+    <div className="bg-white rounded-[18px] card-shadow p-5 space-y-4">
+      <div>
+        <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest mb-3">Einladung</p>
+
+        {/* Code + copy */}
+        <div className="flex items-center justify-between gap-3 bg-muted rounded-2xl px-4 py-3">
+          <button onClick={copyLink} className="font-mono text-2xl font-bold tracking-[0.15em] text-foreground hover:text-primary transition-colors">
             {inviteCode}
           </button>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            size="sm"
-            variant="outline"
+          <button
             onClick={copyLink}
-            className="gap-1.5"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-white rounded-xl card-shadow text-sm font-semibold text-foreground hover:text-primary transition-colors flex-shrink-0"
           >
-            {copied ? <Check className="w-3.5 h-3.5" /> : <Link className="w-3.5 h-3.5" />}
-            {copied ? 'Kopiert!' : 'Link teilen'}
-          </Button>
+            {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+            {copied ? 'Kopiert!' : 'Kopieren'}
+          </button>
         </div>
       </div>
-      <p className="text-xs text-gray-400">
-        Teile den Code oder Link mit deinen Mitreisenden. Sie brauchen nur ein Google-Konto.
+
+      <div className="grid grid-cols-2 gap-2">
+        <a
+          href={`mailto:?subject=${emailSubject}&body=${emailBody}`}
+          className="flex items-center justify-center gap-2 bg-sky-50 hover:bg-sky-100 rounded-2xl px-3 py-2.5 text-sm font-semibold text-sky-700 transition-colors"
+        >
+          <Mail className="w-4 h-4" strokeWidth={2} />
+          Per E-Mail
+        </a>
+        <a
+          href={`https://wa.me/?text=${whatsappText}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center gap-2 bg-emerald-50 hover:bg-emerald-100 rounded-2xl px-3 py-2.5 text-sm font-semibold text-emerald-700 transition-colors"
+        >
+          <MessageCircle className="w-4 h-4" strokeWidth={2} />
+          WhatsApp
+        </a>
+      </div>
+
+      <p className="text-[11px] text-muted-foreground">
+        Jeder mit dem Link kann beitreten und seinen Gruppenanteil festlegen.
       </p>
     </div>
   )

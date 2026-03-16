@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TeileniX – App Design Proposals</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Plus Jakarta Sans', sans-serif; background: #0a0c10; color: #fff; }
+
+/* NAV */
+.nav { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; gap: 10px; padding: 14px 24px; background: rgba(10,12,16,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.06); }
+.nav h1 { font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.3); letter-spacing: 0.1em; text-transform: uppercase; margin-right: auto; }
+.nav-btn { padding: 7px 16px; border-radius: 100px; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: rgba(255,255,255,0.4); font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit; }
+.nav-btn:hover { border-color: rgba(255,255,255,0.25); color: #fff; }
+.nav-btn.active { background: #fff; color: #000; border-color: #fff; }
+
+.proposal { display: none; }
+.proposal.visible { display: block; }
+
+/* ===== INTRO BLOCK ===== */
+.intro { padding: 56px 24px 40px; text-align: center; }
+.intro-tag { display: inline-block; padding: 5px 14px; border-radius: 100px; font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 16px; }
+.intro-title { font-size: clamp(28px, 5vw, 48px); font-weight: 800; line-height: 1.1; letter-spacing: -0.03em; margin-bottom: 12px; }
+.intro-sub { font-size: 14px; max-width: 480px; margin: 0 auto 24px; line-height: 1.6; }
+.tags { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.tag { padding: 5px 12px; border-radius: 100px; font-size: 11px; font-weight: 600; }
+
+/* ===== PHONE GRID ===== */
+.phones { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 320px)); gap: 20px; justify-content: center; padding: 0 24px 64px; }
+.phone-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.phone-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.2); }
+.phone { border-radius: 32px; overflow: hidden; width: 100%; max-width: 320px; }
+
+/* ======================== A: DARK GLASS ======================== */
+/* Full dark, glassmorphism cards, atmospheric glow like login */
+.pA-phone { background: #0d1117; box-shadow: 0 0 0 1px rgba(255,255,255,0.07), 0 32px 80px rgba(0,0,0,0.7); }
+.pA-header {
+  padding: 28px 20px 24px;
+  background: linear-gradient(150deg, #1b5c58 0%, #0d3835 100%);
+  position: relative; overflow: hidden;
+}
+.pA-header::before {
+  content: '';
+  position: absolute; width: 220px; height: 220px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(110,232,216,0.18) 0%, transparent 70%);
+  top: -60px; right: -40px; filter: blur(30px);
+}
+.pA-ht { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 18px; }
+.pA-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.4); margin-bottom: 5px; }
+.pA-name { font-size: 22px; font-weight: 800; color: #fff; letter-spacing: -0.03em; }
+.pA-sub { font-size: 12px; color: rgba(255,255,255,0.45); margin-top: 2px; }
+.pA-av { width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.9); flex-shrink: 0; }
+.pA-balance { padding: 14px 16px; border-radius: 14px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px); display: flex; justify-content: space-between; }
+.pA-bc { }
+.pA-bc-lbl { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.35); margin-bottom: 3px; }
+.pA-bc-val { font-size: 18px; font-weight: 800; letter-spacing: -0.03em; }
+.pA-bc-val.g { color: #6ee8d8; }
+.pA-divider { width: 1px; background: rgba(255,255,255,0.1); margin: 0 12px; }
+
+.pA-body { background: #0d1117; padding: 18px; }
+.pA-sec { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.25); margin-bottom: 10px; }
+.pA-trip { display: flex; align-items: center; gap: 12px; padding: 13px; border-radius: 16px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); margin-bottom: 8px; cursor: pointer; }
+.pA-trip:hover { background: rgba(255,255,255,0.07); }
+.pA-trip-icon { width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, rgba(27,92,88,0.4), rgba(27,92,88,0.15)); border: 1px solid rgba(27,92,88,0.4); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.pA-trip-name { font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.88); }
+.pA-trip-meta { font-size: 11px; color: rgba(255,255,255,0.28); margin-top: 2px; }
+.pA-badge { padding: 3px 8px; border-radius: 6px; background: rgba(110,232,216,0.1); color: #6ee8d8; font-size: 9px; font-weight: 700; margin-left: auto; flex-shrink: 0; }
+.pA-exp { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.pA-exp:last-child { border: none; }
+.pA-exp-icon { width: 34px; height: 34px; border-radius: 10px; background: rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+.pA-exp-name { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.8); }
+.pA-exp-who { font-size: 10px; color: rgba(255,255,255,0.25); margin-top: 1px; }
+.pA-exp-amt { font-size: 13px; font-weight: 700; color: #fff; margin-left: auto; flex-shrink: 0; }
+.pA-nav { display: flex; justify-content: space-around; padding: 12px 16px 16px; background: #0d1117; border-top: 1px solid rgba(255,255,255,0.06); }
+.pA-ni { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.pA-ni-icon { width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+.pA-ni-icon.a { background: #1b5c58; }
+.pA-ni-lbl { font-size: 9px; font-weight: 700; color: rgba(255,255,255,0.2); text-transform: uppercase; letter-spacing: 0.05em; }
+.pA-ni-lbl.a { color: #6ee8d8; }
+
+/* ======================== B: WARM ELEVATED ======================== */
+/* Light cream but with stronger depth, glow effects, better cards */
+.pB-phone { background: #f5f1ea; box-shadow: 0 2px 4px rgba(0,0,0,0.04), 0 20px 60px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.05); }
+.pB-header {
+  padding: 28px 20px 22px;
+  background: linear-gradient(150deg, #1b5c58 0%, #134844 100%);
+  position: relative; overflow: hidden;
+}
+.pB-header::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 80% 0%, rgba(110,232,216,0.2) 0%, transparent 60%);
+  pointer-events: none;
+}
+.pB-ht { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; position: relative; z-index: 1; }
+.pB-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.4); margin-bottom: 4px; }
+.pB-name { font-size: 21px; font-weight: 800; color: #fff; letter-spacing: -0.03em; }
+.pB-sub { font-size: 12px; color: rgba(255,255,255,0.45); margin-top: 2px; }
+.pB-av { width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0; }
+.pB-balance { display: flex; justify-content: space-between; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; padding: 12px 14px; position: relative; z-index: 1; }
+.pB-bc-lbl { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.4); margin-bottom: 3px; }
+.pB-bc-val { font-size: 17px; font-weight: 800; letter-spacing: -0.02em; color: #fff; }
+.pB-bc-val.g { color: #a8ffd0; }
+.pB-divider { width: 1px; background: rgba(255,255,255,0.15); margin: 0 10px; }
+
+.pB-body { padding: 18px; background: #f5f1ea; }
+.pB-sec { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; color: #b5a890; margin-bottom: 10px; }
+.pB-trip { display: flex; align-items: center; gap: 12px; padding: 13px; border-radius: 14px; background: #fff; border: 1px solid #e8e2d8; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 10px rgba(0,0,0,0.06); }
+/* Trip icon: SVG-style icon in teal circle instead of emoji */
+.pB-trip-icon { width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, #1b5c58, #0d4440); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.pB-trip-name { font-size: 13px; font-weight: 700; color: #1a1612; }
+.pB-trip-meta { font-size: 11px; color: #9a9080; margin-top: 2px; }
+.pB-badge { padding: 3px 8px; border-radius: 5px; background: rgba(27,92,88,0.1); color: #1b5c58; font-size: 9px; font-weight: 800; margin-left: auto; flex-shrink: 0; }
+.pB-exp { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid #ede8e0; }
+.pB-exp:last-child { border: none; }
+.pB-exp-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.pB-exp-name { font-size: 12px; font-weight: 700; color: #1a1612; }
+.pB-exp-who { font-size: 10px; color: #9a9080; margin-top: 1px; }
+.pB-exp-amt { font-size: 13px; font-weight: 800; color: #1a1612; margin-left: auto; flex-shrink: 0; letter-spacing: -0.02em; }
+.pB-exp-share { font-size: 10px; color: #9a9080; text-align: right; }
+.pB-nav { display: flex; justify-content: space-around; padding: 12px 16px 16px; background: #fff; border-top: 1px solid #ede8e0; }
+.pB-ni { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.pB-ni-icon { width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+.pB-ni-icon.a { background: #1b5c58; }
+.pB-ni-lbl { font-size: 9px; font-weight: 700; color: #b5a890; text-transform: uppercase; letter-spacing: 0.05em; }
+.pB-ni-lbl.a { color: #1b5c58; }
+
+/* ======================== C: FROSTED TEAL ======================== */
+/* Teal bleeds into content, frosted glass cards, subtle glow */
+.pC-phone { background: linear-gradient(180deg, #1b5c58 0%, #0d3835 30%, #f2efe8 30%); box-shadow: 0 2px 4px rgba(0,0,0,0.04), 0 24px 64px rgba(0,0,0,0.16), 0 0 0 1px rgba(0,0,0,0.05); }
+.pC-header {
+  padding: 28px 20px 48px;
+  background: linear-gradient(150deg, #1b5c58 0%, #134844 100%);
+  position: relative; overflow: hidden;
+}
+.pC-glow { position: absolute; width: 200px; height: 200px; border-radius: 50%; background: radial-gradient(circle, rgba(110,232,216,0.25) 0%, transparent 70%); top: -40px; right: -30px; filter: blur(20px); pointer-events: none; }
+.pC-ht { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; position: relative; }
+.pC-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.4); margin-bottom: 4px; }
+.pC-name { font-size: 21px; font-weight: 800; color: #fff; letter-spacing: -0.03em; }
+.pC-sub { font-size: 12px; color: rgba(255,255,255,0.45); margin-top: 2px; }
+.pC-av { width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,0.18); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0; }
+.pC-balance {
+  margin: -28px 14px 0;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.95);
+  border: 1px solid rgba(255,255,255,0.8);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  display: flex; justify-content: space-between;
+  position: relative; z-index: 2;
+}
+.pC-bc-lbl { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #9a9080; margin-bottom: 3px; }
+.pC-bc-val { font-size: 17px; font-weight: 800; letter-spacing: -0.02em; color: #1a1612; }
+.pC-bc-val.g { color: #1b5c58; }
+.pC-divider { width: 1px; background: #ede8e0; margin: 0 10px; }
+
+.pC-body { background: #f2efe8; padding: 18px; }
+.pC-sec { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; color: #b5a890; margin-bottom: 10px; margin-top: 24px; }
+.pC-sec:first-child { margin-top: 0; }
+.pC-trip { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 14px; background: #fff; border: 1px solid #ede8e0; margin-bottom: 7px; box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 3px 8px rgba(0,0,0,0.05); }
+.pC-trip-icon { width: 40px; height: 40px; border-radius: 12px; background: #e8f2f0; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 20px; }
+.pC-trip-name { font-size: 13px; font-weight: 700; color: #1a1612; }
+.pC-trip-meta { font-size: 11px; color: #9a9080; margin-top: 2px; }
+.pC-badge { padding: 3px 8px; border-radius: 5px; background: #e8f2f0; color: #1b5c58; font-size: 9px; font-weight: 800; margin-left: auto; flex-shrink: 0; }
+.pC-exp { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid #ede8e0; }
+.pC-exp:last-child { border: none; }
+.pC-exp-cat { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+.pC-exp-name { font-size: 12px; font-weight: 700; color: #1a1612; }
+.pC-exp-who { font-size: 10px; color: #9a9080; margin-top: 1px; }
+.pC-exp-amt { font-size: 13px; font-weight: 800; color: #1a1612; margin-left: auto; flex-shrink: 0; letter-spacing: -0.02em; }
+.pC-nav { display: flex; justify-content: space-around; padding: 12px 16px 16px; background: #f2efe8; border-top: 1px solid #ede8e0; }
+.pC-ni { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.pC-ni-icon { width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+.pC-ni-icon.a { background: #1b5c58; }
+.pC-ni-lbl { font-size: 9px; font-weight: 700; color: #b5a890; text-transform: uppercase; letter-spacing: 0.05em; }
+.pC-ni-lbl.a { color: #1b5c58; }
+
+/* ======================== D: DEEP IMMERSIVE ======================== */
+/* Dark like login throughout, teal accents, strong consistency with login screen */
+.pD-phone { background: linear-gradient(160deg, #0f1f1e 0%, #0a1412 100%); box-shadow: 0 0 0 1px rgba(110,232,216,0.08), 0 32px 80px rgba(0,0,0,0.8); }
+.pD-header {
+  padding: 28px 20px 22px;
+  background: transparent;
+  border-bottom: 1px solid rgba(110,232,216,0.08);
+  position: relative; overflow: hidden;
+}
+.pD-glow { position: absolute; width: 280px; height: 180px; border-radius: 50%; background: radial-gradient(circle, rgba(27,92,88,0.5) 0%, transparent 70%); top: -60px; right: -60px; filter: blur(40px); pointer-events: none; }
+.pD-ht { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; position: relative; }
+.pD-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(110,232,216,0.5); margin-bottom: 4px; }
+.pD-name { font-size: 20px; font-weight: 800; color: #fff; letter-spacing: -0.03em; }
+.pD-sub { font-size: 12px; color: rgba(255,255,255,0.35); margin-top: 2px; }
+.pD-av { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #1b5c58, #6ee8d8); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; color: #fff; flex-shrink: 0; }
+.pD-balance { display: flex; justify-content: space-between; background: rgba(110,232,216,0.06); border: 1px solid rgba(110,232,216,0.1); border-radius: 12px; padding: 12px 14px; }
+.pD-bc-lbl { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.28); margin-bottom: 3px; }
+.pD-bc-val { font-size: 17px; font-weight: 800; letter-spacing: -0.02em; color: #fff; }
+.pD-bc-val.g { color: #6ee8d8; }
+.pD-divider { width: 1px; background: rgba(110,232,216,0.1); margin: 0 10px; }
+
+.pD-body { padding: 18px; }
+.pD-sec { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.2); margin-bottom: 10px; }
+.pD-trip { display: flex; align-items: center; gap: 12px; padding: 13px; border-radius: 16px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); margin-bottom: 8px; }
+.pD-trip-icon { width: 40px; height: 40px; border-radius: 12px; background: rgba(27,92,88,0.3); border: 1px solid rgba(110,232,216,0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.pD-trip-name { font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.85); }
+.pD-trip-meta { font-size: 11px; color: rgba(255,255,255,0.27); margin-top: 2px; }
+.pD-badge { padding: 3px 8px; border-radius: 6px; background: rgba(110,232,216,0.12); color: #6ee8d8; font-size: 9px; font-weight: 700; margin-left: auto; flex-shrink: 0; }
+.pD-exp { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.pD-exp:last-child { border: none; }
+.pD-exp-cat { width: 32px; height: 32px; border-radius: 9px; background: rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+.pD-exp-name { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.8); }
+.pD-exp-who { font-size: 10px; color: rgba(255,255,255,0.25); margin-top: 1px; }
+.pD-exp-amt { font-size: 13px; font-weight: 700; color: #fff; margin-left: auto; flex-shrink: 0; }
+.pD-nav { display: flex; justify-content: space-around; padding: 12px 16px 16px; border-top: 1px solid rgba(110,232,216,0.07); }
+.pD-ni { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.pD-ni-icon { width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+.pD-ni-icon.a { background: linear-gradient(135deg, #1b5c58, #0d4440); }
+.pD-ni-lbl { font-size: 9px; font-weight: 700; color: rgba(255,255,255,0.2); text-transform: uppercase; letter-spacing: 0.05em; }
+.pD-ni-lbl.a { color: #6ee8d8; }
+
+/* SVG icons shared */
+svg.icon { width: 18px; height: 18px; stroke-width: 2; fill: none; }
+
+/* Desc block */
+.desc { text-align: center; font-size: 11px; line-height: 1.5; max-width: 260px; margin: 0 auto; }
+.pA .desc, .pD .desc { color: rgba(255,255,255,0.3); }
+.pB .desc, .pC .desc { color: #9a9080; background: #0a0c10; padding: 0 8px; border-radius: 6px; }
+
+@media (max-width: 600px) {
+  .phones { padding: 0 12px 48px; }
+  .intro { padding: 36px 16px 32px; }
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <h1>TeileniX — App Design Proposals</h1>
+  <button class="nav-btn active" onclick="show('A',this)">A · Dark Glass</button>
+  <button class="nav-btn" onclick="show('B',this)">B · Warm Elevated</button>
+  <button class="nav-btn" onclick="show('C',this)">C · Frosted Teal</button>
+  <button class="nav-btn" onclick="show('D',this)">D · Deep Immersive</button>
+</nav>
+
+<!-- ======= A: DARK GLASS ======= -->
+<section class="proposal pA visible" id="pA">
+  <div class="intro">
+    <div class="intro-tag" style="background:rgba(110,232,216,0.1);color:#6ee8d8;border:1px solid rgba(110,232,216,0.15);">A · Dark Glass</div>
+    <h2 class="intro-title">Login-Ästhetik<br>in der App fortführen</h2>
+    <p class="intro-sub" style="color:rgba(255,255,255,0.4);">Dunkles Interface wie die Login-Seite. Glasmorphismus-Karten, atmosphärische Teal-Glows. Konsistent vom ersten Klick bis zur Abrechnung.</p>
+    <div class="tags">
+      <span class="tag" style="background:rgba(110,232,216,0.08);color:#6ee8d8;">Dark Mode</span>
+      <span class="tag" style="background:rgba(110,232,216,0.08);color:#6ee8d8;">Glass Cards</span>
+      <span class="tag" style="background:rgba(110,232,216,0.08);color:#6ee8d8;">Teal Glow</span>
+      <span class="tag" style="background:rgba(110,232,216,0.08);color:#6ee8d8;">Maximale Konsistenz</span>
+    </div>
+  </div>
+  <div class="phones">
+    <div class="phone-wrap">
+      <div class="phone-label">Dashboard</div>
+      <div class="phone pA-phone">
+        <div class="pA-header">
+          <div class="pA-ht">
+            <div>
+              <div class="pA-eyebrow">TeileniX</div>
+              <div class="pA-name">Hallo, Müller</div>
+              <div class="pA-sub">2 aktive Reisen</div>
+            </div>
+            <div class="pA-av">M</div>
+          </div>
+          <div class="pA-balance">
+            <div class="pA-bc"><div class="pA-bc-lbl">Saldo</div><div class="pA-bc-val g">+47,50 €</div></div>
+            <div class="pA-divider"></div>
+            <div class="pA-bc"><div class="pA-bc-lbl">Gesamt</div><div class="pA-bc-val">318 €</div></div>
+            <div class="pA-divider"></div>
+            <div class="pA-bc"><div class="pA-bc-lbl">Bezahlt</div><div class="pA-bc-val">140 €</div></div>
+          </div>
+        </div>
+        <div class="pA-body">
+          <div class="pA-sec">Aktive Reisen</div>
+          <div class="pA-trip">
+            <div class="pA-trip-icon">
+              <svg class="icon" stroke="#6ee8d8" viewBox="0 0 24 24"><path d="M3 17l5-5-4-4 2-1 4 4 4-8 2 1-4 8 4 4-2 1-4-4-5 5-2-1z"/><path d="M21 3l-6 2"/></svg>
+            </div>
+            <div style="flex:1">
+              <div class="pA-trip-name">Alpen Tour 2025</div>
+              <div class="pA-trip-meta">15.–22. Jul · 3 Gruppen</div>
+            </div>
+            <div class="pA-badge">Aktiv</div>
+          </div>
+          <div class="pA-trip">
+            <div class="pA-trip-icon">
+              <svg class="icon" stroke="#6ee8d8" viewBox="0 0 24 24"><path d="M3 12c0-5 3.5-9 9-9s9 4 9 9"/><path d="M3 12c0 2.5 1 5 3 7"/><path d="M21 12c0 2.5-1 5-3 7"/><path d="M8 21c1.3.6 2.6 1 4 1s2.7-.4 4-1"/><circle cx="12" cy="12" r="3"/></svg>
+            </div>
+            <div style="flex:1">
+              <div class="pA-trip-name">Kroatien</div>
+              <div class="pA-trip-meta">2.–10. Aug · 2 Gruppen</div>
+            </div>
+            <div class="pA-badge">Aktiv</div>
+          </div>
+          <div style="height:10px"></div>
+          <div class="pA-sec">Letzte Ausgaben</div>
+          <div class="pA-exp">
+            <div class="pA-exp-icon">🍽️</div>
+            <div style="flex:1"><div class="pA-exp-name">Abendessen</div><div class="pA-exp-who">Fam. Müller · Alpen</div></div>
+            <div class="pA-exp-amt">84 €</div>
+          </div>
+          <div class="pA-exp">
+            <div class="pA-exp-icon">🚗</div>
+            <div style="flex:1"><div class="pA-exp-name">Mautgebühr</div><div class="pA-exp-who">du · Alpen</div></div>
+            <div class="pA-exp-amt">24,50 €</div>
+          </div>
+          <div class="pA-exp">
+            <div class="pA-exp-icon">🏨</div>
+            <div style="flex:1"><div class="pA-exp-name">Hotel Nacht</div><div class="pA-exp-who">Fam. Koch · Alpen</div></div>
+            <div class="pA-exp-amt">210 €</div>
+          </div>
+        </div>
+        <div class="pA-nav">
+          <div class="pA-ni"><div class="pA-ni-icon a">✈️</div><div class="pA-ni-lbl a">Reisen</div></div>
+          <div class="pA-ni"><div class="pA-ni-icon">👤</div><div class="pA-ni-lbl">Profil</div></div>
+        </div>
+      </div>
+      <div class="desc" style="color:rgba(255,255,255,0.3);margin-top:8px;">Volle Konsistenz mit Login.<br>Dunkel, atmosphärisch, modern.</div>
+    </div>
+
+    <div class="phone-wrap">
+      <div class="phone-label">Trip-Übersicht</div>
+      <div class="phone pA-phone">
+        <div style="padding:20px 20px 16px;background:#0d1117;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:10px;">
+          <div style="width:32px;height:32px;border-radius:10px;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;font-size:16px;color:rgba(255,255,255,0.4);">←</div>
+          <div style="font-size:16px;font-weight:800;color:#fff;letter-spacing:-0.02em;flex:1;">Alpen Tour 2025</div>
+        </div>
+        <div style="display:flex;gap:6px;padding:12px 20px;background:#0d1117;overflow-x:auto;">
+          <div style="padding:6px 14px;border-radius:10px;background:#1b5c58;color:#fff;font-size:12px;font-weight:700;white-space:nowrap;">Übersicht</div>
+          <div style="padding:6px 14px;border-radius:10px;color:rgba(255,255,255,0.3);font-size:12px;font-weight:600;white-space:nowrap;">Ausgaben</div>
+          <div style="padding:6px 14px;border-radius:10px;color:rgba(255,255,255,0.3);font-size:12px;font-weight:600;white-space:nowrap;">Statistik</div>
+        </div>
+        <div class="pA-body" style="padding-top:0;">
+          <!-- Balance Card -->
+          <div style="padding:18px;border-radius:18px;background:linear-gradient(135deg,#1b5c58,#0d3835);border:1px solid rgba(110,232,216,0.15);margin-bottom:14px;position:relative;overflow:hidden;">
+            <div style="position:absolute;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,rgba(110,232,216,0.2) 0%,transparent 70%);top:-30px;right:-20px;"></div>
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:rgba(255,255,255,0.4);margin-bottom:6px;">Dein Saldo</div>
+            <div style="font-size:34px;font-weight:800;color:#fff;letter-spacing:-0.04em;margin-bottom:3px;">+47,50 €</div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.5);">Du bekommst Geld zurück</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:14px;">
+              <div style="padding:8px;border-radius:10px;background:rgba(255,255,255,0.08);text-align:center;"><div style="font-size:8px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px;">Gesamt</div><div style="font-size:11px;font-weight:700;color:#fff;">318 €</div></div>
+              <div style="padding:8px;border-radius:10px;background:rgba(255,255,255,0.08);text-align:center;"><div style="font-size:8px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px;">Anteil</div><div style="font-size:11px;font-weight:700;color:#fff;">106 €</div></div>
+              <div style="padding:8px;border-radius:10px;background:rgba(255,255,255,0.08);text-align:center;"><div style="font-size:8px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px;">Bezahlt</div><div style="font-size:11px;font-weight:700;color:#fff;">140 €</div></div>
+            </div>
+          </div>
+          <div class="pA-sec">Teilnehmer</div>
+          <div style="display:flex;align-items:center;gap:10px;padding:11px;border-radius:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(110,232,216,0.1);margin-bottom:6px;">
+            <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#1b5c58,#0d4440);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;">M</div>
+            <div style="flex:1;"><div style="font-size:13px;font-weight:700;color:#fff;">Familie Müller <span style="font-size:9px;padding:1px 6px;border-radius:4px;background:rgba(110,232,216,0.1);color:#6ee8d8;font-weight:700;">du</span></div><div style="font-size:10px;color:rgba(255,255,255,0.28);margin-top:1px;">Bezahlt: 140 €</div></div>
+            <div style="text-align:right;"><div style="font-size:13px;font-weight:700;color:#6ee8d8;">+47,50 €</div><div style="font-size:10px;color:rgba(255,255,255,0.28);">bekommt zurück</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:11px;border-radius:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);margin-bottom:6px;">
+            <div style="width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:rgba(255,255,255,0.6);flex-shrink:0;">K</div>
+            <div style="flex:1;"><div style="font-size:13px;font-weight:600;color:rgba(255,255,255,0.75);">Familie Koch</div><div style="font-size:10px;color:rgba(255,255,255,0.28);margin-top:1px;">Bezahlt: 178 €</div></div>
+            <div style="text-align:right;"><div style="font-size:13px;font-weight:700;color:#f87171;">−23,50 €</div><div style="font-size:10px;color:rgba(255,255,255,0.28);">schuldet</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======= B: WARM ELEVATED ======= -->
+<section class="proposal pB" id="pB">
+  <div class="intro" style="background:#0a0c10;">
+    <div class="intro-tag" style="background:rgba(27,92,88,0.15);color:#1b5c58;border:1px solid rgba(27,92,88,0.2);">B · Warm Elevated</div>
+    <h2 class="intro-title">Helles Design,<br>mehr Tiefe & Raffinesse</h2>
+    <p class="intro-sub" style="color:rgba(255,255,255,0.4);">Cream-Hintergrund bleibt, aber Karten bekommen stärkere Schatten, Icons werden zu Lucide-Vektoren, Kategorie-Farben werden zurückgehalten.</p>
+    <div class="tags">
+      <span class="tag" style="background:rgba(27,92,88,0.12);color:#6ee8d8;">Light Mode</span>
+      <span class="tag" style="background:rgba(27,92,88,0.12);color:#6ee8d8;">Vektor-Icons</span>
+      <span class="tag" style="background:rgba(27,92,88,0.12);color:#6ee8d8;">Mehr Tiefe</span>
+      <span class="tag" style="background:rgba(27,92,88,0.12);color:#6ee8d8;">Farbreduziert</span>
+    </div>
+  </div>
+  <div class="phones" style="background:#0a0c10;">
+    <div class="phone-wrap">
+      <div class="phone-label">Dashboard</div>
+      <div class="phone pB-phone">
+        <div class="pB-header">
+          <div class="pB-ht">
+            <div>
+              <div class="pB-eyebrow">TeileniX</div>
+              <div class="pB-name">Hallo, Müller</div>
+              <div class="pB-sub">2 aktive Reisen</div>
+            </div>
+            <div class="pB-av">M</div>
+          </div>
+          <div class="pB-balance">
+            <div><div class="pB-bc-lbl">Saldo</div><div class="pB-bc-val g">+47,50 €</div></div>
+            <div class="pB-divider"></div>
+            <div><div class="pB-bc-lbl">Gesamt</div><div class="pB-bc-val">318 €</div></div>
+            <div class="pB-divider"></div>
+            <div><div class="pB-bc-lbl">Bezahlt</div><div class="pB-bc-val">140 €</div></div>
+          </div>
+        </div>
+        <div class="pB-body">
+          <div class="pB-sec">Aktive Reisen</div>
+          <div class="pB-trip">
+            <div class="pB-trip-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5-4-4 2-1 4 4 4-8 2 1-4 8 4 4-2 1-4-4-5 5-2-1z"/></svg>
+            </div>
+            <div style="flex:1">
+              <div class="pB-trip-name">Alpen Tour 2025</div>
+              <div class="pB-trip-meta">15.–22. Jul · 3 Gruppen</div>
+            </div>
+            <div class="pB-badge">Aktiv</div>
+          </div>
+          <div class="pB-trip">
+            <div class="pB-trip-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3.6 9h16.8M3.6 15h16.8"/><path d="M12 3a14 14 0 010 18M12 3a14 14 0 000 18"/></svg>
+            </div>
+            <div style="flex:1">
+              <div class="pB-trip-name">Kroatien</div>
+              <div class="pB-trip-meta">2.–10. Aug · 2 Gruppen</div>
+            </div>
+            <div class="pB-badge">Aktiv</div>
+          </div>
+          <div style="height:10px"></div>
+          <div class="pB-sec">Letzte Ausgaben</div>
+          <!-- Category dots statt bunter Emoji-Boxen -->
+          <div class="pB-exp">
+            <div class="pB-exp-dot" style="background:#1b5c58;margin-top:2px;self-align:flex-start;"></div>
+            <div style="flex:1"><div class="pB-exp-name">Abendessen Grill</div><div class="pB-exp-who">Fam. Müller · Essen</div></div>
+            <div><div class="pB-exp-amt">84 €</div><div class="pB-exp-share">dein: 28 €</div></div>
+          </div>
+          <div class="pB-exp">
+            <div class="pB-exp-dot" style="background:#6b9ab8;margin-top:2px;"></div>
+            <div style="flex:1"><div class="pB-exp-name">Mautgebühr A8</div><div class="pB-exp-who">du · Transport</div></div>
+            <div><div class="pB-exp-amt">24,50 €</div><div class="pB-exp-share">dein: 8 €</div></div>
+          </div>
+          <div class="pB-exp">
+            <div class="pB-exp-dot" style="background:#8b7ab8;margin-top:2px;"></div>
+            <div style="flex:1"><div class="pB-exp-name">Berghotel Nacht</div><div class="pB-exp-who">Fam. Koch · Unterkunft</div></div>
+            <div><div class="pB-exp-amt">210 €</div><div class="pB-exp-share">dein: 70 €</div></div>
+          </div>
+        </div>
+        <div class="pB-nav">
+          <div class="pB-ni"><div class="pB-ni-icon a">✈️</div><div class="pB-ni-lbl a">Reisen</div></div>
+          <div class="pB-ni"><div class="pB-ni-icon">👤</div><div class="pB-ni-lbl">Profil</div></div>
+        </div>
+      </div>
+      <div class="desc" style="color:rgba(255,255,255,0.3);margin-top:8px;">Vertraute Helligkeit,<br>raffinierter und ruhiger.</div>
+    </div>
+    <div class="phone-wrap">
+      <div class="phone-label">Trip-Übersicht</div>
+      <div class="phone pB-phone">
+        <div style="padding:18px 18px 14px;background:#f5f1ea;border-bottom:1px solid #e8e2d8;display:flex;align-items:center;gap:10px;">
+          <div style="width:32px;height:32px;border-radius:10px;background:#fff;border:1px solid #e8e2d8;box-shadow:0 1px 3px rgba(0,0,0,0.05);display:flex;align-items:center;justify-content:center;font-size:15px;color:#9a9080;">←</div>
+          <div style="font-size:16px;font-weight:800;color:#1a1612;letter-spacing:-0.02em;flex:1;">Alpen Tour 2025</div>
+        </div>
+        <div style="display:flex;gap:4px;padding:10px 18px;background:#f5f1ea;border-bottom:1px solid #e8e2d8;">
+          <div style="padding:6px 12px;border-radius:10px;background:#1b5c58;color:#fff;font-size:11px;font-weight:700;">Übersicht</div>
+          <div style="padding:6px 12px;border-radius:10px;color:#9a9080;font-size:11px;font-weight:600;">Ausgaben</div>
+          <div style="padding:6px 12px;border-radius:10px;color:#9a9080;font-size:11px;font-weight:600;">Statistik</div>
+        </div>
+        <div class="pB-body" style="background:#f5f1ea;">
+          <div style="padding:18px;border-radius:16px;background:#1b5c58;margin-bottom:14px;position:relative;overflow:hidden;">
+            <div style="position:absolute;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,0.08);top:-20px;right:-20px;"></div>
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:rgba(255,255,255,0.45);margin-bottom:6px;">Dein Saldo</div>
+            <div style="font-size:32px;font-weight:800;color:#fff;letter-spacing:-0.04em;margin-bottom:2px;">+47,50 €</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.5);">Du bekommst Geld zurück</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:14px;">
+              <div style="padding:8px;border-radius:10px;background:rgba(255,255,255,0.1);text-align:center;"><div style="font-size:8px;color:rgba(255,255,255,0.45);text-transform:uppercase;margin-bottom:2px;">Gesamt</div><div style="font-size:11px;font-weight:700;color:#fff;">318 €</div></div>
+              <div style="padding:8px;border-radius:10px;background:rgba(255,255,255,0.1);text-align:center;"><div style="font-size:8px;color:rgba(255,255,255,0.45);text-transform:uppercase;margin-bottom:2px;">Anteil</div><div style="font-size:11px;font-weight:700;color:#fff;">106 €</div></div>
+              <div style="padding:8px;border-radius:10px;background:rgba(255,255,255,0.1);text-align:center;"><div style="font-size:8px;color:rgba(255,255,255,0.45);text-transform:uppercase;margin-bottom:2px;">Bezahlt</div><div style="font-size:11px;font-weight:700;color:#fff;">140 €</div></div>
+            </div>
+          </div>
+          <div class="pB-sec">Abrechnungsgruppen</div>
+          <div style="background:#fff;border-radius:14px;border:1px solid #e8e2d8;box-shadow:0 1px 4px rgba(0,0,0,0.05),0 4px 12px rgba(0,0,0,0.07);overflow:hidden;">
+            <div style="display:flex;align-items:center;gap:10px;padding:12px;border-bottom:1px solid #f0ede6;">
+              <div style="width:36px;height:36px;border-radius:10px;background:#e8f2f0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#1b5c58;">M</div>
+              <div style="flex:1;"><div style="font-size:13px;font-weight:700;color:#1a1612;">Müller <span style="font-size:9px;padding:1px 6px;border-radius:4px;background:rgba(27,92,88,0.1);color:#1b5c58;font-weight:700;">du</span></div><div style="font-size:10px;color:#9a9080;">Bezahlt: 140 €</div></div>
+              <div style="text-align:right;"><div style="font-size:13px;font-weight:800;color:#1b5c58;">+47,50 €</div><div style="font-size:10px;color:#9a9080;">bekommt zurück</div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;padding:12px;">
+              <div style="width:36px;height:36px;border-radius:10px;background:#f5f1ea;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#9a9080;">K</div>
+              <div style="flex:1;"><div style="font-size:13px;font-weight:600;color:#1a1612;">Koch</div><div style="font-size:10px;color:#9a9080;">Bezahlt: 178 €</div></div>
+              <div style="text-align:right;"><div style="font-size:13px;font-weight:800;color:#e53e3e;">−23,50 €</div><div style="font-size:10px;color:#9a9080;">schuldet</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======= C: FROSTED TEAL ======= -->
+<section class="proposal pC" id="pC">
+  <div class="intro" style="background:#0a0c10;">
+    <div class="intro-tag" style="background:rgba(27,92,88,0.15);color:#6ee8d8;border:1px solid rgba(110,232,216,0.15);">C · Frosted Teal</div>
+    <h2 class="intro-title">Teal-Header fließt<br>in den Content</h2>
+    <p class="intro-sub" style="color:rgba(255,255,255,0.4);">Der Teal-Header geht weiter nach unten, die Balance-Karte schwebt wie eine Glasplatte darüber. Elegantes "Hero"-Gefühl ohne Dark Mode.</p>
+    <div class="tags">
+      <span class="tag" style="background:rgba(110,232,216,0.08);color:#6ee8d8;">Floating Card</span>
+      <span class="tag" style="background:rgba(110,232,216,0.08);color:#6ee8d8;">Hero-Header</span>
+      <span class="tag" style="background:rgba(110,232,216,0.08);color:#6ee8d8;">Light Body</span>
+      <span class="tag" style="background:rgba(110,232,216,0.08);color:#6ee8d8;">Dynamisch</span>
+    </div>
+  </div>
+  <div class="phones" style="background:#0a0c10;">
+    <div class="phone-wrap">
+      <div class="phone-label">Dashboard</div>
+      <div class="phone pC-phone" style="background:#f2efe8;">
+        <div class="pC-header" style="padding-bottom:52px;">
+          <div class="pC-glow"></div>
+          <div class="pC-ht">
+            <div>
+              <div class="pC-eyebrow">TeileniX</div>
+              <div class="pC-name">Hallo, Müller</div>
+              <div class="pC-sub">2 aktive Reisen</div>
+            </div>
+            <div class="pC-av">M</div>
+          </div>
+        </div>
+        <div style="padding:0 14px;margin-top:-28px;position:relative;z-index:2;">
+          <div class="pC-balance" style="margin:0;padding:14px 16px;box-shadow:0 8px 24px rgba(27,92,88,0.18),0 2px 6px rgba(0,0,0,0.06);">
+            <div><div class="pC-bc-lbl">Saldo</div><div class="pC-bc-val g">+47,50 €</div></div>
+            <div class="pC-divider"></div>
+            <div><div class="pC-bc-lbl">Gesamt</div><div class="pC-bc-val">318 €</div></div>
+            <div class="pC-divider"></div>
+            <div><div class="pC-bc-lbl">Bezahlt</div><div class="pC-bc-val">140 €</div></div>
+          </div>
+        </div>
+        <div class="pC-body">
+          <div class="pC-sec">Aktive Reisen</div>
+          <div class="pC-trip">
+            <div class="pC-trip-icon">🏔️</div>
+            <div style="flex:1"><div class="pC-trip-name">Alpen Tour 2025</div><div class="pC-trip-meta">15.–22. Jul · 3 Gruppen</div></div>
+            <div class="pC-badge">Aktiv</div>
+          </div>
+          <div class="pC-trip">
+            <div class="pC-trip-icon">🌊</div>
+            <div style="flex:1"><div class="pC-trip-name">Kroatien</div><div class="pC-trip-meta">2.–10. Aug · 2 Gruppen</div></div>
+            <div class="pC-badge">Aktiv</div>
+          </div>
+          <div class="pC-sec">Letzte Ausgaben</div>
+          <div class="pC-exp">
+            <div class="pC-exp-cat" style="background:#fef3e2;">🍽️</div>
+            <div style="flex:1"><div class="pC-exp-name">Abendessen</div><div class="pC-exp-who">Fam. Müller · Essen</div></div>
+            <div class="pC-exp-amt">84 €</div>
+          </div>
+          <div class="pC-exp">
+            <div class="pC-exp-cat" style="background:#e8f0fe;">🚗</div>
+            <div style="flex:1"><div class="pC-exp-name">Mautgebühr</div><div class="pC-exp-who">du · Transport</div></div>
+            <div class="pC-exp-amt">24,50 €</div>
+          </div>
+          <div class="pC-exp">
+            <div class="pC-exp-cat" style="background:#f3e8ff;">🏨</div>
+            <div style="flex:1"><div class="pC-exp-name">Hotel Nacht</div><div class="pC-exp-who">Fam. Koch · Unterkunft</div></div>
+            <div class="pC-exp-amt">210 €</div>
+          </div>
+        </div>
+        <div class="pC-nav">
+          <div class="pC-ni"><div class="pC-ni-icon a">✈️</div><div class="pC-ni-lbl a">Reisen</div></div>
+          <div class="pC-ni"><div class="pC-ni-icon">👤</div><div class="pC-ni-lbl">Profil</div></div>
+        </div>
+      </div>
+      <div class="desc" style="color:rgba(255,255,255,0.3);margin-top:8px;">Dramatischer als heute,<br>ohne Dark Mode.</div>
+    </div>
+    <div class="phone-wrap">
+      <div class="phone-label">Ausgabe erfassen</div>
+      <div class="phone pC-phone" style="background:#f2efe8;">
+        <div style="background:linear-gradient(150deg,#1b5c58,#134844);padding:22px 18px 18px;position:relative;overflow:hidden;">
+          <div style="position:absolute;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(110,232,216,0.2) 0%,transparent 70%);top:-40px;right:-30px;filter:blur(20px);"></div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;position:relative;">
+            <div style="width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;font-size:14px;color:rgba(255,255,255,0.6);">←</div>
+            <div style="font-size:14px;font-weight:700;color:rgba(255,255,255,0.6);">Alpen Tour 2025</div>
+          </div>
+          <div style="font-size:18px;font-weight:800;color:#fff;letter-spacing:-0.02em;position:relative;">Ausgabe erfassen</div>
+        </div>
+        <div class="pC-body" style="padding:16px;">
+          <div style="margin-bottom:12px;">
+            <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.12em;color:#b5a890;margin-bottom:6px;">Bezeichnung</div>
+            <div style="padding:10px 12px;border-radius:10px;background:#fff;border:1px solid #ede8e0;font-size:13px;color:#1a1612;">Abendessen Restaurant</div>
+          </div>
+          <div style="margin-bottom:12px;">
+            <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.12em;color:#b5a890;margin-bottom:6px;">Betrag</div>
+            <div style="padding:10px 12px;border-radius:10px;background:#fff;border:1px solid #ede8e0;font-size:18px;font-weight:800;color:#1a1612;letter-spacing:-0.02em;">€ 84,00</div>
+          </div>
+          <div style="margin-bottom:12px;">
+            <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.12em;color:#b5a890;margin-bottom:6px;">Kategorie · <span style="color:#1b5c58;normal-case;">Essen</span></div>
+            <div style="display:flex;gap:8px;">
+              <div style="width:38px;height:38px;border-radius:10px;background:#1b5c58;display:flex;align-items:center;justify-content:center;font-size:17px;">🍽️</div>
+              <div style="width:38px;height:38px;border-radius:10px;background:#fff;border:1px solid #ede8e0;display:flex;align-items:center;justify-content:center;font-size:17px;">🚗</div>
+              <div style="width:38px;height:38px;border-radius:10px;background:#fff;border:1px solid #ede8e0;display:flex;align-items:center;justify-content:center;font-size:17px;">🏠</div>
+              <div style="width:38px;height:38px;border-radius:10px;background:#fff;border:1px solid #ede8e0;display:flex;align-items:center;justify-content:center;font-size:17px;">🎡</div>
+              <div style="width:38px;height:38px;border-radius:10px;background:#fff;border:1px solid #ede8e0;display:flex;align-items:center;justify-content:center;font-size:17px;">🛍️</div>
+              <div style="width:38px;height:38px;border-radius:10px;background:#fff;border:1px solid #ede8e0;display:flex;align-items:center;justify-content:center;font-size:17px;">💊</div>
+              <div style="width:38px;height:38px;border-radius:10px;background:#fff;border:1px solid #ede8e0;display:flex;align-items:center;justify-content:center;font-size:17px;">📦</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+            <div><div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.12em;color:#b5a890;margin-bottom:6px;">Datum</div><div style="padding:10px 12px;border-radius:10px;background:#fff;border:1px solid #ede8e0;font-size:13px;color:#1a1612;">15.07.2025</div></div>
+            <div><div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.12em;color:#b5a890;margin-bottom:6px;">Bezahlt von</div><div style="padding:8px 12px;border-radius:10px;background:rgba(27,92,88,0.1);border:1px solid rgba(27,92,88,0.2);font-size:12px;font-weight:700;color:#1b5c58;">Müller</div></div>
+          </div>
+          <div style="padding:12px;border-radius:10px;background:#1b5c58;">
+            <div style="font-size:14px;font-weight:700;color:#fff;text-align:center;">Ausgabe speichern</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======= D: DEEP IMMERSIVE ======= -->
+<section class="proposal pD" id="pD">
+  <div class="intro">
+    <div class="intro-tag" style="background:rgba(110,232,216,0.08);color:#6ee8d8;border:1px solid rgba(110,232,216,0.1);">D · Deep Immersive</div>
+    <h2 class="intro-title">Vollständige Login-DNA<br>als konsistente App</h2>
+    <p class="intro-sub" style="color:rgba(255,255,255,0.4);">Dunkelgrün-schwarz, Teal-Highlights. Wie ein Premium-Finanz-Tool. Fühlt sich teuer an. Glow-Effekte, klare Hierarchie, keine Ablenkung.</p>
+    <div class="tags">
+      <span class="tag" style="background:rgba(110,232,216,0.08);color:#6ee8d8;">Premium Dark</span>
+      <span class="tag" style="background:rgba(110,232,216,0.08);color:#6ee8d8;">Teal Highlights</span>
+      <span class="tag" style="background:rgba(110,232,216,0.08);color:#6ee8d8;">Glow Effects</span>
+      <span class="tag" style="background:rgba(110,232,216,0.08);color:#6ee8d8;">Login-Konsistenz</span>
+    </div>
+  </div>
+  <div class="phones">
+    <div class="phone-wrap">
+      <div class="phone-label">Dashboard</div>
+      <div class="phone pD-phone">
+        <div class="pD-header">
+          <div class="pD-glow"></div>
+          <div class="pD-ht">
+            <div>
+              <div class="pD-eyebrow">TeileniX</div>
+              <div class="pD-name">Hallo, Müller</div>
+              <div class="pD-sub">2 aktive Reisen</div>
+            </div>
+            <div class="pD-av">M</div>
+          </div>
+          <div class="pD-balance">
+            <div><div class="pD-bc-lbl">Saldo</div><div class="pD-bc-val g">+47,50 €</div></div>
+            <div class="pD-divider"></div>
+            <div><div class="pD-bc-lbl">Gesamt</div><div class="pD-bc-val">318 €</div></div>
+            <div class="pD-divider"></div>
+            <div><div class="pD-bc-lbl">Bezahlt</div><div class="pD-bc-val">140 €</div></div>
+          </div>
+        </div>
+        <div class="pD-body">
+          <div class="pD-sec" style="margin-bottom:10px;">Aktive Reisen</div>
+          <div class="pD-trip">
+            <div class="pD-trip-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6ee8d8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5-4-4 2-1 4 4 4-8 2 1-4 8 4 4-2 1-4-4-5 5-2-1z"/></svg>
+            </div>
+            <div style="flex:1">
+              <div class="pD-trip-name">Alpen Tour 2025</div>
+              <div class="pD-trip-meta">15.–22. Jul · 3 Gruppen</div>
+            </div>
+            <div class="pD-badge">Aktiv</div>
+          </div>
+          <div class="pD-trip">
+            <div class="pD-trip-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6ee8d8" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3.6 9h16.8M3.6 15h16.8"/><path d="M12 3a14 14 0 010 18M12 3a14 14 0 000 18"/></svg>
+            </div>
+            <div style="flex:1">
+              <div class="pD-trip-name">Kroatien</div>
+              <div class="pD-trip-meta">2.–10. Aug · 2 Gruppen</div>
+            </div>
+            <div class="pD-badge">Aktiv</div>
+          </div>
+          <div style="height:10px;"></div>
+          <div class="pD-sec">Letzte Ausgaben</div>
+          <div class="pD-exp">
+            <div class="pD-exp-cat">🍽️</div>
+            <div style="flex:1"><div class="pD-exp-name">Abendessen</div><div class="pD-exp-who">Fam. Müller · Essen</div></div>
+            <div class="pD-exp-amt">84 €</div>
+          </div>
+          <div class="pD-exp">
+            <div class="pD-exp-cat">🚗</div>
+            <div style="flex:1"><div class="pD-exp-name">Mautgebühr</div><div class="pD-exp-who">du · Transport</div></div>
+            <div class="pD-exp-amt">24,50 €</div>
+          </div>
+          <div class="pD-exp">
+            <div class="pD-exp-cat">🏨</div>
+            <div style="flex:1"><div class="pD-exp-name">Hotel Nacht</div><div class="pD-exp-who">Fam. Koch · Unterkunft</div></div>
+            <div class="pD-exp-amt">210 €</div>
+          </div>
+        </div>
+        <div class="pD-nav">
+          <div class="pD-ni"><div class="pD-ni-icon a">✈️</div><div class="pD-ni-lbl a">Reisen</div></div>
+          <div class="pD-ni"><div class="pD-ni-icon">👤</div><div class="pD-ni-lbl">Profil</div></div>
+        </div>
+      </div>
+      <div class="desc" style="color:rgba(255,255,255,0.3);margin-top:8px;">Maximale Konsistenz mit Login.<br>Premium, fokussiert, clean.</div>
+    </div>
+    <div class="phone-wrap">
+      <div class="phone-label">Trip-Übersicht</div>
+      <div class="phone pD-phone">
+        <div style="padding:20px 18px 14px;border-bottom:1px solid rgba(110,232,216,0.08);display:flex;align-items:center;gap:10px;position:relative;overflow:hidden;">
+          <div style="position:absolute;width:200px;height:120px;border-radius:50%;background:radial-gradient(circle,rgba(27,92,88,0.4) 0%,transparent 70%);top:-40px;right:-40px;filter:blur(30px);"></div>
+          <div style="width:30px;height:30px;border-radius:9px;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;font-size:14px;color:rgba(255,255,255,0.3);position:relative;">←</div>
+          <div style="font-size:15px;font-weight:800;color:#fff;letter-spacing:-0.02em;flex:1;position:relative;">Alpen Tour 2025</div>
+        </div>
+        <div style="display:flex;gap:4px;padding:10px 18px;border-bottom:1px solid rgba(110,232,216,0.06);">
+          <div style="padding:6px 12px;border-radius:9px;background:linear-gradient(135deg,#1b5c58,#0d4440);color:#fff;font-size:11px;font-weight:700;border:1px solid rgba(110,232,216,0.2);">Übersicht</div>
+          <div style="padding:6px 12px;border-radius:9px;color:rgba(255,255,255,0.3);font-size:11px;font-weight:600;">Ausgaben</div>
+          <div style="padding:6px 12px;border-radius:9px;color:rgba(255,255,255,0.3);font-size:11px;font-weight:600;">Statistik</div>
+        </div>
+        <div class="pD-body">
+          <!-- Teal balance card -->
+          <div style="padding:18px;border-radius:18px;background:linear-gradient(135deg,rgba(27,92,88,0.6),rgba(13,56,53,0.6));border:1px solid rgba(110,232,216,0.15);backdrop-filter:blur(10px);margin-bottom:14px;position:relative;overflow:hidden;">
+            <div style="position:absolute;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,rgba(110,232,216,0.2) 0%,transparent 70%);top:-20px;right:-10px;filter:blur(15px);"></div>
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:rgba(110,232,216,0.5);margin-bottom:6px;position:relative;">Dein Saldo</div>
+            <div style="font-size:32px;font-weight:800;color:#fff;letter-spacing:-0.04em;margin-bottom:2px;position:relative;">+47,50 €</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);position:relative;">Du bekommst Geld zurück</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:14px;position:relative;">
+              <div style="padding:8px;border-radius:10px;background:rgba(255,255,255,0.07);text-align:center;"><div style="font-size:8px;color:rgba(255,255,255,0.35);text-transform:uppercase;margin-bottom:2px;">Gesamt</div><div style="font-size:11px;font-weight:700;color:#fff;">318 €</div></div>
+              <div style="padding:8px;border-radius:10px;background:rgba(255,255,255,0.07);text-align:center;"><div style="font-size:8px;color:rgba(255,255,255,0.35);text-transform:uppercase;margin-bottom:2px;">Anteil</div><div style="font-size:11px;font-weight:700;color:#fff;">106 €</div></div>
+              <div style="padding:8px;border-radius:10px;background:rgba(255,255,255,0.07);text-align:center;"><div style="font-size:8px;color:rgba(255,255,255,0.35);text-transform:uppercase;margin-bottom:2px;">Bezahlt</div><div style="font-size:11px;font-weight:700;color:#fff;">140 €</div></div>
+            </div>
+          </div>
+          <div class="pD-sec">Abrechnungsgruppen</div>
+          <div style="padding:12px;border-radius:14px;background:rgba(110,232,216,0.06);border:1px solid rgba(110,232,216,0.12);margin-bottom:6px;display:flex;align-items:center;gap:10px;">
+            <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#1b5c58,#0d4440);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0;">M</div>
+            <div style="flex:1;"><div style="font-size:13px;font-weight:700;color:#fff;">Müller <span style="font-size:9px;padding:1px 6px;border-radius:4px;background:rgba(110,232,216,0.12);color:#6ee8d8;font-weight:700;">du</span></div><div style="font-size:10px;color:rgba(255,255,255,0.28);margin-top:1px;">Bezahlt: 140 €</div></div>
+            <div style="text-align:right;"><div style="font-size:13px;font-weight:700;color:#6ee8d8;">+47,50 €</div><div style="font-size:10px;color:rgba(255,255,255,0.25);">bekommt zurück</div></div>
+          </div>
+          <div style="padding:12px;border-radius:14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:10px;">
+            <div style="width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:rgba(255,255,255,0.5);flex-shrink:0;">K</div>
+            <div style="flex:1;"><div style="font-size:13px;font-weight:600;color:rgba(255,255,255,0.7);">Koch</div><div style="font-size:10px;color:rgba(255,255,255,0.25);margin-top:1px;">Bezahlt: 178 €</div></div>
+            <div style="text-align:right;"><div style="font-size:13px;font-weight:700;color:#f87171;">−23,50 €</div><div style="font-size:10px;color:rgba(255,255,255,0.25);">schuldet</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+function show(id, btn) {
+  document.querySelectorAll('.proposal').forEach(p => p.classList.remove('visible'))
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'))
+  document.getElementById('p' + id).classList.add('visible')
+  btn.classList.add('active')
+}
+</script>
+</body>
+</html>

@@ -11,7 +11,7 @@ interface SpendingByCategoryChartProps {
 
 export default function SpendingByCategoryChart({ data }: SpendingByCategoryChartProps) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-4">
+    <div className="bg-card card-shadow rounded-2xl p-4">
       <ResponsiveContainer width="100%" height={220}>
         <PieChart>
           <Pie
@@ -35,7 +35,7 @@ export default function SpendingByCategoryChart({ data }: SpendingByCategoryChar
           <Legend
             iconType="circle"
             iconSize={8}
-            formatter={(value) => <span className="text-xs text-gray-600">{value}</span>}
+            formatter={(value) => <span className="text-xs text-muted-foreground">{value}</span>}
           />
         </PieChart>
       </ResponsiveContainer>

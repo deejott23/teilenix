@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Trash2 } from 'lucide-react'
+import Link from 'next/link'
+import { Trash2, Pencil } from 'lucide-react'
 import { toast } from 'sonner'
 import CategoryIcon from './CategoryIcon'
 import { formatCurrency, categoryLabels } from '@/lib/formatting'
@@ -11,22 +12,21 @@ import { cn } from '@/lib/utils'
 
 interface ExpenseCardProps {
   expense: ExpenseWithSplits
-  myFamilyId: string
+  myParticipantId: string
   tripId: string
   canEdit: boolean
 }
 
-export default function ExpenseCard({ expense, myFamilyId, canEdit }: ExpenseCardProps) {
+export default function ExpenseCard({ expense, myParticipantId, tripId, canEdit }: ExpenseCardProps) {
   const router = useRouter()
   const [deleting, setDeleting] = useState(false)
 
-  const myFamilySplit = expense.expense_splits.find(s => s.family_id === myFamilyId)
-  const totalShares = expense.expense_splits.reduce((sum, s) => sum + s.shares, 0)
-  const myOwed = myFamilySplit
-    ? Math.round(expense.amount_cents * myFamilySplit.shares / totalShares)
-    : 0
+  const myParticipantSplit = expense.expense_splits.find(s => s.participant_id === myParticipantId)
+  const totalShares   = expense.expense_splits.reduce((sum, s) => sum + s.shares, 0)
+  const myOwed        = myParticipantSplit ? Math.round(expense.amount_cents * myParticipantSplit.shares / totalShares) : 0
+  const iPaid         = expense.paid_by_participant_id === myParticipantId
 
-  const iPaid = expense.paid_by_family === myFamilyId
+  const payerName = expense.participant?.name ?? 'Unbekannt'
 
   const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -45,45 +45,43 @@ export default function ExpenseCard({ expense, myFamilyId, canEdit }: ExpenseCar
   }
 
   return (
-    <div
-      className={cn(
-        'bg-white rounded-xl border p-4 flex items-center gap-3',
-        iPaid ? 'border-primary/20' : 'border-gray-100'
-      )}
-    >
+    <div className="bg-card rounded-[18px] card-shadow p-4 flex items-center gap-3.5">
       <CategoryIcon category={expense.category} />
 
       <div className="flex-1 min-w-0">
-        <p className="font-medium text-gray-900 text-sm truncate">{expense.title}</p>
-        <p className="text-xs text-gray-400 mt-0.5">
-          {expense.families.name} hat bezahlt
-          {expense.expense_splits.length < 10 && ` · ${expense.expense_splits.length} Familien`}
-        </p>
-        <p className="text-xs text-gray-400">
-          {categoryLabels[expense.category]}
+        <p className="font-semibold text-foreground text-[14px] truncate leading-tight">{expense.title}</p>
+        <p className="text-xs text-muted-foreground mt-0.5">
+          <span className={cn(iPaid && 'text-primary font-semibold')}>{payerName}</span>
+          {' · '}{categoryLabels[expense.category as keyof typeof categoryLabels] ?? expense.category}
         </p>
       </div>
 
       <div className="text-right flex-shrink-0">
-        <p className="font-semibold text-gray-900">{formatCurrency(expense.amount_cents)}</p>
-        {myFamilySplit && (
-          <p className="text-xs text-gray-400">
-            Dein Anteil: {formatCurrency(myOwed)}
-          </p>
-        )}
-        {!myFamilySplit && (
-          <p className="text-xs text-gray-300">Nicht beteiligt</p>
+        <p className="font-semibold text-foreground text-[14px]">{formatCurrency(expense.amount_cents)}</p>
+        {myParticipantSplit ? (
+          <p className="text-[11px] text-muted-foreground">dein: {formatCurrency(myOwed)}</p>
+        ) : (
+          <p className="text-[11px] text-muted-foreground/50">—</p>
         )}
       </div>
 
-      {canEdit && expense.paid_by_family === myFamilyId && (
-        <button
-          onClick={handleDelete}
-          disabled={deleting}
-          className="p-1.5 text-gray-300 hover:text-red-400 transition-colors"
-        >
-          <Trash2 className="w-4 h-4" />
-        </button>
+      {canEdit && (
+        <div className="flex items-center gap-0.5">
+          <Link
+            href={`/trips/${tripId}/expenses/${expense.id}/edit`}
+            onClick={e => e.stopPropagation()}
+            className="p-1.5 text-muted-foreground/30 hover:text-primary rounded-lg hover:bg-primary/8 transition-colors"
+          >
+            <Pencil className="w-4 h-4" strokeWidth={1.8} />
+          </Link>
+          <button
+            onClick={handleDelete}
+            disabled={deleting}
+            className="p-1.5 text-muted-foreground/30 hover:text-destructive rounded-lg hover:bg-destructive/8 transition-colors"
+          >
+            <Trash2 className="w-4 h-4" strokeWidth={1.8} />
+          </button>
+        </div>
       )}
     </div>
   )

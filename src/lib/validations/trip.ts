@@ -17,6 +17,8 @@ export const updateTripSchema = z.object({
   startDate: z.string().optional(),
   endDate: z.string().optional(),
   status: z.enum(['active', 'ended']).optional(),
+  enabledCategories: z.array(z.string()).optional(),
+  customCategories: z.array(z.string()).optional(),
 })
 
 export type CreateTripInput = z.infer<typeof createTripSchema>

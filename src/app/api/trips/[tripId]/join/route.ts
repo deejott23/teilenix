@@ -1,6 +1,5 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
-import { joinTripSchema } from '@/lib/validations/trip'
 
 export async function POST(
   request: NextRequest,
@@ -11,54 +10,52 @@ export async function POST(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Nicht angemeldet' }, { status: 401 })
 
-  // Get user's family
-  const { data: familyMember } = await supabase
-    .from('family_members')
-    .select('family_id')
-    .eq('user_id', user.id)
-    .maybeSingle()
+  const admin = createAdminClient()
 
-  if (!familyMember) {
-    return NextResponse.json({ error: 'Keine Familie gefunden. Erstelle zuerst eine Familie.' }, { status: 400 })
-  }
-
-  // Check trip exists
-  const { data: trip } = await supabase
+  // Use admin to bypass RLS for trip lookup
+  const { data: tripData } = await admin
     .from('trips')
     .select('id, status')
     .eq('id', tripId)
     .maybeSingle()
 
-  if (!trip) return NextResponse.json({ error: 'Reise nicht gefunden' }, { status: 404 })
-  if (trip.status === 'ended') return NextResponse.json({ error: 'Diese Reise ist bereits beendet' }, { status: 400 })
+  if (!tripData) {
+    return NextResponse.json({ error: 'Reise nicht gefunden' }, { status: 404 })
+  }
 
-  // Check if family already joined
-  const { data: existing } = await supabase
-    .from('trip_families')
+  if ((tripData as { status: string }).status === 'ended') {
+    return NextResponse.json({ error: 'Reise bereits beendet' }, { status: 400 })
+  }
+
+  // Check already joined
+  const { data: existing } = await admin
+    .from('trip_participants')
     .select('id')
     .eq('trip_id', tripId)
-    .eq('family_id', familyMember.family_id)
+    .eq('user_id', user.id)
     .maybeSingle()
 
   if (existing) {
-    return NextResponse.json({ error: 'Deine Familie ist bereits in dieser Reise' }, { status: 400 })
+    return NextResponse.json({ success: true, trip_id: tripId, already_joined: true })
   }
 
-  const body = await request.json()
-  const parsed = joinTripSchema.safeParse(body)
-  if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 })
+  // Get display name from profile
+  const { data: profile } = await admin
+    .from('profiles')
+    .select('display_name')
+    .eq('id', user.id)
+    .maybeSingle()
+
+  const name = (profile as { display_name?: string } | null)?.display_name ?? 'Unbekannt'
+
+  const { error: insertError } = await admin
+    .from('trip_participants')
+    .insert({ trip_id: tripId, user_id: user.id, name, shares: 1 })
+
+  if (insertError) {
+    console.error('join insert error:', insertError)
+    return NextResponse.json({ error: 'Beitreten fehlgeschlagen' }, { status: 500 })
   }
 
-  const { error } = await supabase
-    .from('trip_families')
-    .insert({
-      trip_id: tripId,
-      family_id: familyMember.family_id,
-      shares: parsed.data.shares,
-    })
-
-  if (error) return NextResponse.json({ error: 'Beitreten fehlgeschlagen' }, { status: 500 })
-
-  return NextResponse.json({ success: true })
+  return NextResponse.json({ success: true, trip_id: tripId, already_joined: false })
 }

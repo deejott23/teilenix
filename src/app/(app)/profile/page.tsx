@@ -1,9 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import PageHeader from '@/components/layout/PageHeader'
 import SignOutButton from '@/components/auth/SignOutButton'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
 
 export default async function ProfilePage() {
   const supabase = await createClient()
@@ -16,26 +14,9 @@ export default async function ProfilePage() {
     .eq('id', user.id)
     .single()
 
-  const { data: memberData } = await supabase
-    .from('family_members')
-    .select('role, family_id')
-    .eq('user_id', user.id)
-    .maybeSingle()
-
-  let familyName: string | null = null
-  if (memberData?.family_id) {
-    const { data: fam } = await supabase
-      .from('families')
-      .select('name')
-      .eq('id', memberData.family_id)
-      .single()
-    familyName = fam?.name ?? null
-  }
-
   const displayName = (profile?.display_name as string) ?? 'User'
   const avatarUrl = (profile?.avatar_url as string | null) ?? undefined
   const email = (profile?.email as string) ?? ''
-  const role = (memberData?.role as string) ?? null
 
   const initials = displayName
     .split(' ')
@@ -46,30 +27,36 @@ export default async function ProfilePage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Profil" />
 
-      <div className="bg-white rounded-2xl border border-gray-100 p-5 flex items-center gap-4">
-        <Avatar className="w-16 h-16">
-          <AvatarImage src={avatarUrl} />
-          <AvatarFallback className="bg-primary/10 text-primary font-bold text-xl">
-            {initials}
-          </AvatarFallback>
-        </Avatar>
-        <div>
-          <h2 className="font-bold text-gray-900 text-lg">{displayName}</h2>
-          <p className="text-sm text-gray-500">{email}</p>
-          {familyName && (
-            <div className="flex items-center gap-2 mt-1">
-              <Badge className="text-xs bg-primary/10 text-primary border-0">
-                {familyName}
-              </Badge>
-              {role === 'admin' && (
-                <Badge className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200">
-                  Admin
-                </Badge>
-              )}
-            </div>
-          )}
+      {/* Teal header */}
+      <div className="-mx-4 -mt-7 mb-2 px-6 pt-8 pb-6 rounded-b-3xl" style={{ background: 'linear-gradient(150deg, #1b5c58 0%, #134844 100%)' }}>
+        <div className="flex items-center gap-4">
+          <Avatar className="w-14 h-14" style={{ outline: '2px solid rgba(255,255,255,0.25)', outlineOffset: '2px' }}>
+            <AvatarImage src={avatarUrl} />
+            <AvatarFallback className="font-bold text-lg" style={{ background: 'rgba(255,255,255,0.15)', color: '#fff' }}>
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+          <div>
+            <p className="text-[10px] font-bold tracking-[0.14em] uppercase mb-1" style={{ color: 'rgba(255,255,255,0.45)' }}>Profil</p>
+            <h1 className="text-xl font-extrabold text-white tracking-tight leading-tight">{displayName}</h1>
+            <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.5)' }}>{email}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Profile info card */}
+      <div className="bg-card card-shadow rounded-2xl p-5 space-y-4">
+        <h2 className="text-[12px] font-bold text-muted-foreground uppercase tracking-widest">Kontodaten</h2>
+        <div className="space-y-3">
+          <div>
+            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide mb-0.5">Name</p>
+            <p className="text-sm font-medium text-foreground">{displayName}</p>
+          </div>
+          <div>
+            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide mb-0.5">E-Mail</p>
+            <p className="text-sm font-medium text-foreground">{email}</p>
+          </div>
         </div>
       </div>
 

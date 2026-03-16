@@ -28,7 +28,22 @@
       "Bash(cd \"/c/Users/schwe/onedrive/dokumente/claudeprojects/teilenix\" && npm run build 2>&1 | grep -E \"\\(Type error:|^\\\\./src|Failed|✓ Compiled|Route\\)\" | head -80)",
       "Bash(cd \"/c/Users/schwe/onedrive/dokumente/claudeprojects/teilenix\" && npm run build 2>&1 | tail -40)",
       "Bash(cd \"/c/Users/schwe/onedrive/dokumente/claudeprojects/teilenix\" && npm run build 2>&1 | tail -15)",
-      "Bash(cd \"/c/Users/schwe/onedrive/dokumente/claudeprojects/teilenix\" && npm run build 2>&1 | tail -35)"
+      "Bash(cd \"/c/Users/schwe/onedrive/dokumente/claudeprojects/teilenix\" && npm run build 2>&1 | tail -35)",
+      "Bash(ls src/app/\\\\\\(app\\\\\\)/trips/\\\\[tripId\\\\]/expenses/ && ls src/app/\\\\\\(app\\\\\\)/trips/\\\\[tripId\\\\]/settlement/ && ls src/app/\\\\\\(app\\\\\\)/trips/\\\\[tripId\\\\]/stats/)",
+      "Bash(cat src/app/\\\\\\(app\\\\\\)/trips/\\\\[tripId\\\\]/expenses/page.tsx)",
+      "Bash(cat src/app/\\\\\\(app\\\\\\)/trips/\\\\[tripId\\\\]/stats/page.tsx)",
+      "Bash(cat src/app/\\\\\\(app\\\\\\)/trips/\\\\[tripId\\\\]/settlement/page.tsx)",
+      "Bash(npm run:*)",
+      "Bash(npx supabase:*)",
+      "Bash(grep -r \"from '@/types/database'\" \"C:/Users/schwe/onedrive/dokumente/claudeprojects/teilenix/src\" --include=\"*.ts\" --include=\"*.tsx\" -l)",
+      "Bash(grep -n \"from '@/types/database'\" \"C:/Users/schwe/onedrive/dokumente/claudeprojects/teilenix/src/components/expenses/ExpenseForm.tsx\" && grep -n \"from '@/types/database'\" \"C:/Users/schwe/onedrive/dokumente/claudeprojects/teilenix/src/lib/formatting.ts\")",
+      "Bash(sed -i \"s|from '@/types/database'|from '@/types/app'|g\" \"C:/Users/schwe/onedrive/dokumente/claudeprojects/teilenix/src/components/expenses/ExpenseForm.tsx\" && sed -i \"s|from '@/types/database'|from '@/types/app'|g\" \"C:/Users/schwe/onedrive/dokumente/claudeprojects/teilenix/src/lib/formatting.ts\")",
+      "Bash(cd \"C:/Users/schwe/onedrive/dokumente/claudeprojects/teilenix\" && rm -rf .next && npm run build 2>&1 | tail -35)",
+      "Bash(cat \"C:/Users/schwe/onedrive/dokumente/claudeprojects/teilenix/src/app/\\(app\\)/onboarding/OnboardingClient.tsx\")",
+      "Bash(cat \"C:/Users/schwe/onedrive/dokumente/claudeprojects/teilenix/src/app/\\(app\\)/join/[code]/JoinTripClient.tsx\")",
+      "Bash(curl -s -X POST \"https://wwridqyjdplyyqgkijra.supabase.co/rest/v1/rpc/user_in_trip\" \\\\\n  -H \"apikey: sb_publishable_imIc4nLBBT8uGyV46uEelQ_rNWGBdWm\" \\\\\n  -H \"Content-Type: application/json\" \\\\\n  -d '{\"trip_uuid\": \"00000000-0000-0000-0000-000000000000\"}' 2>&1)",
+      "Bash(cd \"C:/Users/schwe/onedrive/dokumente/claudeprojects/teilenix\" && npx supabase db execute --sql \"\nCREATE OR REPLACE FUNCTION create_trip_for_user\\(\n  p_name        TEXT,\n  p_description TEXT,\n  p_start_date  TEXT,\n  p_end_date    TEXT,\n  p_invite_code TEXT,\n  p_family_id   UUID,\n  p_shares      INT\n\\) RETURNS UUID AS \\\\$\\\\$\nDECLARE\n  v_trip_id UUID;\nBEGIN\n  INSERT INTO trips \\(name, description, start_date, end_date, invite_code, created_by\\)\n  VALUES \\(p_name, NULLIF\\(p_description, ''\\), NULLIF\\(p_start_date, ''\\)::DATE, NULLIF\\(p_end_date, ''\\)::DATE, p_invite_code, auth.uid\\(\\)\\)\n  RETURNING id INTO v_trip_id;\n\n  INSERT INTO trip_families \\(trip_id, family_id, shares\\)\n  VALUES \\(v_trip_id, p_family_id, p_shares\\);\n\n  RETURN v_trip_id;\nEND;\n\\\\$\\\\$ LANGUAGE plpgsql SECURITY DEFINER;\n\" 2>&1)",
+      "Bash(find /c/Users/schwe/onedrive/dokumente/claudeprojects/teilenix -maxdepth 1 -type f \\\\\\( -name \"*.json\" -o -name \"*.config.*\" \\\\\\) 2>/dev/null | head -20####)"
     ]
   }
 }

@@ -16,13 +16,13 @@ export default function FamilyInviteCode({ inviteCode }: { inviteCode: string })
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl p-4">
-      <p className="text-xs text-gray-500 font-medium uppercase tracking-wide mb-2">
+    <div className="bg-card card-shadow rounded-2xl p-4">
+      <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide mb-2">
         Einladungscode
       </p>
       <div className="flex items-center gap-3">
-        <div className="flex-1 bg-gray-50 rounded-xl py-3 px-4 text-center">
-          <span className="font-mono text-2xl font-bold tracking-widest text-gray-900">
+        <div className="flex-1 bg-muted rounded-xl py-3 px-4 text-center">
+          <span className="font-mono text-2xl font-bold tracking-widest text-foreground">
             {inviteCode}
           </span>
         </div>
@@ -36,8 +36,8 @@ export default function FamilyInviteCode({ inviteCode }: { inviteCode: string })
           {copied ? 'Kopiert' : 'Kopieren'}
         </Button>
       </div>
-      <p className="text-xs text-gray-400 mt-2">
-        Teile diesen Code mit Familienmitgliedern, damit sie diesem Konto beitreten können.
+      <p className="text-xs text-muted-foreground/60 mt-2">
+        Teile diesen Code, damit weitere Mitglieder deiner Abrechnungsgruppe beitreten können.
       </p>
     </div>
   )

@@ -9,10 +9,10 @@ interface SettlementTransferListProps {
 export default function SettlementTransferList({ transfers }: SettlementTransferListProps) {
   if (transfers.length === 0) {
     return (
-      <div className="bg-green-50 border border-green-200 rounded-2xl p-5 text-center">
+      <div className="bg-primary/8 border border-primary/15 rounded-2xl p-5 text-center">
         <p className="text-2xl mb-2">🎉</p>
-        <p className="font-semibold text-green-800">Alles ausgeglichen!</p>
-        <p className="text-sm text-green-600">Keine Überweisungen notwendig.</p>
+        <p className="font-semibold text-primary">Alles ausgeglichen!</p>
+        <p className="text-sm text-primary/70">Keine Überweisungen notwendig.</p>
       </div>
     )
   }
@@ -22,17 +22,17 @@ export default function SettlementTransferList({ transfers }: SettlementTransfer
       {transfers.map((transfer, index) => (
         <div
           key={index}
-          className="bg-white border border-gray-100 rounded-2xl p-4"
+          className="bg-card card-shadow rounded-2xl p-4"
         >
           <div className="flex items-center gap-3">
-            {/* From family */}
+            {/* From participant */}
             <div className="flex-1 text-right">
               <div className="w-10 h-10 bg-red-50 rounded-xl flex items-center justify-center ml-auto mb-1">
                 <span className="text-base font-bold text-red-500">
-                  {transfer.fromFamilyName.charAt(0)}
+                  {transfer.fromParticipantName.charAt(0)}
                 </span>
               </div>
-              <p className="text-xs font-medium text-gray-700 truncate">{transfer.fromFamilyName}</p>
+              <p className="text-xs font-medium text-muted-foreground truncate">{transfer.fromParticipantName}</p>
             </div>
 
             {/* Arrow + amount */}
@@ -42,17 +42,17 @@ export default function SettlementTransferList({ transfers }: SettlementTransfer
                   {formatCurrency(transfer.amountCents)}
                 </p>
               </div>
-              <ArrowRight className="w-5 h-5 text-gray-400" />
+              <ArrowRight className="w-5 h-5 text-muted-foreground/40" />
             </div>
 
-            {/* To family */}
+            {/* To participant */}
             <div className="flex-1">
-              <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center mb-1">
+              <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center mb-1">
                 <span className="text-base font-bold text-primary">
-                  {transfer.toFamilyName.charAt(0)}
+                  {transfer.toParticipantName.charAt(0)}
                 </span>
               </div>
-              <p className="text-xs font-medium text-gray-700 truncate">{transfer.toFamilyName}</p>
+              <p className="text-xs font-medium text-muted-foreground truncate">{transfer.toParticipantName}</p>
             </div>
           </div>
         </div>

@@ -5,11 +5,11 @@ import { Download, Share2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { formatCurrency } from '@/lib/formatting'
-import type { SettlementResult } from '@/types/app'
+import type { Settlement } from '@/types/app'
 
 interface SettlementExportButtonProps {
   tripName: string
-  settlement: SettlementResult
+  settlement: Settlement
 }
 
 export default function SettlementExportButton({ tripName, settlement }: SettlementExportButtonProps) {
@@ -23,7 +23,7 @@ export default function SettlementExportButton({ tripName, settlement }: Settlem
       settlement.transfers.length === 0
         ? '✅ Alles ausgeglichen!'
         : settlement.transfers.map(t =>
-            `${t.fromFamilyName} → ${t.toFamilyName}: ${formatCurrency(t.amountCents)}`
+            `${t.fromParticipantName} → ${t.toParticipantName}: ${formatCurrency(t.amountCents)}`
           ).join('\n'),
     ]
     return lines.join('\n')
@@ -56,15 +56,15 @@ export default function SettlementExportButton({ tripName, settlement }: Settlem
         settlement.transfers.length === 0
           ? 'Keine Überweisungen notwendig – alles ausgeglichen!'
           : settlement.transfers.map(t =>
-              `${t.fromFamilyName.padEnd(20)} zahlt ${formatCurrency(t.amountCents).padStart(10)} an ${t.toFamilyName}`
+              `${t.fromParticipantName.padEnd(20)} zahlt ${formatCurrency(t.amountCents).padStart(10)} an ${t.toParticipantName}`
             ).join('\n'),
         '',
         'DETAILÜBERSICHT:',
         '-'.repeat(40),
-        ['Familie', 'Bezahlt', 'Anteil', 'Saldo']
+        ['Teilnehmer', 'Bezahlt', 'Anteil', 'Saldo']
           .map(h => h.padEnd(18)).join(''),
         ...settlement.balances.map(b => [
-          b.familyName.padEnd(18),
+          b.participantName.padEnd(18),
           formatCurrency(b.totalPaidCents).padEnd(18),
           formatCurrency(b.totalOwedCents).padEnd(18),
           `${b.netBalanceCents > 0 ? '+' : ''}${formatCurrency(b.netBalanceCents)}`,

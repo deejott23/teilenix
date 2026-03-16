@@ -21,9 +21,9 @@ export default function SplitOverrideEditor({ splits, onChange }: SplitOverrideE
     <div className="space-y-2">
       {splits.map((split, index) => (
         <div
-          key={split.familyId}
+          key={split.participantId}
           className={`flex items-center gap-3 p-3 rounded-xl border transition-colors ${
-            split.included ? 'border-primary/20 bg-primary/5' : 'border-gray-100 bg-white opacity-60'
+            split.included ? 'border-primary/20 bg-primary/5' : 'border-border bg-card opacity-60'
           }`}
         >
           <Checkbox
@@ -31,16 +31,16 @@ export default function SplitOverrideEditor({ splits, onChange }: SplitOverrideE
             onCheckedChange={checked => updateSplit(index, { included: !!checked })}
           />
 
-          <span className="flex-1 text-sm font-medium text-gray-700">
-            {split.familyName}
+          <span className="flex-1 text-sm font-medium text-foreground">
+            {split.participantName}
           </span>
 
           <div className="flex items-center gap-1.5">
-            <span className="text-xs text-gray-400">Anteile:</span>
+            <span className="text-xs text-muted-foreground">Anteile:</span>
             <Input
               type="number"
               min={1}
-              max={20}
+              max={50}
               value={split.shares}
               disabled={!split.included}
               onChange={e => updateSplit(index, { shares: parseInt(e.target.value) || 1 })}
@@ -52,7 +52,7 @@ export default function SplitOverrideEditor({ splits, onChange }: SplitOverrideE
 
       {includedCount === 0 && (
         <p className="text-sm text-red-500 text-center py-2">
-          Bitte wähle mindestens eine Familie aus.
+          Bitte wähle mindestens einen Teilnehmer aus.
         </p>
       )}
     </div>

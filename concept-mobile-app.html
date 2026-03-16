@@ -1,0 +1,1662 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TeileniX – Mobile App Konzept</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117;
+    --bg-card: #161b22;
+    --bg-card-hover: #1c2128;
+    --border: #21262d;
+    --border-light: #30363d;
+    --teal: #1b5c58;
+    --teal-bright: #2d9b94;
+    --teal-dim: #1b5c5820;
+    --teal-glow: #1b5c5840;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --muted-dim: #484f58;
+    --amber: #d29922;
+    --amber-dim: #d2992218;
+    --red: #da3633;
+    --red-dim: #da363318;
+    --green: #3fb950;
+    --green-dim: #3fb95018;
+    --mono: 'Geist Mono', monospace;
+    --serif: 'Instrument Serif', serif;
+    --sans: 'Geist', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* Subtle grid texture */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 40px 40px;
+    opacity: 0.3;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .layout {
+    display: flex;
+    min-height: 100vh;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── Sidebar Nav ── */
+  .sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 48px 0 48px 32px;
+    border-right: 1px solid var(--border);
+  }
+
+  .sidebar-logo {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--teal-bright);
+    letter-spacing: 0.05em;
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .sidebar-logo::before {
+    content: '';
+    display: block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--teal-bright);
+    box-shadow: 0 0 8px var(--teal-bright);
+  }
+
+  .nav-section {
+    margin-bottom: 8px;
+  }
+
+  .nav-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--muted-dim);
+    text-transform: uppercase;
+    padding: 0 0 6px 12px;
+  }
+
+  .nav-link {
+    display: block;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--muted);
+    text-decoration: none;
+    transition: all 0.15s;
+    border-left: 2px solid transparent;
+    margin-bottom: 1px;
+  }
+
+  .nav-link:hover {
+    color: var(--text);
+    background: var(--bg-card);
+    border-left-color: var(--border-light);
+  }
+
+  .nav-link.active {
+    color: var(--teal-bright);
+    border-left-color: var(--teal-bright);
+    background: var(--teal-dim);
+  }
+
+  /* ── Main Content ── */
+  .main {
+    flex: 1;
+    max-width: 860px;
+    padding: 64px 48px 120px;
+    overflow-x: hidden;
+  }
+
+  /* ── Header ── */
+  .doc-header {
+    margin-bottom: 72px;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .doc-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  .badge {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 100px;
+  }
+
+  .badge-teal {
+    background: var(--teal-dim);
+    color: var(--teal-bright);
+    border: 1px solid var(--teal-bright)30;
+  }
+
+  .badge-muted {
+    background: var(--bg-card);
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+
+  .doc-title {
+    font-family: var(--serif);
+    font-size: 52px;
+    line-height: 1.1;
+    color: var(--text);
+    margin-bottom: 16px;
+    letter-spacing: -0.02em;
+  }
+
+  .doc-title em {
+    color: var(--teal-bright);
+    font-style: italic;
+  }
+
+  .doc-subtitle {
+    font-size: 18px;
+    color: var(--muted);
+    font-weight: 300;
+    max-width: 560px;
+    line-height: 1.5;
+  }
+
+  .doc-divider {
+    height: 1px;
+    background: linear-gradient(to right, var(--teal-bright)40, var(--border), transparent);
+    margin-top: 40px;
+  }
+
+  /* ── Sections ── */
+  .section {
+    margin-bottom: 80px;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .section-number {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--teal-bright);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .section-title {
+    font-family: var(--serif);
+    font-size: 32px;
+    color: var(--text);
+    margin-bottom: 8px;
+    letter-spacing: -0.01em;
+  }
+
+  .section-desc {
+    color: var(--muted);
+    margin-bottom: 32px;
+    font-size: 14px;
+  }
+
+  /* ── Option Cards ── */
+  .options-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  .option-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    position: relative;
+    transition: all 0.2s;
+  }
+
+  .option-card:hover {
+    border-color: var(--border-light);
+    background: var(--bg-card-hover);
+  }
+
+  .option-card.recommended {
+    border-color: var(--teal-bright)50;
+    background: linear-gradient(135deg, var(--bg-card) 0%, #1a2e2d 100%);
+  }
+
+  .option-card.recommended::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: 13px;
+    background: linear-gradient(135deg, var(--teal-bright)30, transparent 60%);
+    z-index: -1;
+  }
+
+  .option-badge {
+    font-family: var(--mono);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 100px;
+    margin-bottom: 16px;
+    display: inline-block;
+  }
+
+  .badge-recommended { background: var(--teal-dim); color: var(--teal-bright); border: 1px solid var(--teal-bright)40; }
+  .badge-heavy { background: var(--amber-dim); color: var(--amber); border: 1px solid var(--amber)30; }
+  .badge-minimal { background: var(--bg); color: var(--muted); border: 1px solid var(--border); }
+
+  .option-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .option-sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+
+  .option-stat {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+  }
+
+  .option-stat:last-of-type { border-bottom: none; }
+  .option-stat-label { color: var(--muted); }
+  .option-stat-value { font-family: var(--mono); color: var(--text); font-size: 11px; }
+
+  .pro-con-list {
+    margin-top: 16px;
+    space-y: 4px;
+  }
+
+  .pro-con-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 4px;
+    line-height: 1.4;
+  }
+
+  .pro-con-item .icon { flex-shrink: 0; margin-top: 1px; }
+  .pro { color: var(--green); }
+  .con { color: var(--red); }
+
+  /* ── Timeline ── */
+  .timeline {
+    position: relative;
+    padding-left: 32px;
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 11px;
+    top: 8px;
+    bottom: 8px;
+    width: 1px;
+    background: linear-gradient(to bottom, var(--teal-bright), var(--border));
+  }
+
+  .timeline-item {
+    position: relative;
+    margin-bottom: 32px;
+  }
+
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -25px;
+    top: 8px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--teal-bright);
+    border: 2px solid var(--bg);
+    box-shadow: 0 0 0 3px var(--teal-bright)30;
+  }
+
+  .timeline-phase {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--teal-bright);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .timeline-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  .timeline-body {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+  }
+
+  .timeline-task {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--muted);
+    padding: 3px 0;
+  }
+
+  .timeline-task::before {
+    content: '→';
+    color: var(--teal-bright);
+    font-size: 11px;
+    flex-shrink: 0;
+  }
+
+  /* ── Kosten ── */
+  .costs-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .cost-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+  }
+
+  .cost-card-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 20px;
+  }
+
+  .cost-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    gap: 12px;
+  }
+
+  .cost-row:last-child { border-bottom: none; }
+
+  .cost-label {
+    font-size: 13px;
+    color: var(--muted);
+    flex: 1;
+  }
+
+  .cost-value {
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+  }
+
+  .cost-value.highlight { color: var(--teal-bright); }
+
+  .cost-total-card {
+    background: linear-gradient(135deg, var(--teal-dim), var(--bg-card));
+    border: 1px solid var(--teal-bright)30;
+    border-radius: 12px;
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .cost-total-label {
+    font-size: 14px;
+    color: var(--muted);
+  }
+
+  .cost-total-value {
+    font-family: var(--mono);
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--teal-bright);
+  }
+
+  .risk-list {
+    background: var(--amber-dim);
+    border: 1px solid var(--amber)20;
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-top: 16px;
+  }
+
+  .risk-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 12px;
+  }
+
+  .risk-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 13px;
+    color: #c9a227;
+    margin-bottom: 8px;
+    line-height: 1.4;
+  }
+
+  .risk-item:last-child { margin-bottom: 0; }
+  .risk-item::before { content: '⚠'; flex-shrink: 0; }
+
+  /* ── Tech Split ── */
+  .tech-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .tech-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+  }
+
+  .tech-card.stays { border-color: var(--green)30; }
+  .tech-card.changes { border-color: var(--amber)20; }
+
+  .tech-card-title {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .tech-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 10px;
+    line-height: 1.4;
+  }
+
+  .tech-item code {
+    font-family: var(--mono);
+    font-size: 11px;
+    background: var(--bg);
+    padding: 1px 6px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    color: var(--text);
+    white-space: nowrap;
+  }
+
+  /* ── Alert ── */
+  .alert {
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+  }
+
+  .alert-warning {
+    background: var(--amber-dim);
+    border: 1px solid var(--amber)25;
+  }
+
+  .alert-success {
+    background: var(--teal-dim);
+    border: 1px solid var(--teal-bright)30;
+  }
+
+  .alert-title {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .alert-warning .alert-title { color: var(--amber); }
+  .alert-success .alert-title { color: var(--teal-bright); }
+
+  .alert-body {
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .alert-warning .alert-body { color: #c9a227; }
+  .alert-success .alert-body { color: #7ecdc8; }
+
+  /* ── Recommendation Box ── */
+  .recommendation {
+    background: linear-gradient(135deg, #1a2e2d 0%, #162524 50%, var(--bg-card) 100%);
+    border: 1px solid var(--teal-bright)40;
+    border-radius: 16px;
+    padding: 32px;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 32px;
+  }
+
+  .recommendation::before {
+    content: '★';
+    position: absolute;
+    right: 24px;
+    top: 24px;
+    font-size: 64px;
+    color: var(--teal-bright)10;
+    line-height: 1;
+  }
+
+  .recommendation-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--teal-bright);
+    margin-bottom: 12px;
+  }
+
+  .recommendation-text {
+    font-family: var(--serif);
+    font-size: 22px;
+    color: var(--text);
+    line-height: 1.4;
+    max-width: 600px;
+  }
+
+  /* ── Steps ── */
+  .steps-list {
+    counter-reset: steps;
+    list-style: none;
+  }
+
+  .step-item {
+    counter-increment: steps;
+    display: flex;
+    gap: 16px;
+    margin-bottom: 12px;
+    align-items: flex-start;
+  }
+
+  .step-num {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--bg-card);
+    border: 1px solid var(--border-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--teal-bright);
+    margin-top: 2px;
+  }
+
+  .step-body {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    flex: 1;
+    font-size: 13px;
+    color: var(--muted);
+    transition: all 0.2s;
+  }
+
+  .step-body:hover {
+    border-color: var(--border-light);
+    color: var(--text);
+  }
+
+  .step-body strong { color: var(--text); font-weight: 600; }
+  .step-body .cost-tag {
+    float: right;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--teal-bright);
+    background: var(--teal-dim);
+    padding: 1px 8px;
+    border-radius: 100px;
+  }
+
+  /* ── Footer ── */
+  .doc-footer {
+    border-top: 1px solid var(--border);
+    padding-top: 40px;
+    margin-top: 80px;
+  }
+
+  .footer-note {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    font-size: 13px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  .footer-note::before {
+    content: '💻';
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  .footer-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted-dim);
+  }
+
+  /* ── Animations ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .section:nth-child(2) { animation-delay: 0.05s; }
+  .section:nth-child(3) { animation-delay: 0.1s; }
+  .section:nth-child(4) { animation-delay: 0.15s; }
+  .section:nth-child(5) { animation-delay: 0.2s; }
+  .section:nth-child(6) { animation-delay: 0.25s; }
+
+  /* ── Responsive ── */
+  @media (max-width: 900px) {
+    .sidebar { display: none; }
+    .main { padding: 32px 20px 80px; }
+    .options-grid { grid-template-columns: 1fr; }
+    .costs-grid { grid-template-columns: 1fr; }
+    .tech-grid { grid-template-columns: 1fr; }
+    .doc-title { font-size: 36px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">TeileniX</div>
+
+    <div class="nav-section">
+      <div class="nav-label">Konzept</div>
+      <a href="#tech" class="nav-link">Technologiestrategie</a>
+      <a href="#roadmap" class="nav-link">Roadmap</a>
+      <a href="#kosten" class="nav-link">Kosten</a>
+      <a href="#technik" class="nav-link">Technische Änderungen</a>
+      <a href="#herausforderung" class="nav-link">Herausforderungen</a>
+      <a href="#offline" class="nav-link">Offline-Fähigkeit</a>
+      <a href="#ki" class="nav-link">KI & Spracheingabe</a>
+      <a href="#pwa" class="nav-link">PWA: KI & Offline</a>
+      <a href="#empfehlung" class="nav-link">Empfehlung</a>
+    </div>
+  </nav>
+
+  <!-- Main -->
+  <main class="main">
+
+    <!-- Header -->
+    <header class="doc-header" id="top">
+      <div class="doc-meta">
+        <span class="badge badge-teal">Mobile App Konzept</span>
+        <span class="badge badge-muted">März 2026</span>
+        <span class="badge badge-muted">v1.0</span>
+      </div>
+      <h1 class="doc-title">TeileniX für<br><em>iOS & Android</em></h1>
+      <p class="doc-subtitle">Strategieplan zur nativen Veröffentlichung der Reisekostenapp im Apple App Store und Google Play Store.</p>
+      <div class="doc-divider"></div>
+    </header>
+
+    <!-- 1. Technologiestrategie -->
+    <section class="section" id="tech">
+      <div class="section-number">01 — Technologiestrategie</div>
+      <h2 class="section-title">Drei Wege zur App</h2>
+      <p class="section-desc">Vergleich der möglichen Ansätze zur Portierung der bestehenden Next.js WebApp auf native Plattformen.</p>
+
+      <div class="options-grid">
+
+        <!-- Option A -->
+        <div class="option-card recommended">
+          <div class="option-badge badge-recommended">★ Empfohlen</div>
+          <div class="option-name">Capacitor</div>
+          <div class="option-sub">Hybrid-App mit WebView</div>
+
+          <div class="option-stat">
+            <span class="option-stat-label">Aufwand</span>
+            <span class="option-stat-value">🟢 Gering</span>
+          </div>
+          <div class="option-stat">
+            <span class="option-stat-label">Dauer</span>
+            <span class="option-stat-value">2–4 Wochen</span>
+          </div>
+          <div class="option-stat">
+            <span class="option-stat-label">Code-Änderung</span>
+            <span class="option-stat-value">~5%</span>
+          </div>
+          <div class="option-stat">
+            <span class="option-stat-label">Kosten (Entwicklung)</span>
+            <span class="option-stat-value">Niedrig</span>
+          </div>
+
+          <div class="pro-con-list">
+            <div class="pro-con-item"><span class="icon pro">✓</span> 95% Code-Wiederverwendung</div>
+            <div class="pro-con-item"><span class="icon pro">✓</span> Schnell & günstig</div>
+            <div class="pro-con-item"><span class="icon pro">✓</span> Native Plugins möglich</div>
+            <div class="pro-con-item"><span class="icon con">✗</span> Keine 100% native Performance</div>
+            <div class="pro-con-item"><span class="icon con">✗</span> WebView-basiert (kein nativer Look)</div>
+          </div>
+        </div>
+
+        <!-- Option B -->
+        <div class="option-card">
+          <div class="option-badge badge-heavy">Großer Aufwand</div>
+          <div class="option-name">React Native / Expo</div>
+          <div class="option-sub">Natives Frontend neu schreiben</div>
+
+          <div class="option-stat">
+            <span class="option-stat-label">Aufwand</span>
+            <span class="option-stat-value">🔴 Hoch</span>
+          </div>
+          <div class="option-stat">
+            <span class="option-stat-label">Dauer</span>
+            <span class="option-stat-value">8–16 Wochen</span>
+          </div>
+          <div class="option-stat">
+            <span class="option-stat-label">Code-Änderung</span>
+            <span class="option-stat-value">Frontend neu</span>
+          </div>
+          <div class="option-stat">
+            <span class="option-stat-label">Kosten (Entwicklung)</span>
+            <span class="option-stat-value">Hoch</span>
+          </div>
+
+          <div class="pro-con-list">
+            <div class="pro-con-item"><span class="icon pro">✓</span> Echte native Performance</div>
+            <div class="pro-con-item"><span class="icon pro">✓</span> Nativer Look & Feel</div>
+            <div class="pro-con-item"><span class="icon pro">✓</span> Supabase-Backend bleibt</div>
+            <div class="pro-con-item"><span class="icon con">✗</span> Doppelter Code (Web + App)</div>
+            <div class="pro-con-item"><span class="icon con">✗</span> Sehr hoher Zeitaufwand</div>
+          </div>
+        </div>
+
+        <!-- Option C -->
+        <div class="option-card">
+          <div class="option-badge badge-minimal">Kein App Store</div>
+          <div class="option-name">PWA</div>
+          <div class="option-sub">Progressive Web App</div>
+
+          <div class="option-stat">
+            <span class="option-stat-label">Aufwand</span>
+            <span class="option-stat-value">🟡 Minimal</span>
+          </div>
+          <div class="option-stat">
+            <span class="option-stat-label">Dauer</span>
+            <span class="option-stat-value">1–2 Wochen</span>
+          </div>
+          <div class="option-stat">
+            <span class="option-stat-label">Code-Änderung</span>
+            <span class="option-stat-value">~1%</span>
+          </div>
+          <div class="option-stat">
+            <span class="option-stat-label">Kosten (Entwicklung)</span>
+            <span class="option-stat-value">Minimal</span>
+          </div>
+
+          <div class="pro-con-list">
+            <div class="pro-con-item"><span class="icon pro">✓</span> Quasi kein extra Code</div>
+            <div class="pro-con-item"><span class="icon pro">✓</span> Sofort verfügbar</div>
+            <div class="pro-con-item"><span class="icon con">✗</span> Kein App Store</div>
+            <div class="pro-con-item"><span class="icon con">✗</span> Kein Push auf iOS</div>
+            <div class="pro-con-item"><span class="icon con">✗</span> Eingeschränkte Features</div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 2. Roadmap -->
+    <section class="section" id="roadmap">
+      <div class="section-number">02 — Empfohlener Weg</div>
+      <h2 class="section-title">Roadmap mit Capacitor</h2>
+      <p class="section-desc">4-Wochen-Plan für die Umsetzung des Hybrid-Ansatzes — von der Installation bis zur App Store Submission.</p>
+
+      <div class="timeline">
+
+        <div class="timeline-item">
+          <div class="timeline-phase">Woche 1</div>
+          <div class="timeline-title">Setup & Konfiguration</div>
+          <div class="timeline-body">
+            <div class="timeline-task">Capacitor in bestehendes Next.js Projekt installieren</div>
+            <div class="timeline-task">Xcode (Mac) und Android Studio einrichten</div>
+            <div class="timeline-task">Next.js auf <code style="font-family:var(--mono);font-size:11px;background:var(--bg);padding:1px 5px;border-radius:3px;border:1px solid var(--border)">output: 'export'</code> umstellen</div>
+            <div class="timeline-task">iOS & Android Projekt initialisieren</div>
+            <div class="timeline-task">Ersten Test-Build auf Simulator ausführen</div>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-phase">Woche 2</div>
+          <div class="timeline-title">Native Features & Assets</div>
+          <div class="timeline-body">
+            <div class="timeline-task">Push Notifications via Capacitor Plugin konfigurieren</div>
+            <div class="timeline-task">Haptic Feedback für Interaktionen einbauen</div>
+            <div class="timeline-task">Share-Sheet Plugin für Einladungslinks</div>
+            <div class="timeline-task">App Icon (1024×1024px) und Splashscreen erstellen</div>
+            <div class="timeline-task">Deep Links für <code style="font-family:var(--mono);font-size:11px;background:var(--bg);padding:1px 5px;border-radius:3px;border:1px solid var(--border)">/join/[code]</code> konfigurieren</div>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-phase">Woche 3</div>
+          <div class="timeline-title">Testen & Bugfixing</div>
+          <div class="timeline-body">
+            <div class="timeline-task">Auf echten Geräten (iPhone + Android) testen</div>
+            <div class="timeline-task">Safe Area Insets (Notch, Dynamic Island) anpassen</div>
+            <div class="timeline-task">Keyboard-Verhalten auf Mobile optimieren</div>
+            <div class="timeline-task">Beta-Tester via TestFlight (iOS) einladen</div>
+            <div class="timeline-task">Google Play Internal Testing Track starten</div>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-phase">Woche 4</div>
+          <div class="timeline-title">App Store Submission</div>
+          <div class="timeline-body">
+            <div class="timeline-task">App Store Screenshots erstellen (6,7" + 5,5" + iPad)</div>
+            <div class="timeline-task">App Store Beschreibung, Keywords, Datenschutz-URL</div>
+            <div class="timeline-task">Apple Review einreichen (1–7 Tage Wartezeit)</div>
+            <div class="timeline-task">Google Play Review einreichen (2–3 Tage)</div>
+            <div class="timeline-task">Veröffentlichung & Monitoring</div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 3. Kosten -->
+    <section class="section" id="kosten">
+      <div class="section-number">03 — Kostenübersicht</div>
+      <h2 class="section-title">Was es kostet</h2>
+      <p class="section-desc">Alle anfallenden Kosten für Entwicklung, Accounts und laufenden Betrieb im Überblick.</p>
+
+      <div class="costs-grid">
+        <div class="cost-card">
+          <div class="cost-card-title">Einmalige Kosten</div>
+          <div class="cost-row">
+            <span class="cost-label">Apple Developer Account</span>
+            <span class="cost-value highlight">99 USD/Jahr</span>
+          </div>
+          <div class="cost-row">
+            <span class="cost-label">Google Play Developer</span>
+            <span class="cost-value highlight">25 USD</span>
+          </div>
+          <div class="cost-row">
+            <span class="cost-label">App Icon Design</span>
+            <span class="cost-value">0–200 USD</span>
+          </div>
+          <div class="cost-row">
+            <span class="cost-label">Capacitor Setup & Anpassung</span>
+            <span class="cost-value">20–40h Arbeit</span>
+          </div>
+        </div>
+
+        <div class="cost-card">
+          <div class="cost-card-title">Laufende Kosten / Monat</div>
+          <div class="cost-row">
+            <span class="cost-label">Apple Developer (anteilig)</span>
+            <span class="cost-value">~8 USD/Monat</span>
+          </div>
+          <div class="cost-row">
+            <span class="cost-label">Supabase (aktuell Free Tier)</span>
+            <span class="cost-value highlight">0–25 USD</span>
+          </div>
+          <div class="cost-row">
+            <span class="cost-label">Vercel Hosting (aktuell Free)</span>
+            <span class="cost-value highlight">0–20 USD</span>
+          </div>
+          <div class="cost-row">
+            <span class="cost-label">Push Notification Service</span>
+            <span class="cost-value">0 USD (Supabase)</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="cost-total-card">
+        <div>
+          <div class="cost-total-label">Gesamtkosten Einstieg (ohne Entwicklungszeit)</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">Apple + Google Accounts im ersten Jahr</div>
+        </div>
+        <div class="cost-total-value">124 USD</div>
+      </div>
+
+      <div class="risk-list">
+        <div class="risk-title">Versteckte Kosten & Risiken</div>
+        <div class="risk-item">Apple Review kann abgelehnt werden — Überarbeitungszeit nicht einplanen vergessen</div>
+        <div class="risk-item">iOS Push Notifications erfordern APNs-Zertifikate und extra Backend-Konfiguration</div>
+        <div class="risk-item">Over-the-Air Updates: Capacitor Live Update Plugin (optional, kostenpflichtig bei Appflow)</div>
+        <div class="risk-item">Mac Computer zwingend erforderlich für iOS-Build — kein Mac = kein iOS-Release</div>
+        <div class="risk-item">Supabase Free Tier hat Limits: 500 MB DB, 1 GB Storage, 50.000 MAU</div>
+      </div>
+    </section>
+
+    <!-- 4. Technische Änderungen -->
+    <section class="section" id="technik">
+      <div class="section-number">04 — Technische Änderungen</div>
+      <h2 class="section-title">Was bleibt, was ändert sich</h2>
+      <p class="section-desc">Beim Capacitor-Ansatz bleibt der Großteil des bestehenden Codes unverändert.</p>
+
+      <div class="tech-grid">
+        <div class="tech-card stays">
+          <div class="tech-card-title" style="color:var(--green)">
+            <span>✓</span> Bleibt gleich
+          </div>
+          <div class="tech-item">✓ &nbsp;Supabase Backend & Datenbank vollständig</div>
+          <div class="tech-item">✓ &nbsp;Alle API Routes auf Vercel</div>
+          <div class="tech-item">✓ &nbsp;Gesamte Business Logic & Settlement-Algorithmus</div>
+          <div class="tech-item">✓ &nbsp;Supabase Auth (Google Sign-In)</div>
+          <div class="tech-item">✓ &nbsp;Alle React-Komponenten & UI</div>
+          <div class="tech-item">✓ &nbsp;Tailwind CSS & Design-System</div>
+          <div class="tech-item">✓ &nbsp;RLS Policies & Migrations</div>
+        </div>
+
+        <div class="tech-card changes">
+          <div class="tech-card-title" style="color:var(--amber)">
+            ⚡ Muss angepasst werden
+          </div>
+          <div class="tech-item">→ &nbsp;<code>next.config.ts</code>: <code>output: 'export'</code> hinzufügen</div>
+          <div class="tech-item">→ &nbsp;Server Components prüfen — einige müssen zu Client Components</div>
+          <div class="tech-item">→ &nbsp;<code>cookies()</code> nicht verfügbar → Token-basierte Auth</div>
+          <div class="tech-item">→ &nbsp;Deep Links konfigurieren für <code>/join/[code]</code></div>
+          <div class="tech-item">→ &nbsp;Safe Area CSS für iPhone Notch/Dynamic Island</div>
+          <div class="tech-item">→ &nbsp;App Icon + Splashscreen in allen Größen</div>
+          <div class="tech-item">→ &nbsp;<code>capacitor.config.ts</code> erstellen</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. Herausforderung -->
+    <section class="section" id="herausforderung">
+      <div class="section-number">05 — Kritische Herausforderung</div>
+      <h2 class="section-title">Das größte Problem</h2>
+      <p class="section-desc">Ein technisches Detail, das frühzeitig bedacht werden muss.</p>
+
+      <div class="alert alert-warning">
+        <div class="alert-title">⚠ Next.js Server Components in nativer App</div>
+        <div class="alert-body">
+          Next.js Server Components und API Routes benötigen einen laufenden Node.js-Server. Eine native App kann keinen Server starten — sie ist eine statische Datei. Das bedeutet: <strong style="color:var(--amber)">Server-seitige Logik funktioniert nicht direkt in der App.</strong>
+        </div>
+      </div>
+
+      <div class="alert alert-success">
+        <div class="alert-title">✓ Empfohlene Lösung: Hybrid-Ansatz</div>
+        <div class="alert-body">
+          Die App kommuniziert via HTTPS mit den bestehenden API Routes auf <strong style="color:var(--teal-bright)">Vercel</strong>. Die Next.js App bleibt auf Vercel deployed — die native App ist nur ein WebView-Wrapper, der diese URL lädt. Damit funktionieren <strong style="color:var(--teal-bright)">95% des bestehenden Codes ohne jede Änderung</strong>. Server Components, API Routes, Auth — alles bleibt wie gehabt.
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. Offline -->
+    <section class="section" id="offline">
+      <div class="section-number">06 — Offline-Fähigkeit</div>
+      <h2 class="section-title">Ausgaben ohne Internet erfassen</h2>
+      <p class="section-desc">Mit Capacitor ist echte Offline-Unterstützung machbar — Ausgaben lokal speichern, bei Verbindung automatisch synchronisieren.</p>
+
+      <div class="alert alert-success" style="margin-bottom:24px">
+        <div class="alert-title">✓ Mit Capacitor grundsätzlich umsetzbar</div>
+        <div class="alert-body">
+          Capacitor bietet Zugang zu nativen Storage-APIs und SQLite direkt auf dem Gerät. Damit können Ausgaben lokal gespeichert und später mit Supabase synchronisiert werden — auch wenn Tage vergehen.
+        </div>
+      </div>
+
+      <div class="tech-grid" style="margin-bottom:16px">
+        <div class="cost-card">
+          <div class="cost-card-title">Wie es funktioniert</div>
+          <div class="tech-item" style="margin-bottom:10px">→ &nbsp;Neue Ausgabe wird zuerst lokal in <code>SQLite</code> oder <code>Capacitor Preferences</code> gespeichert</div>
+          <div class="tech-item" style="margin-bottom:10px">→ &nbsp;App erkennt automatisch ob Online- oder Offline-Status</div>
+          <div class="tech-item" style="margin-bottom:10px">→ &nbsp;Bei Verbindungsrückkehr: automatischer Sync zu Supabase</div>
+          <div class="tech-item" style="margin-bottom:10px">→ &nbsp;Konfliktlösung: Timestamp-basiert (neuere Einträge gewinnen)</div>
+          <div class="tech-item">→ &nbsp;Offline-Badge in der App zeigt Sync-Status</div>
+        </div>
+        <div class="cost-card">
+          <div class="cost-card-title">Benötigte Pakete</div>
+          <div class="cost-row">
+            <span class="cost-label">@capacitor-community/sqlite</span>
+            <span class="cost-value highlight">Kostenlos</span>
+          </div>
+          <div class="cost-row">
+            <span class="cost-label">@capacitor/network</span>
+            <span class="cost-value highlight">Kostenlos</span>
+          </div>
+          <div class="cost-row">
+            <span class="cost-label">Supabase Realtime</span>
+            <span class="cost-value highlight">Inklusive</span>
+          </div>
+          <div class="cost-row">
+            <span class="cost-label">PowerSync (Alternative)</span>
+            <span class="cost-value">0–50 USD/Monat</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tech-grid" style="margin-bottom:16px">
+        <div class="tech-card stays">
+          <div class="tech-card-title" style="color:var(--green)">✓ Offline möglich</div>
+          <div class="tech-item">✓ &nbsp;Ausgaben erfassen & speichern</div>
+          <div class="tech-item">✓ &nbsp;Eigene Ausgaben ansehen</div>
+          <div class="tech-item">✓ &nbsp;Zuletzt geladene Ausgaben lesen</div>
+          <div class="tech-item">✓ &nbsp;Kategorien & Teilnehmer (gecacht)</div>
+        </div>
+        <div class="tech-card changes">
+          <div class="tech-card-title" style="color:var(--red)">✗ Nur mit Internet</div>
+          <div class="tech-item">✗ &nbsp;Reise beitreten via Einladungscode</div>
+          <div class="tech-item">✗ &nbsp;Ausgaben anderer Teilnehmer sehen</div>
+          <div class="tech-item">✗ &nbsp;Abrechnung berechnen</div>
+          <div class="tech-item">✗ &nbsp;Einladungslinks teilen</div>
+        </div>
+      </div>
+
+      <div class="cost-card" style="margin-bottom:16px">
+        <div class="cost-card-title">Aufwand-Einschätzung</div>
+        <div class="cost-row">
+          <span class="cost-label">Einfach: Eingabe lokal puffern, bei Online-Rückkehr senden</span>
+          <span class="cost-value highlight">+1–2 Wochen</span>
+        </div>
+        <div class="cost-row">
+          <span class="cost-label">Mittel: Lokale SQLite-Datenbank mit vollständigem Sync</span>
+          <span class="cost-value" style="color:var(--amber)">+3–5 Wochen</span>
+        </div>
+        <div class="cost-row">
+          <span class="cost-label">PowerSync (fertige Offline-First Sync-Lösung für Supabase)</span>
+          <span class="cost-value" style="color:var(--amber)">+1–2 Wochen</span>
+        </div>
+      </div>
+
+      <div class="alert alert-warning">
+        <div class="alert-title">⚠ Empfehlung: Einfache Variante zuerst</div>
+        <div class="alert-body">
+          Start mit der einfachen Variante: Formular-Eingaben lokal im Gerätespeicher puffern (<code style="font-size:11px;background:#0d1117;padding:1px 5px;border-radius:3px">Capacitor Preferences</code>), bei Verbindungsrückkehr automatisch absenden. Das deckt 90% des Offline-Bedarfs mit minimalem Aufwand. Vollständiges bidirektionales Sync (alle fremden Ausgaben offline lesen) ist deutlich komplexer und kann in Phase 2 nachgeliefert werden.
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. KI & Sprache -->
+    <section class="section" id="ki">
+      <div class="section-number">07 — KI & Spracheingabe</div>
+      <h2 class="section-title">Ausgaben per Sprache erfassen</h2>
+      <p class="section-desc">„Abendessen 48 Euro, bezahlt von Anna, aufteilen auf alle" — KI versteht und befüllt das Formular automatisch.</div>
+
+      <div class="alert alert-success" style="margin-bottom:24px">
+        <div class="alert-title">✓ Mit allen drei Ansätzen umsetzbar — Capacitor ist ideal</div>
+        <div class="alert-body">
+          Die Kombination aus nativem Mikrofon-Zugang via Capacitor und der Claude API (Anthropic) oder OpenAI macht dies sehr elegant umsetzbar. <strong style="color:var(--teal-bright)">Kein MCP nötig</strong> — MCP ist ein Protokoll für KI-Agenten-Tools, nicht für Spracheingabe. Für Sprache braucht es: Speech-to-Text + KI-Parsing.
+        </div>
+      </div>
+
+      <!-- Flow-Diagramm als Steps -->
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:16px">
+        <div class="cost-card-title" style="margin-bottom:20px">Technischer Ablauf</div>
+        <div style="display:flex;align-items:center;gap:0;flex-wrap:wrap;gap:8px">
+
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px 16px;text-align:center;min-width:130px">
+            <div style="font-size:24px;margin-bottom:6px">🎙</div>
+            <div style="font-size:12px;font-weight:600;color:var(--text)">Sprache</div>
+            <div style="font-size:11px;color:var(--muted)">Nutzer spricht</div>
+          </div>
+
+          <div style="color:var(--teal-bright);font-size:18px;font-weight:300">→</div>
+
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px 16px;text-align:center;min-width:130px">
+            <div style="font-size:24px;margin-bottom:6px">📝</div>
+            <div style="font-size:12px;font-weight:600;color:var(--text)">Speech-to-Text</div>
+            <div style="font-size:11px;color:var(--muted)">iOS/Android nativ<br>oder Whisper API</div>
+          </div>
+
+          <div style="color:var(--teal-bright);font-size:18px;font-weight:300">→</div>
+
+          <div style="background:var(--teal-dim);border:1px solid var(--teal-bright)30;border-radius:10px;padding:12px 16px;text-align:center;min-width:130px">
+            <div style="font-size:24px;margin-bottom:6px">🧠</div>
+            <div style="font-size:12px;font-weight:600;color:var(--teal-bright)">Claude API</div>
+            <div style="font-size:11px;color:#7ecdc8">Parst Betrag, Titel,<br>Kategorie, Personen</div>
+          </div>
+
+          <div style="color:var(--teal-bright);font-size:18px;font-weight:300">→</div>
+
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px 16px;text-align:center;min-width:130px">
+            <div style="font-size:24px;margin-bottom:6px">✅</div>
+            <div style="font-size:12px;font-weight:600;color:var(--text)">Formular</div>
+            <div style="font-size:11px;color:var(--muted)">Vorausgefüllt,<br>Nutzer bestätigt</div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="tech-grid" style="margin-bottom:16px">
+        <div class="cost-card">
+          <div class="cost-card-title">Speech-to-Text Optionen</div>
+          <div class="cost-row">
+            <span class="cost-label">iOS Speech Recognition (nativ)</span>
+            <span class="cost-value highlight">Kostenlos</span>
+          </div>
+          <div class="cost-row">
+            <span class="cost-label">Android SpeechRecognizer (nativ)</span>
+            <span class="cost-value highlight">Kostenlos</span>
+          </div>
+          <div class="cost-row">
+            <span class="cost-label">OpenAI Whisper API</span>
+            <span class="cost-value">~0,006 USD/min</span>
+          </div>
+          <div class="cost-row">
+            <span class="cost-label">Web Speech API (Browser)</span>
+            <span class="cost-value highlight">Kostenlos</span>
+          </div>
+        </div>
+        <div class="cost-card">
+          <div class="cost-card-title">KI-Parsing: Claude API</div>
+          <div class="cost-row">
+            <span class="cost-label">Claude Haiku (günstigst)</span>
+            <span class="cost-value highlight">~0,0003 USD/Anfrage</span>
+          </div>
+          <div class="cost-row">
+            <span class="cost-label">Claude Sonnet (empfohlen)</span>
+            <span class="cost-value">~0,003 USD/Anfrage</span>
+          </div>
+          <div class="cost-row">
+            <span class="cost-label">Bei 1.000 Eingaben/Monat</span>
+            <span class="cost-value highlight">ca. 0,30–3 USD</span>
+          </div>
+          <div class="cost-row">
+            <span class="cost-label">Anthropic API Key</span>
+            <span class="cost-value highlight">Kostenlos (Pay-as-go)</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:16px">
+        <div class="cost-card-title" style="margin-bottom:16px">Beispiel: Was Claude aus Sprache extrahiert</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div>
+            <div style="font-size:11px;color:var(--muted);margin-bottom:8px;font-family:var(--mono);letter-spacing:0.05em">GESPROCHENER TEXT</div>
+            <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:13px;color:var(--muted);font-style:italic;line-height:1.5">
+              „Abendessen am Hafen, 48 Euro 50, bezahlt von Anna, aufteilen auf alle außer Thomas"
+            </div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--teal-bright);margin-bottom:8px;font-family:var(--mono);letter-spacing:0.05em">ERKANNT VON KI</div>
+            <div style="background:var(--bg);border:1px solid var(--teal-bright)20;border-radius:8px;padding:12px;font-family:var(--mono);font-size:11px;color:var(--text);line-height:1.8">
+              title: <span style="color:var(--teal-bright)">"Abendessen am Hafen"</span><br>
+              amount: <span style="color:var(--teal-bright)">4850</span> <span style="color:var(--muted)">// Cent</span><br>
+              paidBy: <span style="color:var(--teal-bright)">"Anna"</span><br>
+              exclude: <span style="color:var(--teal-bright)">["Thomas"]</span><br>
+              category: <span style="color:var(--teal-bright)">"food"</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tech-grid" style="margin-bottom:16px">
+        <div class="cost-card">
+          <div class="cost-card-title">Aufwand</div>
+          <div class="cost-row">
+            <span class="cost-label">Capacitor Speech Plugin einbinden</span>
+            <span class="cost-value highlight">~2h</span>
+          </div>
+          <div class="cost-row">
+            <span class="cost-label">Claude API Prompt entwickeln & testen</span>
+            <span class="cost-value highlight">~4–8h</span>
+          </div>
+          <div class="cost-row">
+            <span class="cost-label">UI: Mikrofon-Button im Formular</span>
+            <span class="cost-value highlight">~2h</span>
+          </div>
+          <div class="cost-row">
+            <span class="cost-label">Gesamtaufwand</span>
+            <span class="cost-value" style="color:var(--teal-bright)">~1–2 Tage</span>
+          </div>
+        </div>
+        <div class="cost-card">
+          <div class="cost-card-title">Varianten-Vergleich</div>
+          <div class="cost-row">
+            <span class="cost-label">Capacitor (Empfohlen)</span>
+            <span class="cost-value highlight">✓ Ideal</span>
+          </div>
+          <div class="cost-row">
+            <span class="cost-label">React Native</span>
+            <span class="cost-value highlight">✓ Ideal</span>
+          </div>
+          <div class="cost-row">
+            <span class="cost-label">PWA (Browser)</span>
+            <span class="cost-value" style="color:var(--amber)">⚠ Eingeschränkt</span>
+          </div>
+          <div class="cost-row">
+            <span class="cost-label">Web Speech API auf iOS</span>
+            <span class="cost-value" style="color:var(--red)">✗ Unzuverlässig</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="alert alert-warning">
+        <div class="alert-title">ℹ Was ist MCP?</div>
+        <div class="alert-body">
+          MCP (Model Context Protocol) ist ein Standard von Anthropic, mit dem KI-Assistenten externe Tools aufrufen können — z.B. Datenbanken lesen, APIs steuern. Für TeileniX wäre ein MCP-Server denkbar, der Claude erlaubt direkt Ausgaben in Supabase zu schreiben. Das ist jedoch eine fortgeschrittene Architektur und für den Nutzer nicht sichtbar anders als die einfachere API-Variante. <strong style="color:var(--amber)">Empfehlung: Zuerst einfache Claude API nutzen, MCP später als Erweiterung.</strong>
+        </div>
+      </div>
+    </section>
+
+    <!-- 9. PWA: KI & Offline -->
+    <section class="section" id="pwa">
+      <div class="section-number">09 — PWA: KI & Offline im Detail</div>
+      <h2 class="section-title">PWA auf iPhone & Android</h2>
+      <p class="section-desc">Was ist mit einer Progressive Web App konkret möglich — ohne App Store, direkt im Browser? Ein realistischer Blick auf KI-Anbindung und Offline-Fähigkeit.</p>
+
+      <!-- PWA Grundlage -->
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:16px">
+        <div class="cost-card-title" style="margin-bottom:16px">Was eine PWA ist</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center">
+            <div style="font-size:28px;margin-bottom:8px">📲</div>
+            <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px">Installierbar</div>
+            <div style="font-size:11px;color:var(--muted)">„Zum Homescreen hinzufügen" — sieht aus wie eine App</div>
+          </div>
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center">
+            <div style="font-size:28px;margin-bottom:8px">⚡</div>
+            <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px">Kein App Store</div>
+            <div style="font-size:11px;color:var(--muted)">Direkt via URL, kein Review, sofortige Updates</div>
+          </div>
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center">
+            <div style="font-size:28px;margin-bottom:8px">🌐</div>
+            <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px">Web-Technologie</div>
+            <div style="font-size:11px;color:var(--muted)">Läuft in Safari (iOS) oder Chrome (Android)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- KI / Sprache bei PWA -->
+      <div class="section-number" style="margin-bottom:8px;margin-top:32px">Spracheingabe mit PWA</div>
+      <h3 style="font-size:20px;font-family:var(--serif);color:var(--text);margin-bottom:8px">KI-Anbindung im Browser</h3>
+      <p style="font-size:14px;color:var(--muted);margin-bottom:20px">Zwei technische Wege — mit unterschiedlicher Browserunterstützung auf iOS und Android.</p>
+
+      <div class="tech-grid" style="margin-bottom:16px">
+        <div class="cost-card">
+          <div class="cost-card-title">Weg A — Web Speech API</div>
+          <div style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.5">Browser erkennt Sprache direkt — kein Upload, keine API-Kosten für Speech-to-Text.</div>
+          <div class="cost-row">
+            <span class="cost-label">Android Chrome</span>
+            <span class="cost-value highlight">✓ Funktioniert sehr gut</span>
+          </div>
+          <div class="cost-row">
+            <span class="cost-label">iOS Safari</span>
+            <span class="cost-value" style="color:var(--amber)">⚠ Seit iOS 14.5, instabil</span>
+          </div>
+          <div class="cost-row">
+            <span class="cost-label">Offline-Erkennung</span>
+            <span class="cost-value" style="color:var(--red)">✗ Braucht Internet</span>
+          </div>
+          <div class="cost-row">
+            <span class="cost-label">Kosten</span>
+            <span class="cost-value highlight">0 USD</span>
+          </div>
+        </div>
+
+        <div class="cost-card" style="border-color:var(--teal-bright)30">
+          <div class="cost-card-title" style="color:var(--teal-bright)">Weg B — MediaRecorder + Whisper (Empfohlen)</div>
+          <div style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.5">Browser nimmt Audio auf, sendet es an OpenAI Whisper zur Transkription, dann Claude API zum Parsen.</div>
+          <div class="cost-row">
+            <span class="cost-label">Android Chrome</span>
+            <span class="cost-value highlight">✓ Vollständig</span>
+          </div>
+          <div class="cost-row">
+            <span class="cost-label">iOS Safari</span>
+            <span class="cost-value highlight">✓ Seit iOS 14.5</span>
+          </div>
+          <div class="cost-row">
+            <span class="cost-label">Qualität</span>
+            <span class="cost-value highlight">Sehr hoch (Whisper)</span>
+          </div>
+          <div class="cost-row">
+            <span class="cost-label">Kosten pro Aufnahme</span>
+            <span class="cost-value">~0,01 USD</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- iOS vs Android Vergleich -->
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px">
+        <div style="display:grid;grid-template-columns:1fr 1fr">
+          <div style="padding:20px 24px;border-right:1px solid var(--border)">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+              <span style="font-size:20px"></span>
+              <span style="font-size:13px;font-weight:600;color:var(--text)">iPhone (Safari)</span>
+            </div>
+            <div class="tech-item" style="margin-bottom:8px;font-size:13px">
+              <span style="color:var(--green)">✓</span>&nbsp; MediaRecorder: funktioniert seit iOS 14.5
+            </div>
+            <div class="tech-item" style="margin-bottom:8px;font-size:13px">
+              <span style="color:var(--green)">✓</span>&nbsp; Mikrofon-Zugriff per getUserMedia
+            </div>
+            <div class="tech-item" style="margin-bottom:8px;font-size:13px">
+              <span style="color:var(--amber)">⚠</span>&nbsp; Web Speech API: unzuverlässig, bricht ab
+            </div>
+            <div class="tech-item" style="margin-bottom:8px;font-size:13px">
+              <span style="color:var(--red)">✗</span>&nbsp; Background Sync: nicht unterstützt
+            </div>
+            <div class="tech-item" style="font-size:13px">
+              <span style="color:var(--green)">✓</span>&nbsp; Push Notifications seit iOS 16.4
+            </div>
+          </div>
+          <div style="padding:20px 24px">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+              <span style="font-size:20px">🤖</span>
+              <span style="font-size:13px;font-weight:600;color:var(--text)">Android (Chrome)</span>
+            </div>
+            <div class="tech-item" style="margin-bottom:8px;font-size:13px">
+              <span style="color:var(--green)">✓</span>&nbsp; MediaRecorder: vollständig unterstützt
+            </div>
+            <div class="tech-item" style="margin-bottom:8px;font-size:13px">
+              <span style="color:var(--green)">✓</span>&nbsp; Web Speech API: funktioniert zuverlässig
+            </div>
+            <div class="tech-item" style="margin-bottom:8px;font-size:13px">
+              <span style="color:var(--green)">✓</span>&nbsp; Background Sync: unterstützt
+            </div>
+            <div class="tech-item" style="margin-bottom:8px;font-size:13px">
+              <span style="color:var(--green)">✓</span>&nbsp; Push Notifications: vollständig
+            </div>
+            <div class="tech-item" style="font-size:13px">
+              <span style="color:var(--green)">✓</span>&nbsp; Offline-First deutlich besser als iOS
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Offline PWA -->
+      <div class="section-number" style="margin-bottom:8px;margin-top:32px">Offline-Fähigkeit mit PWA</div>
+      <h3 style="font-size:20px;font-family:var(--serif);color:var(--text);margin-bottom:8px">Was ohne Internet geht</h3>
+      <p style="font-size:14px;color:var(--muted);margin-bottom:20px">PWAs nutzen Service Workers und IndexedDB — das sind Browser-native Mechanismen für Offline-Betrieb.</p>
+
+      <div class="tech-grid" style="margin-bottom:16px">
+        <div class="tech-card stays">
+          <div class="tech-card-title" style="color:var(--green)">✓ Offline möglich (PWA)</div>
+          <div class="tech-item">✓ &nbsp;App-Shell (UI) vollständig gecacht</div>
+          <div class="tech-item">✓ &nbsp;Bereits geladene Ausgaben lesen</div>
+          <div class="tech-item">✓ &nbsp;Neue Ausgabe erfassen → lokal in IndexedDB</div>
+          <div class="tech-item">✓ &nbsp;Teilnehmer & Kategorien gecacht</div>
+          <div class="tech-item">✓ &nbsp;Letzte Abrechnung offline einsehbar</div>
+          <div class="tech-item">✓ &nbsp;Android: automatischer Sync via Background Sync</div>
+        </div>
+        <div class="tech-card changes">
+          <div class="tech-card-title" style="color:var(--red)">✗ Nur mit Internet (PWA)</div>
+          <div class="tech-item">✗ &nbsp;Spracheingabe (Whisper/Web Speech braucht Internet)</div>
+          <div class="tech-item">✗ &nbsp;Ausgaben anderer Teilnehmer live sehen</div>
+          <div class="tech-item">✗ &nbsp;Reise beitreten</div>
+          <div class="tech-item">✗ &nbsp;Neue Abrechnung berechnen</div>
+          <div class="tech-item">✗ &nbsp;iOS: Sync erst beim nächsten App-Öffnen</div>
+          <div class="tech-item">✗ &nbsp;Push Notifications nur iOS 16.4+</div>
+        </div>
+      </div>
+
+      <!-- Technische Umsetzung -->
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:16px">
+        <div class="cost-card-title" style="margin-bottom:16px">Technische Bausteine für PWA-Offline</div>
+        <div class="cost-row">
+          <span class="cost-label"><strong style="color:var(--text)">Service Worker</strong> — Netz abfangen, aus Cache bedienen</span>
+          <span class="cost-value highlight">next-pwa Plugin</span>
+        </div>
+        <div class="cost-row">
+          <span class="cost-label"><strong style="color:var(--text)">IndexedDB</strong> — Pending-Ausgaben lokal speichern</span>
+          <span class="cost-value highlight">idb-keyval (2kb)</span>
+        </div>
+        <div class="cost-row">
+          <span class="cost-label"><strong style="color:var(--text)">Background Sync</strong> — Android: automatisch senden wenn online</span>
+          <span class="cost-value highlight">Service Worker API</span>
+        </div>
+        <div class="cost-row">
+          <span class="cost-label"><strong style="color:var(--text)">Network Status</strong> — Online/Offline erkennen</span>
+          <span class="cost-value highlight">navigator.onLine</span>
+        </div>
+        <div class="cost-row">
+          <span class="cost-label"><strong style="color:var(--text)">Web App Manifest</strong> — Installierbar, Splashscreen, Icon</span>
+          <span class="cost-value highlight">manifest.json</span>
+        </div>
+      </div>
+
+      <!-- Aufwand PWA -->
+      <div class="costs-grid" style="margin-bottom:16px">
+        <div class="cost-card">
+          <div class="cost-card-title">Aufwand PWA-Offline</div>
+          <div class="cost-row">
+            <span class="cost-label">next-pwa einrichten + Manifest</span>
+            <span class="cost-value highlight">~4–8h</span>
+          </div>
+          <div class="cost-row">
+            <span class="cost-label">Offline-Ausgabe in IndexedDB</span>
+            <span class="cost-value highlight">~8–12h</span>
+          </div>
+          <div class="cost-row">
+            <span class="cost-label">Sync-Logik + Konfliktbehandlung</span>
+            <span class="cost-value" style="color:var(--amber)">~12–20h</span>
+          </div>
+          <div class="cost-row">
+            <span class="cost-label">Gesamt</span>
+            <span class="cost-value" style="color:var(--teal-bright)">~3–5 Tage</span>
+          </div>
+        </div>
+        <div class="cost-card">
+          <div class="cost-card-title">Aufwand PWA-Spracheingabe</div>
+          <div class="cost-row">
+            <span class="cost-label">MediaRecorder + Mikrofon UI</span>
+            <span class="cost-value highlight">~4h</span>
+          </div>
+          <div class="cost-row">
+            <span class="cost-label">Whisper API anbinden</span>
+            <span class="cost-value highlight">~2h</span>
+          </div>
+          <div class="cost-row">
+            <span class="cost-label">Claude API Prompt (Parsing)</span>
+            <span class="cost-value highlight">~4–6h</span>
+          </div>
+          <div class="cost-row">
+            <span class="cost-label">Gesamt</span>
+            <span class="cost-value" style="color:var(--teal-bright)">~1–2 Tage</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="alert alert-success">
+        <div class="alert-title">✓ PWA-Fazit: Solide Grundlage, mit klaren Grenzen</div>
+        <div class="alert-body">
+          Eine PWA für TeileniX ist <strong style="color:var(--teal-bright)">heute schon sehr gut umsetzbar</strong> — Offline-Erfassung, KI-Spracheingabe und Installierbarkeit sind alle machbar. Die größte Einschränkung ist iOS: kein Background Sync (Sync erst beim nächsten Öffnen der App) und Web Speech API ist unzuverlässig → daher Whisper-Variante bevorzugen. Android verhält sich deutlich näher an einer nativen App. <strong style="color:var(--teal-bright)">Empfehlung: PWA als schneller erster Schritt, später mit Capacitor zu nativer App erweitern.</strong>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10. Empfehlung -->
+    <section class="section" id="empfehlung">
+      <div class="section-number">10 — Empfehlung & nächste Schritte</div>
+      <h2 class="section-title">Wie vorgehen</h2>
+      <p class="section-desc">Klare Handlungsempfehlung und konkrete erste Schritte.</p>
+
+      <div class="recommendation">
+        <div class="recommendation-label">Strategische Empfehlung</div>
+        <div class="recommendation-text">
+          Starte mit <em style="font-style:italic;color:var(--teal-bright)">Capacitor + Vercel API</em> als Hybrid-Ansatz. Minimaler Aufwand, maximale Code-Wiederverwendung. Die App läuft als WebView mit nativen Erweiterungen — schnell, günstig und erweiterbar.
+        </div>
+      </div>
+
+      <ol class="steps-list">
+        <li class="step-item">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <span class="cost-tag">99 USD</span>
+            <strong>Apple Developer Account anlegen</strong><br>
+            Unter developer.apple.com registrieren. Pflicht für jeden App Store Upload und TestFlight-Test.
+          </div>
+        </li>
+        <li class="step-item">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <span class="cost-tag">25 USD</span>
+            <strong>Google Play Console Account anlegen</strong><br>
+            Einmalige Gebühr, danach unbegrenzte App-Veröffentlichungen unter diesem Account.
+          </div>
+        </li>
+        <li class="step-item">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <span class="cost-tag">~4h</span>
+            <strong>Capacitor installieren & konfigurieren</strong><br>
+            <code>npm install @capacitor/core @capacitor/cli @capacitor/ios @capacitor/android</code> — dann iOS & Android Projekte initialisieren.
+          </div>
+        </li>
+        <li class="step-item">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <span class="cost-tag">Design</span>
+            <strong>App Icon & Splashscreen erstellen</strong><br>
+            Benötigt: 1024×1024px PNG (iOS) und diverse Splash-Größen. Capacitor Assets Plugin automatisiert die Größen-Generierung.
+          </div>
+        </li>
+        <li class="step-item">
+          <div class="step-num">5</div>
+          <div class="step-body">
+            <span class="cost-tag">Mac nötig</span>
+            <strong>iOS Build via Xcode</strong><br>
+            Xcode läuft ausschließlich auf macOS. Für Windows-Nutzer: Mac Mini mieten (MacStadium) oder Mac-Freund fragen.
+          </div>
+        </li>
+        <li class="step-item">
+          <div class="step-num">6</div>
+          <div class="step-body">
+            <span class="cost-tag">Win/Mac</span>
+            <strong>Android Build via Android Studio</strong><br>
+            Funktioniert auf Windows, Mac und Linux. Android Studio kostenlos verfügbar.
+          </div>
+        </li>
+        <li class="step-item">
+          <div class="step-num">7</div>
+          <div class="step-body">
+            <strong>Beta-Test: TestFlight (iOS) & Play Internal Testing (Android)</strong><br>
+            Bis zu 10.000 Tester kostenlos via TestFlight. Feedback sammeln, Bugs beheben.
+          </div>
+        </li>
+        <li class="step-item">
+          <div class="step-num">8</div>
+          <div class="step-body">
+            <strong>App Store & Google Play Submission</strong><br>
+            Screenshots, Beschreibung, Datenschutzrichtlinie (Pflicht!), Kategorien auswählen — einreichen und Review abwarten.
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <!-- Footer -->
+    <footer class="doc-footer">
+      <div class="footer-note">
+        <strong>Wichtig:</strong> &nbsp;Ein Mac Computer ist zwingend erforderlich für iOS-Builds. Xcode läuft ausschließlich auf macOS. Für den Android-Build ist kein Mac nötig.
+      </div>
+      <div class="footer-bottom">
+        <span>TeileniX · Mobile App Konzept · März 2026</span>
+        <span>Capacitor + Vercel API (Empfohlen)</span>
+      </div>
+    </footer>
+
+  </main>
+</div>
+
+<script>
+  // Active nav link on scroll
+  const sections = document.querySelectorAll('section[id], header[id]');
+  const navLinks = document.querySelectorAll('.nav-link');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(link => {
+          link.classList.remove('active');
+          if (link.getAttribute('href') === '#' + entry.target.id) {
+            link.classList.add('active');
+          }
+        });
+      }
+    });
+  }, { threshold: 0.3 });
+
+  sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>

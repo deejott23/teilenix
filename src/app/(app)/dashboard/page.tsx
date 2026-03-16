@@ -1,10 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Plus, Plane } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import TripCard from '@/components/trips/TripCard'
-import PageHeader from '@/components/layout/PageHeader'
+import JoinWithCodeButton from '@/components/trips/JoinWithCodeButton'
 import type { Trip } from '@/types/app'
 
 export default async function DashboardPage() {
@@ -12,104 +12,94 @@ export default async function DashboardPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: familyMember } = await supabase
-    .from('family_members')
-    .select('family_id')
-    .eq('user_id', user.id)
-    .maybeSingle()
-
-  if (!familyMember) redirect('/onboarding')
-
-  const familyId = familyMember.family_id as string
-
-  // Get trip IDs for this family
-  const { data: tripFamilies } = await supabase
-    .from('trip_families')
+  // Find trips where the user is a participant
+  const { data: participantRows } = await supabase
+    .from('trip_participants')
     .select('trip_id')
-    .eq('family_id', familyId)
+    .eq('user_id', user.id)
     .order('joined_at', { ascending: false })
 
-  const tripIds = (tripFamilies ?? []).map((tf: { trip_id: string }) => tf.trip_id)
+  const tripIds = (participantRows ?? []).map((p: { trip_id: string }) => p.trip_id)
 
-  // Fetch actual trips
   const { data: tripsRaw } = tripIds.length > 0
-    ? await supabase
-        .from('trips')
-        .select('*')
-        .in('id', tripIds)
-        .order('created_at', { ascending: false })
+    ? await supabase.from('trips').select('*').in('id', tripIds).order('created_at', { ascending: false })
     : { data: [] }
 
-  const trips = (tripsRaw ?? []) as Trip[]
+  const trips       = (tripsRaw ?? []) as Trip[]
   const activeTrips = trips.filter(t => t.status === 'active')
-  const endedTrips = trips.filter(t => t.status === 'ended')
+  const endedTrips  = trips.filter(t => t.status === 'ended')
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('display_name')
-    .eq('id', user.id)
-    .single()
+  const { data: profile } = await supabase.from('profiles').select('display_name').eq('id', user.id).single()
+  const firstName = (profile?.display_name as string)?.split(' ')[0] ?? 'du'
 
   return (
     <div>
-      <PageHeader
-        title={`Hallo, ${(profile?.display_name as string)?.split(' ')[0] ?? 'du'}! 👋`}
-        subtitle="Deine Reisen auf einen Blick"
-        action={
-          <Link href="/trips/new">
-            <Button size="sm" className="gap-1.5">
-              <Plus className="w-4 h-4" />
-              Neue Reise
-            </Button>
-          </Link>
-        }
-      />
+
+      {/* Teal header — breaks out of layout padding */}
+      <div className="-mx-4 -mt-7 mb-8 px-6 pt-8 pb-6 rounded-b-3xl" style={{ background: 'linear-gradient(150deg, #1b5c58 0%, #134844 100%)' }}>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-[10px] font-bold tracking-[0.14em] uppercase mb-1.5" style={{ color: 'rgba(255,255,255,0.45)' }}>
+              TeileniX
+            </p>
+            <h1 className="text-2xl font-extrabold tracking-tight text-white leading-tight">
+              Hallo, {firstName}
+            </h1>
+            <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.5)' }}>
+              {activeTrips.length > 0
+                ? `${activeTrips.length} aktive ${activeTrips.length === 1 ? 'Reise' : 'Reisen'}`
+                : 'Noch keine aktiven Reisen'}
+            </p>
+          </div>
+          <div className="flex items-center gap-2 flex-shrink-0 flex-wrap justify-end">
+            <JoinWithCodeButton />
+            <Link href="/trips/new">
+              <Button size="sm" className="gap-1.5 rounded-xl font-semibold text-xs" style={{ background: 'rgba(255,255,255,0.15)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', boxShadow: 'none' }}>
+                <Plus className="w-3.5 h-3.5" strokeWidth={2.5} />
+                Neue Reise
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-8">
 
       {trips.length === 0 ? (
-        <div className="text-center py-16">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-2xl mb-4">
-            <Plane className="w-8 h-8 text-primary" />
-          </div>
-          <h2 className="text-lg font-semibold text-gray-800 mb-2">Noch keine Reisen</h2>
-          <p className="text-gray-500 text-sm mb-6 max-w-xs mx-auto">
-            Erstelle deine erste Reise oder lass dich von jemandem einladen.
+        <div className="bg-card rounded-2xl card-shadow p-10 text-center">
+          <div className="text-6xl mb-4">🌍</div>
+          <h2 className="font-bold text-foreground text-lg mb-2">Noch keine Reisen</h2>
+          <p className="text-sm text-muted-foreground mb-6 max-w-[240px] mx-auto">
+            Erstelle deine erste Reise oder tritt einer bestehenden Reise bei.
           </p>
-          <Link href="/trips/new">
-            <Button className="gap-2">
-              <Plus className="w-4 h-4" />
-              Erste Reise erstellen
-            </Button>
-          </Link>
+          <div className="flex flex-col items-center gap-3">
+            <Link href="/trips/new">
+              <Button className="gap-2 rounded-xl font-semibold shadow-none">
+                <Plus className="w-4 h-4" />
+                Erste Reise erstellen
+              </Button>
+            </Link>
+            <p className="text-xs text-muted-foreground">oder</p>
+            <JoinWithCodeButton />
+          </div>
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-8">
           {activeTrips.length > 0 && (
-            <section>
-              <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
-                Aktive Reisen
-              </h2>
-              <div className="space-y-3">
-                {activeTrips.map(trip => (
-                  <TripCard key={trip.id} trip={trip} familyId={familyId} />
-                ))}
-              </div>
+            <section className="space-y-2.5">
+              <h2 className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest px-0.5">Aktive Reisen</h2>
+              {activeTrips.map(trip => <TripCard key={trip.id} trip={trip} />)}
             </section>
           )}
-
           {endedTrips.length > 0 && (
-            <section>
-              <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
-                Abgeschlossene Reisen
-              </h2>
-              <div className="space-y-3">
-                {endedTrips.map(trip => (
-                  <TripCard key={trip.id} trip={trip} familyId={familyId} />
-                ))}
-              </div>
+            <section className="space-y-2.5">
+              <h2 className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest px-0.5">Abgeschlossene Reisen</h2>
+              {endedTrips.map(trip => <TripCard key={trip.id} trip={trip} />)}
             </section>
           )}
         </div>
       )}
+      </div>
     </div>
   )
 }

@@ -1,39 +1,56 @@
 import type { Metadata, Viewport } from 'next'
-import { Geist } from 'next/font/google'
+import { Plus_Jakarta_Sans } from 'next/font/google'
 import './globals.css'
 import { Toaster } from '@/components/ui/sonner'
+import ServiceWorkerRegister from '@/components/pwa/ServiceWorkerRegister'
 
-const geist = Geist({
+const jakartaSans = Plus_Jakarta_Sans({
   variable: '--font-sans',
   subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800'],
 })
 
 export const metadata: Metadata = {
   title: 'TeileniX – Reisekosten teilen',
-  description: 'Reisekosten einfach und fair auf Familien aufteilen.',
+  description: 'Teile Abenteuer und die Kosten. Reisekosten fair aufteilen für Gruppen.',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
-    statusBarStyle: 'default',
+    statusBarStyle: 'black-translucent',
     title: 'TeileniX',
+    startupImage: '/apple-touch-icon.png',
+  },
+  icons: {
+    icon: [
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+    ],
+    apple: '/apple-touch-icon.png',
+  },
+  other: {
+    'mobile-web-app-capable': 'yes',
+    'apple-mobile-web-app-capable': 'yes',
+    'apple-mobile-web-app-status-bar-style': 'black-translucent',
+    'msapplication-TileColor': '#1b5c58',
+    'msapplication-TileImage': '/icons/icon-144x144.png',
   },
 }
 
 export const viewport: Viewport = {
-  themeColor: '#22c55e',
+  themeColor: '#1b5c58',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
+  userScalable: false,
 }
 
-export default function RootLayout({
-  children,
-}: Readonly<{ children: React.ReactNode }>) {
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="de">
-      <body className={`${geist.variable} antialiased min-h-screen bg-background`}>
+    <html lang="de" className={jakartaSans.variable}>
+      <body className="antialiased min-h-screen bg-background">
         {children}
         <Toaster position="top-center" richColors />
+        <ServiceWorkerRegister />
       </body>
     </html>
   )

@@ -16,14 +16,14 @@ export default function PageHeader({ title, subtitle, backHref, action, classNam
       {backHref && (
         <Link
           href={backHref}
-          className="p-2 -ml-2 rounded-xl text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+          className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-xl bg-white card-shadow text-muted-foreground hover:text-foreground transition-colors"
         >
-          <ChevronLeft className="w-5 h-5" />
+          <ChevronLeft className="w-5 h-5" strokeWidth={2} />
         </Link>
       )}
       <div className="flex-1 min-w-0">
-        <h1 className="text-xl font-bold text-gray-900 truncate">{title}</h1>
-        {subtitle && <p className="text-sm text-gray-500 mt-0.5">{subtitle}</p>}
+        <h1 className="text-xl font-bold text-foreground truncate leading-tight">{title}</h1>
+        {subtitle && <p className="text-sm text-muted-foreground mt-0.5">{subtitle}</p>}
       </div>
       {action && <div className="flex-shrink-0">{action}</div>}
     </div>

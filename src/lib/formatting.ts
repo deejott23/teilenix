@@ -1,4 +1,4 @@
-import type { ExpenseCategory } from '@/types/database'
+import type { ExpenseCategory } from '@/types/app'
 
 /**
  * Format cents as currency string (e.g. 1250 → "€12,50")

@@ -1,4 +1,4 @@
-import type { ExpenseWithSplits, TripFamilyWithFamily, FamilyBalance, SettlementTransfer, SettlementResult } from '@/types/app'
+import type { ExpenseWithSplits, TripParticipant, SettlementBalance, SettlementTransfer, Settlement } from '@/types/app'
 
 /**
  * Computes settlement balances and minimum-transfer plan.
@@ -6,14 +6,14 @@ import type { ExpenseWithSplits, TripFamilyWithFamily, FamilyBalance, Settlement
  */
 export function computeSettlement(
   expenses: ExpenseWithSplits[],
-  tripFamilies: TripFamilyWithFamily[]
-): SettlementResult {
-  // Initialize balance map for all families
-  const balanceMap = new Map<string, FamilyBalance>()
-  tripFamilies.forEach(tf => {
-    balanceMap.set(tf.family_id, {
-      familyId: tf.family_id,
-      familyName: tf.families.name,
+  participants: TripParticipant[]
+): Settlement {
+  // Initialize balance map for all participants
+  const balanceMap = new Map<string, SettlementBalance>()
+  participants.forEach(p => {
+    balanceMap.set(p.id, {
+      participantId: p.id,
+      participantName: p.name,
       totalPaidCents: 0,
       totalOwedCents: 0,
       netBalanceCents: 0,
@@ -25,20 +25,20 @@ export function computeSettlement(
   expenses.forEach(expense => {
     totalSpentCents += expense.amount_cents
 
-    // Credit the paying family
-    const payer = balanceMap.get(expense.paid_by_family)
+    // Credit the paying participant
+    const payer = balanceMap.get(expense.paid_by_participant_id)
     if (payer) {
       payer.totalPaidCents += expense.amount_cents
     }
 
-    // Distribute owed amounts among participating families
+    // Distribute owed amounts among participating splits
     const totalShares = expense.expense_splits.reduce((sum, s) => sum + s.shares, 0)
     if (totalShares === 0) return
 
     let distributed = 0
     expense.expense_splits.forEach((split, index) => {
-      const family = balanceMap.get(split.family_id)
-      if (!family) return
+      const participant = balanceMap.get(split.participant_id)
+      if (!participant) return
 
       let owed: number
       if (index === expense.expense_splits.length - 1) {
@@ -48,7 +48,7 @@ export function computeSettlement(
         owed = Math.round(expense.amount_cents * split.shares / totalShares)
       }
       distributed += owed
-      family.totalOwedCents += owed
+      participant.totalOwedCents += owed
     })
   })
 
@@ -81,10 +81,10 @@ export function computeSettlement(
 
     if (amount > 0) {
       transfers.push({
-        fromFamilyId: debtor.familyId,
-        fromFamilyName: debtor.familyName,
-        toFamilyId: creditor.familyId,
-        toFamilyName: creditor.familyName,
+        fromParticipantId: debtor.participantId,
+        fromParticipantName: debtor.participantName,
+        toParticipantId: creditor.participantId,
+        toParticipantName: creditor.participantName,
         amountCents: amount,
       })
     }

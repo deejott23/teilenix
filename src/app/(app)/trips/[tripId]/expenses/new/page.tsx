@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import { notFound } from 'next/navigation'
 import PageHeader from '@/components/layout/PageHeader'
 import ExpenseForm from '@/components/expenses/ExpenseForm'
-import type { TripFamilyWithFamily } from '@/types/app'
+import type { TripParticipant } from '@/types/app'
 
 export default async function NewExpensePage({
   params,
@@ -17,37 +17,25 @@ export default async function NewExpensePage({
 
   const { data: trip } = await supabase
     .from('trips')
-    .select('id, name, status')
+    .select('id, name, status, enabled_categories, custom_categories')
     .eq('id', tripId)
     .maybeSingle()
 
   if (!trip) notFound()
   if (trip.status === 'ended') redirect(`/trips/${tripId}/expenses`)
 
-  // Get trip families with family details
-  const { data: tripFamiliesRaw } = await supabase
-    .from('trip_families')
-    .select('id, trip_id, family_id, shares, joined_at')
+  // Get participants
+  const { data: participantsRaw } = await supabase
+    .from('trip_participants')
+    .select('*')
     .eq('trip_id', tripId)
+    .order('joined_at', { ascending: true })
 
-  const familyIds = ((tripFamiliesRaw ?? []) as { family_id: string }[]).map(tf => tf.family_id)
-  const { data: familiesRaw } = familyIds.length > 0
-    ? await supabase.from('families').select('*').in('id', familyIds)
-    : { data: [] }
+  const participants = (participantsRaw ?? []) as TripParticipant[]
 
-  const familiesMap = new Map(((familiesRaw ?? []) as { id: string }[]).map(f => [f.id, f]))
-
-  const tripFamilies = ((tripFamiliesRaw ?? []) as { id: string; trip_id: string; family_id: string; shares: number; joined_at: string }[])
-    .map(tf => ({ ...tf, families: familiesMap.get(tf.family_id) })) as unknown as TripFamilyWithFamily[]
-
-  const { data: memberData } = await supabase
-    .from('family_members')
-    .select('family_id')
-    .eq('user_id', user.id)
-    .maybeSingle()
-
-  if (!memberData) redirect('/onboarding')
-  const myFamilyId = memberData.family_id as string
+  const myParticipant = participants.find(p => p.user_id === user.id)
+  if (!myParticipant) redirect('/dashboard')
+  const myParticipantId = myParticipant.id
 
   return (
     <div>
@@ -57,8 +45,10 @@ export default async function NewExpensePage({
       />
       <ExpenseForm
         tripId={tripId}
-        tripFamilies={tripFamilies}
-        myFamilyId={myFamilyId}
+        participants={participants}
+        myParticipantId={myParticipantId}
+        enabledCategories={(trip.enabled_categories as string[] | null) ?? undefined}
+        customCategoriesRaw={(trip.custom_categories as string[] | null) ?? []}
       />
     </div>
   )

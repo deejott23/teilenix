@@ -14,23 +14,22 @@ export async function POST(request: NextRequest) {
   }
 
   const {
-    tripId, paidByFamilyId, title, description, amountCents,
+    tripId, paidByParticipantId, title, description, amountCents,
     currency, category, expenseDate, splitMode, splits
   } = parsed.data
 
   // Use the atomic RPC to create expense + splits in one transaction
   const { data: expenseId, error } = await supabase.rpc('create_expense_with_splits', {
     p_trip_id: tripId,
-    p_paid_by_family: paidByFamilyId,
-    p_paid_by_user: user.id,
+    p_paid_by_participant_id: paidByParticipantId,
     p_title: title,
-    p_description: description ?? null,
+    p_description: description ?? '',
     p_amount_cents: amountCents,
     p_currency: currency,
     p_category: category,
     p_expense_date: expenseDate,
     p_split_mode: splitMode,
-    p_splits: splits.map(s => ({ family_id: s.familyId, shares: s.shares })),
+    p_splits: splits.map(s => ({ participant_id: s.participantId, shares: s.shares })),
   })
 
   if (error) {
