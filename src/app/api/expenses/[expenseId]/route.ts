@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { updateExpenseSchema } from '@/lib/validations/expense'
 
@@ -11,23 +11,37 @@ export async function PATCH(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Nicht angemeldet' }, { status: 401 })
 
+  // Verify the expense exists and the user is a participant in its trip (RLS-gated read)
+  const { data: expense } = await supabase
+    .from('expenses')
+    .select('id, trip_id')
+    .eq('id', expenseId)
+    .maybeSingle()
+
+  if (!expense) return NextResponse.json({ error: 'Ausgabe nicht gefunden' }, { status: 404 })
+
   const body = await request.json()
   const parsed = updateExpenseSchema.safeParse(body)
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 })
+    return NextResponse.json({ error: 'Ungültige Eingabe' }, { status: 400 })
   }
 
   const { title, description, amountCents, currency, category, expenseDate, splitMode, splits, paidByParticipantId } = parsed.data
 
   if (!splits || splits.length === 0) {
-    return NextResponse.json({ error: 'Splits erforderlich' }, { status: 400 })
+    return NextResponse.json({ error: 'Aufteilung ist erforderlich' }, { status: 400 })
+  }
+
+  // amountCents is required for an update — reject if missing
+  if (amountCents === undefined || amountCents <= 0) {
+    return NextResponse.json({ error: 'Ungültiger Betrag' }, { status: 400 })
   }
 
   const { error } = await supabase.rpc('update_expense_with_splits', {
     p_expense_id:              expenseId,
     p_title:                   title ?? '',
     p_description:             description ?? '',
-    p_amount_cents:            amountCents ?? 0,
+    p_amount_cents:            amountCents,
     p_currency:                currency ?? 'EUR',
     p_category:                category ?? 'other',
     p_expense_date:            expenseDate ?? new Date().toISOString().split('T')[0],
@@ -53,7 +67,19 @@ export async function DELETE(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Nicht angemeldet' }, { status: 401 })
 
-  const { error } = await supabase
+  // Verify the expense exists and the user is a participant in its trip (RLS-gated read)
+  // If the user is not in the trip, RLS returns null → 404
+  const { data: expense } = await supabase
+    .from('expenses')
+    .select('id, trip_id')
+    .eq('id', expenseId)
+    .maybeSingle()
+
+  if (!expense) return NextResponse.json({ error: 'Ausgabe nicht gefunden' }, { status: 404 })
+
+  // Use admin client for the actual delete (RLS blocks deletes in some policies)
+  const admin = createAdminClient()
+  const { error } = await admin
     .from('expenses')
     .delete()
     .eq('id', expenseId)

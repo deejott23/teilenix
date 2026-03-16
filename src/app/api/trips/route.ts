@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
 
   if (error) {
     console.error('create_trip_with_participant error:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ error: 'Reise konnte nicht erstellt werden' }, { status: 500 })
   }
 
   return NextResponse.json({ trip: { id: tripId } }, { status: 201 })
