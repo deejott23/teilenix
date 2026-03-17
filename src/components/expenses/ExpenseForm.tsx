@@ -37,14 +37,13 @@ interface ExpenseFormProps {
   tripId: string
   participants: TripParticipant[]
   myParticipantId: string
-  myGroupId?: string | null
   expenseId?: string
   initialData?: ExpenseFormData
   enabledCategories?: string[]
   customCategoriesRaw?: string[]
 }
 
-export default function ExpenseForm({ tripId, participants, myParticipantId, myGroupId, expenseId, initialData, enabledCategories, customCategoriesRaw = [] }: ExpenseFormProps) {
+export default function ExpenseForm({ tripId, participants, myParticipantId, expenseId, initialData, enabledCategories, customCategoriesRaw = [] }: ExpenseFormProps) {
   const customCats = parseCustomCats(customCategoriesRaw)
   const standardVisible = enabledCategories
     ? ALL_STANDARD_CATEGORIES.filter(c => enabledCategories.includes(c))
@@ -56,8 +55,13 @@ export default function ExpenseForm({ tripId, participants, myParticipantId, myG
   const router = useRouter()
   const isEdit = !!expenseId
 
-  // Only show participants that are not assigned to a group (grouped members are represented by their group)
+  // Splits are at group/standalone level (groups represent their members)
   const billableParticipants = participants.filter(p => !p.group_id)
+
+  // Payer options: real individuals only (no abstract group entries)
+  // Group members are shown with their group name as context
+  const payerOptions = participants.filter(p => !p.is_group)
+  const participantLookup = new Map(participants.map(p => [p.id, p]))
 
   const [selectedCategory, setSelectedCategory] = useState<string>(
     initialData?.category ?? 'other'
@@ -94,7 +98,7 @@ export default function ExpenseForm({ tripId, participants, myParticipantId, myG
       amount:              initialData?.amountEuros    ?? '',
       category:            initialData?.category       ?? 'other',
       expenseDate:         initialData?.expenseDate    ?? todayISO(),
-      paidByParticipantId: initialData?.paidByParticipantId ?? myGroupId ?? myParticipantId,
+      paidByParticipantId: initialData?.paidByParticipantId ?? myParticipantId,
     },
   })
 
@@ -251,20 +255,29 @@ export default function ExpenseForm({ tripId, participants, myParticipantId, myG
         <div>
           <label className={fieldLabel}>Bezahlt von</label>
           <div className="flex flex-wrap gap-2">
-            {billableParticipants.map(p => (
-              <button
-                key={p.id}
-                type="button"
-                onClick={() => form.setValue('paidByParticipantId', p.id)}
-                className={`px-3 py-2 rounded-xl border text-sm font-semibold transition-all ${
-                  form.watch('paidByParticipantId') === p.id
-                    ? 'border-primary bg-primary/10 text-primary'
-                    : 'border-border text-muted-foreground hover:border-primary/40'
-                }`}
-              >
-                {p.is_group ? '👥 ' : ''}{p.name}
-              </button>
-            ))}
+            {payerOptions.map(p => {
+              const groupName = p.group_id ? participantLookup.get(p.group_id)?.name : null
+              const isSelected = form.watch('paidByParticipantId') === p.id
+              return (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => form.setValue('paidByParticipantId', p.id)}
+                  className={`px-3 py-1.5 rounded-xl border text-sm font-semibold transition-all flex flex-col items-start leading-tight ${
+                    isSelected
+                      ? 'border-primary bg-primary/10 text-primary'
+                      : 'border-border text-muted-foreground hover:border-primary/40'
+                  }`}
+                >
+                  <span>{p.name}</span>
+                  {groupName && (
+                    <span className={`text-[10px] font-normal ${isSelected ? 'text-primary/70' : 'text-muted-foreground/60'}`}>
+                      {groupName}
+                    </span>
+                  )}
+                </button>
+              )
+            })}
           </div>
         </div>
 

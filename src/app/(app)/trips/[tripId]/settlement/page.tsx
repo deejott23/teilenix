@@ -5,6 +5,7 @@ import SettlementTransferList from '@/components/settlement/SettlementTransferLi
 import BalanceTable from '@/components/settlement/BalanceTable'
 import SettlementExportButton from '@/components/settlement/SettlementExportButton'
 import ExpenseDetailReport from '@/components/settlement/ExpenseDetailReport'
+import GroupMemberBreakdown, { computeGroupBreakdowns } from '@/components/settlement/GroupMemberBreakdown'
 import EndTripButton from '@/components/trips/EndTripButton'
 import { formatCurrency } from '@/lib/formatting'
 import { CheckCircle } from 'lucide-react'
@@ -53,6 +54,7 @@ export default async function SettlementPage({
     })) as unknown as ExpenseWithSplits[]
 
   const settlement = computeSettlement(expenses, participants)
+  const groupBreakdowns = computeGroupBreakdowns(expenses, participants)
   const isActive = trip?.status === 'active'
   const isCreator = trip?.created_by === user.id
 
@@ -104,6 +106,16 @@ export default async function SettlementPage({
         </h3>
         <BalanceTable balances={settlement.balances} />
       </div>
+
+      {/* Group member breakdown */}
+      {groupBreakdowns.length > 0 && (
+        <div>
+          <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-3">
+            Zahlungen je Gruppe
+          </h3>
+          <GroupMemberBreakdown breakdowns={groupBreakdowns} />
+        </div>
+      )}
 
       {/* Expense detail report — collapsible */}
       <div>

@@ -47,7 +47,6 @@ export default async function NewExpensePage({
         tripId={tripId}
         participants={participants}
         myParticipantId={myParticipantId}
-        myGroupId={myParticipant.group_id}
         enabledCategories={(trip.enabled_categories as string[] | null) ?? undefined}
         customCategoriesRaw={(trip.custom_categories as string[] | null) ?? []}
       />

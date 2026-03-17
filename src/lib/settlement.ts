@@ -8,9 +8,13 @@ export function computeSettlement(
   expenses: ExpenseWithSplits[],
   participants: TripParticipant[]
 ): Settlement {
-  // Initialize balance map for all participants
+  // Build lookup to resolve group members → their group
+  const participantLookup = new Map(participants.map(p => [p.id, p]))
+
+  // Only billable entities (groups + standalone individuals, NOT group members)
+  const billable = participants.filter(p => !p.group_id)
   const balanceMap = new Map<string, SettlementBalance>()
-  participants.forEach(p => {
+  billable.forEach(p => {
     balanceMap.set(p.id, {
       participantId: p.id,
       participantName: p.name,
@@ -25,8 +29,10 @@ export function computeSettlement(
   expenses.forEach(expense => {
     totalSpentCents += expense.amount_cents
 
-    // Credit the paying participant
-    const payer = balanceMap.get(expense.paid_by_participant_id)
+    // Resolve payer to their group if they belong to one
+    const payerParticipant = participantLookup.get(expense.paid_by_participant_id)
+    const billablePayerId = payerParticipant?.group_id ?? expense.paid_by_participant_id
+    const payer = balanceMap.get(billablePayerId)
     if (payer) {
       payer.totalPaidCents += expense.amount_cents
     }
