@@ -7,7 +7,7 @@ import { Trash2, Pencil } from 'lucide-react'
 import { toast } from 'sonner'
 import CategoryIcon from './CategoryIcon'
 import { formatCurrency, categoryLabels } from '@/lib/formatting'
-import type { ExpenseWithSplits } from '@/types/app'
+import type { ExpenseWithSplits, TripParticipant } from '@/types/app'
 import { cn } from '@/lib/utils'
 
 interface ExpenseCardProps {
@@ -15,9 +15,10 @@ interface ExpenseCardProps {
   myParticipantId: string
   tripId: string
   canEdit: boolean
+  participantMap?: Map<string, TripParticipant>
 }
 
-export default function ExpenseCard({ expense, myParticipantId, tripId, canEdit }: ExpenseCardProps) {
+export default function ExpenseCard({ expense, myParticipantId, tripId, canEdit, participantMap }: ExpenseCardProps) {
   const router = useRouter()
   const [deleting, setDeleting] = useState(false)
 
@@ -26,7 +27,10 @@ export default function ExpenseCard({ expense, myParticipantId, tripId, canEdit 
   const myOwed        = myParticipantSplit ? Math.round(expense.amount_cents * myParticipantSplit.shares / totalShares) : 0
   const iPaid         = expense.paid_by_participant_id === myParticipantId
 
-  const payerName = expense.participant?.name ?? 'Unbekannt'
+  // If payer belongs to a group, show the group name instead
+  const payer = expense.participant
+  const payerGroup = payer?.group_id && participantMap ? participantMap.get(payer.group_id) : null
+  const payerName = payerGroup?.name ?? payer?.name ?? 'Unbekannt'
 
   const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation()

@@ -57,6 +57,7 @@ export default async function ExpensesPage({
         myParticipantId={myParticipantId}
         tripId={tripId}
         canEdit={trip?.status === 'active'}
+        participantMap={participantMap}
       />
     </div>
   )

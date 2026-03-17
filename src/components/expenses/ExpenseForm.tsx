@@ -37,13 +37,14 @@ interface ExpenseFormProps {
   tripId: string
   participants: TripParticipant[]
   myParticipantId: string
+  myGroupId?: string | null
   expenseId?: string
   initialData?: ExpenseFormData
   enabledCategories?: string[]
   customCategoriesRaw?: string[]
 }
 
-export default function ExpenseForm({ tripId, participants, myParticipantId, expenseId, initialData, enabledCategories, customCategoriesRaw = [] }: ExpenseFormProps) {
+export default function ExpenseForm({ tripId, participants, myParticipantId, myGroupId, expenseId, initialData, enabledCategories, customCategoriesRaw = [] }: ExpenseFormProps) {
   const customCats = parseCustomCats(customCategoriesRaw)
   const standardVisible = enabledCategories
     ? ALL_STANDARD_CATEGORIES.filter(c => enabledCategories.includes(c))
@@ -93,7 +94,7 @@ export default function ExpenseForm({ tripId, participants, myParticipantId, exp
       amount:              initialData?.amountEuros    ?? '',
       category:            initialData?.category       ?? 'other',
       expenseDate:         initialData?.expenseDate    ?? todayISO(),
-      paidByParticipantId: initialData?.paidByParticipantId ?? myParticipantId,
+      paidByParticipantId: initialData?.paidByParticipantId ?? myGroupId ?? myParticipantId,
     },
   })
 
@@ -149,39 +150,77 @@ export default function ExpenseForm({ tripId, participants, myParticipantId, exp
   const fieldLabel = 'text-[11px] font-bold uppercase tracking-widest text-muted-foreground mb-1.5 block'
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
 
-      {/* Title */}
-      <div>
-        <label htmlFor="title" className={fieldLabel}>Bezeichnung</label>
-        <Input
-          id="title"
-          placeholder="z.B. Abendessen am Hafen"
-          className="h-10"
-          {...form.register('title')}
-        />
-        {form.formState.errors.title && (
-          <p className="text-xs text-destructive mt-1">{form.formState.errors.title.message}</p>
-        )}
+      {/* PRIMARY CLUSTER: Bezeichnung + Betrag + Datum */}
+      <div className="bg-card rounded-2xl p-4 space-y-4 border border-border">
+
+        {/* Title */}
+        <div>
+          <label htmlFor="title" className={fieldLabel}>Was wurde bezahlt?</label>
+          <Input
+            id="title"
+            placeholder="z.B. Abendessen am Hafen"
+            className="h-11 text-base"
+            autoFocus={!isEdit}
+            {...form.register('title')}
+          />
+          {form.formState.errors.title && (
+            <p className="text-xs text-destructive mt-1">{form.formState.errors.title.message}</p>
+          )}
+        </div>
+
+        {/* Amount + Date side by side */}
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label htmlFor="amount" className={fieldLabel}>Betrag</label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-bold text-sm">€</span>
+              <Input
+                id="amount"
+                type="text"
+                inputMode="decimal"
+                placeholder="0,00"
+                className="pl-7 h-11 text-lg font-bold"
+                {...form.register('amount')}
+              />
+            </div>
+            {form.formState.errors.amount && (
+              <p className="text-xs text-destructive mt-1">{form.formState.errors.amount.message}</p>
+            )}
+          </div>
+          <div>
+            <label htmlFor="expenseDate" className={fieldLabel}>Datum</label>
+            <Input
+              id="expenseDate"
+              type="date"
+              className="h-11 text-sm"
+              {...form.register('expenseDate')}
+            />
+          </div>
+        </div>
+
       </div>
 
-      {/* Amount */}
+      {/* Paid by */}
       <div>
-        <label htmlFor="amount" className={fieldLabel}>Betrag</label>
-        <div className="relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-semibold text-sm">€</span>
-          <Input
-            id="amount"
-            type="text"
-            inputMode="decimal"
-            placeholder="0,00"
-            className="pl-7 h-10 text-base font-bold"
-            {...form.register('amount')}
-          />
+        <label className={fieldLabel}>Bezahlt von</label>
+        <div className="flex flex-wrap gap-2">
+          {billableParticipants.map(p => (
+            <button
+              key={p.id}
+              type="button"
+              onClick={() => form.setValue('paidByParticipantId', p.id)}
+              className={`px-3 py-2 rounded-xl border text-sm font-semibold transition-all ${
+                form.watch('paidByParticipantId') === p.id
+                  ? 'border-primary bg-primary/10 text-primary'
+                  : 'border-border text-muted-foreground hover:border-primary/40'
+              }`}
+            >
+              {p.is_group ? '👥 ' : ''}{p.name}
+            </button>
+          ))}
         </div>
-        {form.formState.errors.amount && (
-          <p className="text-xs text-destructive mt-1">{form.formState.errors.amount.message}</p>
-        )}
       </div>
 
       {/* Category — compact emoji strip */}
@@ -221,38 +260,6 @@ export default function ExpenseForm({ tripId, participants, myParticipantId, exp
               }`}
             >
               {cat.emoji}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Date */}
-      <div>
-        <label htmlFor="expenseDate" className={fieldLabel}>Datum</label>
-        <Input
-          id="expenseDate"
-          type="date"
-          className="h-10 text-sm"
-          {...form.register('expenseDate')}
-        />
-      </div>
-
-      {/* Paid by — full width below date */}
-      <div>
-        <label className={fieldLabel}>Bezahlt von</label>
-        <div className="flex flex-wrap gap-2">
-          {billableParticipants.map(p => (
-            <button
-              key={p.id}
-              type="button"
-              onClick={() => form.setValue('paidByParticipantId', p.id)}
-              className={`px-3 py-2 rounded-xl border text-sm font-semibold transition-all ${
-                form.watch('paidByParticipantId') === p.id
-                  ? 'border-primary bg-primary/10 text-primary'
-                  : 'border-border text-muted-foreground hover:border-primary/40'
-              }`}
-            >
-              {p.name}
             </button>
           ))}
         </div>

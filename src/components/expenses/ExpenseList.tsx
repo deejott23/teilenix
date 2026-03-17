@@ -1,6 +1,6 @@
 import { formatDateLong } from '@/lib/formatting'
 import ExpenseCard from './ExpenseCard'
-import type { ExpenseWithSplits } from '@/types/app'
+import type { ExpenseWithSplits, TripParticipant } from '@/types/app'
 import { Receipt } from 'lucide-react'
 
 interface ExpenseListProps {
@@ -8,9 +8,10 @@ interface ExpenseListProps {
   myParticipantId: string
   tripId: string
   canEdit: boolean
+  participantMap?: Map<string, TripParticipant>
 }
 
-export default function ExpenseList({ expenses, myParticipantId, tripId, canEdit }: ExpenseListProps) {
+export default function ExpenseList({ expenses, myParticipantId, tripId, canEdit, participantMap }: ExpenseListProps) {
   if (expenses.length === 0) {
     return (
       <div className="text-center py-12">
@@ -46,6 +47,7 @@ export default function ExpenseList({ expenses, myParticipantId, tripId, canEdit
                 myParticipantId={myParticipantId}
                 tripId={tripId}
                 canEdit={canEdit}
+                participantMap={participantMap}
               />
             ))}
           </div>
