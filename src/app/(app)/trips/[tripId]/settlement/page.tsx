@@ -20,26 +20,15 @@ export default async function SettlementPage({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: trip } = await supabase
-    .from('trips')
-    .select('id, name, status, created_by')
-    .eq('id', tripId)
-    .single()
-
-  // Load participants
-  const { data: participantsRaw } = await supabase
-    .from('trip_participants')
-    .select('*')
-    .eq('trip_id', tripId)
-    .order('joined_at', { ascending: true })
+  // Fetch trip, participants, and expenses in parallel
+  const [{ data: trip }, { data: participantsRaw }, { data: expensesRaw }] = await Promise.all([
+    supabase.from('trips').select('id, name, status, created_by').eq('id', tripId).single(),
+    supabase.from('trip_participants').select('*').eq('trip_id', tripId).order('joined_at', { ascending: true }),
+    supabase.from('expenses').select('*').eq('trip_id', tripId),
+  ])
 
   const participants = (participantsRaw ?? []) as TripParticipant[]
   const participantMap = new Map(participants.map(p => [p.id, p]))
-
-  const { data: expensesRaw } = await supabase
-    .from('expenses')
-    .select('*')
-    .eq('trip_id', tripId)
 
   const expenseIds = ((expensesRaw ?? []) as { id: string }[]).map(e => e.id)
   const { data: splitsRaw } = expenseIds.length > 0

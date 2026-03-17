@@ -12,14 +12,14 @@ export default async function DashboardPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // Find trips where the user is a participant
-  const { data: participantRows } = await supabase
-    .from('trip_participants')
-    .select('trip_id')
-    .eq('user_id', user.id)
-    .order('joined_at', { ascending: false })
+  // Fetch participant rows and profile in parallel
+  const [{ data: participantRows }, { data: profile }] = await Promise.all([
+    supabase.from('trip_participants').select('trip_id').eq('user_id', user.id).order('joined_at', { ascending: false }),
+    supabase.from('profiles').select('display_name').eq('id', user.id).single(),
+  ])
 
   const tripIds = (participantRows ?? []).map((p: { trip_id: string }) => p.trip_id)
+  const firstName = (profile?.display_name as string)?.split(' ')[0] ?? 'du'
 
   const { data: tripsRaw } = tripIds.length > 0
     ? await supabase.from('trips').select('*').in('id', tripIds).order('created_at', { ascending: false })
@@ -28,9 +28,6 @@ export default async function DashboardPage() {
   const trips       = (tripsRaw ?? []) as Trip[]
   const activeTrips = trips.filter(t => t.status === 'active')
   const endedTrips  = trips.filter(t => t.status === 'ended')
-
-  const { data: profile } = await supabase.from('profiles').select('display_name').eq('id', user.id).single()
-  const firstName = (profile?.display_name as string)?.split(' ')[0] ?? 'du'
 
   return (
     <div>

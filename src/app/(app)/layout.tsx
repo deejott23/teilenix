@@ -17,12 +17,20 @@ export default async function AppLayout({
     ?? user.email?.split('@')[0]
     ?? 'Meine'
 
-  // SECURITY DEFINER function: upserts profile only (no family/group creation)
-  await supabase.rpc('auto_setup_user', {
-    p_display_name: displayName,
-    p_email: user.email ?? '',
-    p_avatar_url: (user.user_metadata?.avatar_url as string | undefined) ?? '',
-  })
+  // Only run auto_setup_user on first login (when profile doesn't exist yet)
+  const { data: existingProfile } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('id', user.id)
+    .maybeSingle()
+
+  if (!existingProfile) {
+    await supabase.rpc('auto_setup_user', {
+      p_display_name: displayName,
+      p_email: user.email ?? '',
+      p_avatar_url: (user.user_metadata?.avatar_url as string | undefined) ?? '',
+    })
+  }
 
   return (
     <div className="min-h-screen bg-background pb-[72px] md:pb-0 md:pl-60">

@@ -17,19 +17,14 @@ export default async function StatsPage({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: participantsRaw } = await supabase
-    .from('trip_participants')
-    .select('*')
-    .eq('trip_id', tripId)
+  // Fetch participants and expenses in parallel
+  const [{ data: participantsRaw }, { data: expensesRaw }] = await Promise.all([
+    supabase.from('trip_participants').select('*').eq('trip_id', tripId),
+    supabase.from('expenses').select('*').eq('trip_id', tripId).order('expense_date', { ascending: true }),
+  ])
 
   const participants = (participantsRaw ?? []) as TripParticipant[]
   const participantMap = new Map(participants.map(p => [p.id, p]))
-
-  const { data: expensesRaw } = await supabase
-    .from('expenses')
-    .select('*')
-    .eq('trip_id', tripId)
-    .order('expense_date', { ascending: true })
 
   const expenseIds = ((expensesRaw ?? []) as { id: string }[]).map(e => e.id)
   const { data: splitsRaw } = expenseIds.length > 0
@@ -79,10 +74,16 @@ export default async function StatsPage({
   // Leaderboard
   const mostGenerous = [...settlement.balances].sort((a, b) => b.totalPaidCents - a.totalPaidCents)
   const mostDebt = [...settlement.balances].sort((a, b) => a.netBalanceCents - b.netBalanceCents)
+
+  // O(n) count via Map instead of O(n*m) filter per participant
+  const expenseCountByParticipant = new Map<string, number>()
+  expenseRows.forEach(e => {
+    expenseCountByParticipant.set(e.paid_by_participant_id, (expenseCountByParticipant.get(e.paid_by_participant_id) ?? 0) + 1)
+  })
   const mostExpenses = participants.map(p => ({
     participantId: p.id,
     participantName: p.name,
-    count: expenseRows.filter(e => e.paid_by_participant_id === p.id).length,
+    count: expenseCountByParticipant.get(p.id) ?? 0,
   })).sort((a, b) => b.count - a.count)
 
   return (

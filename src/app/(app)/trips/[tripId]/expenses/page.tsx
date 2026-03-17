@@ -13,30 +13,20 @@ export default async function ExpensesPage({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: trip } = await supabase
-    .from('trips')
-    .select('status')
-    .eq('id', tripId)
-    .single()
-
-  // Load participants for context
-  const { data: participantsRaw } = await supabase
-    .from('trip_participants')
-    .select('*')
-    .eq('trip_id', tripId)
+  // Fetch trip status, participants, and expenses in parallel
+  const [{ data: trip }, { data: participantsRaw }, { data: expensesRaw }] = await Promise.all([
+    supabase.from('trips').select('status').eq('id', tripId).single(),
+    supabase.from('trip_participants').select('*').eq('trip_id', tripId),
+    supabase.from('expenses').select('*').eq('trip_id', tripId)
+      .order('expense_date', { ascending: false })
+      .order('created_at', { ascending: false }),
+  ])
 
   const participants = (participantsRaw ?? []) as TripParticipant[]
   const participantMap = new Map(participants.map(p => [p.id, p]))
 
   const myParticipant = participants.find(p => p.user_id === user.id)
   const myParticipantId = myParticipant?.id ?? ''
-
-  const { data: expensesRaw } = await supabase
-    .from('expenses')
-    .select('*')
-    .eq('trip_id', tripId)
-    .order('expense_date', { ascending: false })
-    .order('created_at', { ascending: false })
 
   const expenseIds = ((expensesRaw ?? []) as { id: string }[]).map(e => e.id)
   const { data: splitsRaw } = expenseIds.length > 0

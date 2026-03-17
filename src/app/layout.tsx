@@ -7,7 +7,8 @@ import ServiceWorkerRegister from '@/components/pwa/ServiceWorkerRegister'
 const jakartaSans = Plus_Jakarta_Sans({
   variable: '--font-sans',
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700', '800'],
+  weight: ['400', '600', '700'],
+  display: 'swap',
 })
 
 export const metadata: Metadata = {
