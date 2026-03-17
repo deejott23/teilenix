@@ -3,15 +3,7 @@
 import { useState } from 'react'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import { formatCurrency } from '@/lib/formatting'
-import type { TripParticipant, ExpenseWithSplits } from '@/types/app'
-
-interface GroupBreakdown {
-  group: TripParticipant
-  members: Array<{
-    participant: TripParticipant
-    totalPaidCents: number
-  }>
-}
+import type { GroupBreakdown } from '@/lib/settlement'
 
 interface GroupMemberBreakdownProps {
   breakdowns: GroupBreakdown[]
@@ -67,36 +59,6 @@ function GroupCard({ breakdown }: { breakdown: GroupBreakdown }) {
       )}
     </div>
   )
-}
-
-export function computeGroupBreakdowns(
-  expenses: ExpenseWithSplits[],
-  participants: TripParticipant[]
-): GroupBreakdown[] {
-  const participantMap = new Map(participants.map(p => [p.id, p]))
-  const groups = participants.filter(p => p.is_group)
-
-  return groups.map(group => {
-    const members = participants.filter(p => p.group_id === group.id)
-
-    const memberTotals = new Map<string, number>()
-    members.forEach(m => memberTotals.set(m.id, 0))
-
-    expenses.forEach(e => {
-      const payer = participantMap.get(e.paid_by_participant_id)
-      if (payer?.group_id === group.id) {
-        memberTotals.set(payer.id, (memberTotals.get(payer.id) ?? 0) + e.amount_cents)
-      }
-    })
-
-    return {
-      group,
-      members: members.map(m => ({
-        participant: m,
-        totalPaidCents: memberTotals.get(m.id) ?? 0,
-      })),
-    }
-  })
 }
 
 export default function GroupMemberBreakdown({ breakdowns }: GroupMemberBreakdownProps) {
