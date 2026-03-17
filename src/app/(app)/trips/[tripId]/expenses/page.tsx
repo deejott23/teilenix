@@ -1,5 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
+import { Plus } from 'lucide-react'
 import ExpenseList from '@/components/expenses/ExpenseList'
 import type { ExpenseWithSplits, TripParticipant } from '@/types/app'
 
@@ -52,6 +54,15 @@ export default async function ExpensesPage({
 
   return (
     <div className="space-y-4">
+      {trip?.status === 'active' && (
+        <Link
+          href={`/trips/${tripId}/expenses/new`}
+          className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl bg-primary text-primary-foreground font-semibold text-[14px] hover:bg-primary/90 active:scale-[0.98] transition-all"
+        >
+          <Plus className="w-4.5 h-4.5" strokeWidth={2.5} />
+          Neue Ausgabe
+        </Link>
+      )}
       <ExpenseList
         expenses={expenses}
         myParticipantId={myParticipantId}
