@@ -152,7 +152,7 @@ export default function ExpenseForm({ tripId, participants, myParticipantId, myG
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
 
-      {/* PRIMARY CLUSTER: Bezeichnung + Betrag + Datum */}
+      {/* CARD 1: Bezeichnung + Betrag + Datum + Kategorie */}
       <div className="bg-card rounded-2xl p-4 space-y-4 border border-border">
 
         {/* Title */}
@@ -200,105 +200,113 @@ export default function ExpenseForm({ tripId, participants, myParticipantId, myG
           </div>
         </div>
 
-      </div>
-
-      {/* Paid by */}
-      <div>
-        <label className={fieldLabel}>Bezahlt von</label>
-        <div className="flex flex-wrap gap-2">
-          {billableParticipants.map(p => (
-            <button
-              key={p.id}
-              type="button"
-              onClick={() => form.setValue('paidByParticipantId', p.id)}
-              className={`px-3 py-2 rounded-xl border text-sm font-semibold transition-all ${
-                form.watch('paidByParticipantId') === p.id
-                  ? 'border-primary bg-primary/10 text-primary'
-                  : 'border-border text-muted-foreground hover:border-primary/40'
-              }`}
-            >
-              {p.is_group ? '👥 ' : ''}{p.name}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Category — compact emoji strip */}
-      <div>
-        <label className={fieldLabel}>
-          Kategorie
-          <span className="ml-1.5 text-primary normal-case tracking-normal font-semibold">
-            · {categoryLabels[selectedCategory as ExpenseCategory] ?? enabledCustom.find(c => c.key === selectedCategory)?.label ?? selectedCategory}
-          </span>
-        </label>
-        <div className="flex flex-wrap gap-2">
-          {standardVisible.map(cat => (
-            <button
-              key={cat}
-              type="button"
-              onClick={() => setSelectedCategory(cat)}
-              title={categoryLabels[cat]}
-              className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0 transition-all ${
-                selectedCategory === cat
-                  ? 'bg-primary text-primary-foreground shadow-sm scale-105'
-                  : 'bg-muted text-foreground hover:bg-muted/80'
-              }`}
-            >
-              {categoryEmoji[cat]}
-            </button>
-          ))}
-          {enabledCustom.map(cat => (
-            <button
-              key={cat.key}
-              type="button"
-              onClick={() => setSelectedCategory(cat.key)}
-              title={cat.label}
-              className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0 transition-all ${
-                selectedCategory === cat.key
-                  ? 'bg-primary text-primary-foreground shadow-sm scale-105'
-                  : 'bg-muted text-foreground hover:bg-muted/80'
-              }`}
-            >
-              {cat.emoji}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Split mode */}
-      <div>
-        <div className="flex items-center justify-between mb-2">
-          <label className={fieldLabel + ' mb-0'}>Aufteilung</label>
-          <div className="flex gap-0.5 bg-muted rounded-lg p-0.5">
-            {(['all', 'custom'] as const).map(mode => (
+        {/* Category */}
+        <div>
+          <label className={fieldLabel}>
+            Kategorie
+            <span className="ml-1.5 text-primary normal-case tracking-normal font-semibold">
+              · {categoryLabels[selectedCategory as ExpenseCategory] ?? enabledCustom.find(c => c.key === selectedCategory)?.label ?? selectedCategory}
+            </span>
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {standardVisible.map(cat => (
               <button
-                key={mode}
+                key={cat}
                 type="button"
-                onClick={() => setSplitMode(mode)}
-                className={`px-3 py-1 rounded-md text-xs font-semibold transition-all ${
-                  splitMode === mode
-                    ? 'bg-card text-foreground shadow-sm'
-                    : 'text-muted-foreground'
+                onClick={() => setSelectedCategory(cat)}
+                title={categoryLabels[cat]}
+                className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0 transition-all ${
+                  selectedCategory === cat
+                    ? 'bg-primary text-primary-foreground shadow-sm scale-105'
+                    : 'bg-muted text-foreground hover:bg-muted/80'
                 }`}
               >
-                {mode === 'all' ? 'Alle' : 'Individuell'}
+                {categoryEmoji[cat]}
+              </button>
+            ))}
+            {enabledCustom.map(cat => (
+              <button
+                key={cat.key}
+                type="button"
+                onClick={() => setSelectedCategory(cat.key)}
+                title={cat.label}
+                className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0 transition-all ${
+                  selectedCategory === cat.key
+                    ? 'bg-primary text-primary-foreground shadow-sm scale-105'
+                    : 'bg-muted text-foreground hover:bg-muted/80'
+                }`}
+              >
+                {cat.emoji}
               </button>
             ))}
           </div>
         </div>
 
-        {splitMode === 'all' ? (
-          <div className="bg-muted rounded-xl px-3 py-2 space-y-1.5">
-            {splits.map(split => (
-              <div key={split.participantId} className="flex items-center justify-between text-sm">
-                <span className="text-foreground font-medium">{split.participantName}</span>
-                <Badge variant="secondary" className="text-xs">{split.shares} Anteile</Badge>
-              </div>
+      </div>
+
+      {/* CARD 2: Bezahlt von + Aufteilung */}
+      <div className="bg-card rounded-2xl p-4 space-y-4 border border-border">
+
+        {/* Paid by */}
+        <div>
+          <label className={fieldLabel}>Bezahlt von</label>
+          <div className="flex flex-wrap gap-2">
+            {billableParticipants.map(p => (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => form.setValue('paidByParticipantId', p.id)}
+                className={`px-3 py-2 rounded-xl border text-sm font-semibold transition-all ${
+                  form.watch('paidByParticipantId') === p.id
+                    ? 'border-primary bg-primary/10 text-primary'
+                    : 'border-border text-muted-foreground hover:border-primary/40'
+                }`}
+              >
+                {p.is_group ? '👥 ' : ''}{p.name}
+              </button>
             ))}
           </div>
-        ) : (
-          <SplitOverrideEditor splits={splits} onChange={setSplits} />
-        )}
+        </div>
+
+        {/* Divider */}
+        <div className="border-t border-border" />
+
+        {/* Split mode */}
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <label className={fieldLabel + ' mb-0'}>Aufteilung</label>
+            <div className="flex gap-0.5 bg-muted rounded-lg p-0.5">
+              {(['all', 'custom'] as const).map(mode => (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={() => setSplitMode(mode)}
+                  className={`px-3 py-1 rounded-md text-xs font-semibold transition-all ${
+                    splitMode === mode
+                      ? 'bg-card text-foreground shadow-sm'
+                      : 'text-muted-foreground'
+                  }`}
+                >
+                  {mode === 'all' ? 'Alle' : 'Individuell'}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {splitMode === 'all' ? (
+            <div className="bg-muted rounded-xl px-3 py-2 space-y-1.5">
+              {splits.map(split => (
+                <div key={split.participantId} className="flex items-center justify-between text-sm">
+                  <span className="text-foreground font-medium">{split.participantName}</span>
+                  <Badge variant="secondary" className="text-xs">{split.shares} Anteile</Badge>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <SplitOverrideEditor splits={splits} onChange={setSplits} />
+          )}
+        </div>
+
       </div>
 
       <Button
