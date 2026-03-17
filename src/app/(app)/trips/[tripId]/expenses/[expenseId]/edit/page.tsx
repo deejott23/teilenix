@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import PageHeader from '@/components/layout/PageHeader'
 import ExpenseForm from '@/components/expenses/ExpenseForm'
-import type { ExpenseSplitInput, TripParticipant } from '@/types/app'
+import type { ExpenseSplitInput, TripParticipant, CoPayerEntry } from '@/types/app'
 
 export default async function EditExpensePage({
   params,
@@ -71,7 +71,7 @@ export default async function EditExpensePage({
   const allIncluded = participants.every(p => existingSplits.some(s => s.participant_id === p.id))
   const splitMode: 'proportional' | 'custom' = allIncluded ? 'proportional' : 'custom'
 
-  const expenseRow = expense as { paid_by_participant_id: string; category: string; expense_date: string; title: string }
+  const expenseRow = expense as { paid_by_participant_id: string; category: string; expense_date: string; title: string; co_payers?: CoPayerEntry[] | null }
 
   return (
     <div>
@@ -90,6 +90,7 @@ export default async function EditExpensePage({
           category:            expenseRow.category ?? 'other',
           expenseDate:         expenseRow.expense_date,
           paidByParticipantId: expenseRow.paid_by_participant_id,
+          coPayers:            expenseRow.co_payers ?? [],
           splitMode,
           splits:              initialSplits,
         }}

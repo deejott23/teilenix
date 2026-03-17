@@ -26,7 +26,7 @@ export async function PATCH(
     return NextResponse.json({ error: 'Ungültige Eingabe' }, { status: 400 })
   }
 
-  const { title, description, amountCents, currency, category, expenseDate, splitMode, splits, paidByParticipantId } = parsed.data
+  const { title, description, amountCents, currency, category, expenseDate, splitMode, splits, paidByParticipantId, coPayers } = parsed.data
 
   if (!splits || splits.length === 0) {
     return NextResponse.json({ error: 'Aufteilung ist erforderlich' }, { status: 400 })
@@ -53,6 +53,16 @@ export async function PATCH(
   if (error) {
     console.error('update_expense_with_splits error:', error)
     return NextResponse.json({ error: 'Aktualisierung fehlgeschlagen' }, { status: 500 })
+  }
+
+  // Update co_payers (null clears them, array sets them)
+  if (coPayers !== undefined) {
+    const admin = createAdminClient()
+    await admin.from('expenses').update({
+      co_payers: coPayers.length > 0
+        ? coPayers.map(cp => ({ participant_id: cp.participantId, amount_cents: cp.amountCents }))
+        : null
+    }).eq('id', expenseId)
   }
 
   return NextResponse.json({ success: true })

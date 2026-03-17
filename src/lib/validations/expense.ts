@@ -5,9 +5,15 @@ const splitSchema = z.object({
   shares: z.number().int().min(1),
 })
 
+const coPayerSchema = z.object({
+  participantId: z.string().uuid(),
+  amountCents: z.number().int().min(0),
+})
+
 export const createExpenseSchema = z.object({
   tripId: z.string().uuid(),
   paidByParticipantId: z.string().uuid(),
+  coPayers: z.array(coPayerSchema).optional(),
   title: z.string().min(1, 'Titel ist erforderlich').max(100),
   description: z.string().max(500).optional(),
   amountCents: z.number().int().min(1, 'Betrag muss größer als 0 sein'),
@@ -28,6 +34,7 @@ export const updateExpenseSchema = z.object({
   splitMode: z.enum(['proportional', 'custom']).optional(),
   splits: z.array(splitSchema).min(1).optional(),
   paidByParticipantId: z.string().uuid().optional(),
+  coPayers: z.array(coPayerSchema).optional(),
 })
 
 export type CreateExpenseInput = z.infer<typeof createExpenseSchema>

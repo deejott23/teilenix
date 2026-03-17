@@ -70,8 +70,20 @@ export function computeSettlement(
     const payerParticipant = participantLookup.get(expense.paid_by_participant_id)
     const billablePayerId = payerParticipant?.group_id ?? expense.paid_by_participant_id
     const payer = balanceMap.get(billablePayerId)
-    if (payer) {
-      payer.totalPaidCents += expense.amount_cents
+
+    const coPayers = expense.co_payers ?? []
+    if (coPayers.length > 0) {
+      // Credit each co-payer their amount, primary payer gets the remainder
+      const totalCoPaid = coPayers.reduce((s, cp) => s + cp.amount_cents, 0)
+      if (payer) payer.totalPaidCents += expense.amount_cents - totalCoPaid
+      coPayers.forEach(cp => {
+        const cpParticipant = participantLookup.get(cp.participant_id)
+        const billableCpId = cpParticipant?.group_id ?? cp.participant_id
+        const cpBalance = balanceMap.get(billableCpId)
+        if (cpBalance) cpBalance.totalPaidCents += cp.amount_cents
+      })
+    } else {
+      if (payer) payer.totalPaidCents += expense.amount_cents
     }
 
     // Distribute owed amounts among participating splits

@@ -54,10 +54,16 @@ export type ExpenseSplit = {
   shares: number
 }
 
+export type CoPayerEntry = {
+  participant_id: string
+  amount_cents: number
+}
+
 export type ExpenseWithSplits = {
   id: string
   trip_id: string
   paid_by_participant_id: string
+  co_payers?: CoPayerEntry[] | null
   title: string
   description?: string | null
   amount_cents: number
@@ -67,7 +73,7 @@ export type ExpenseWithSplits = {
   split_mode: string
   created_at: string
   updated_at: string
-  participant: TripParticipant  // who paid
+  participant: TripParticipant  // primary payer
   expense_splits: Array<{
     id: string
     expense_id: string
@@ -113,6 +119,7 @@ export type ExpenseFormData = {
   category: string
   expenseDate: string
   paidByParticipantId: string
+  coPayers?: CoPayerEntry[]
   splitMode: 'proportional' | 'custom'
   splits: ExpenseSplitInput[]
 }

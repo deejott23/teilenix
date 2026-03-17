@@ -3,746 +3,507 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TeileniX – Mobile App Konzept</title>
+<title>TeileniX — Mobile App Konzept</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0d1117;
-    --bg-card: #161b22;
-    --bg-card-hover: #1c2128;
-    --border: #21262d;
-    --border-light: #30363d;
-    --teal: #1b5c58;
-    --teal-bright: #2d9b94;
-    --teal-dim: #1b5c5820;
-    --teal-glow: #1b5c5840;
-    --text: #e6edf3;
-    --muted: #8b949e;
-    --muted-dim: #484f58;
-    --amber: #d29922;
-    --amber-dim: #d2992218;
-    --red: #da3633;
-    --red-dim: #da363318;
-    --green: #3fb950;
-    --green-dim: #3fb95018;
-    --mono: 'Geist Mono', monospace;
-    --serif: 'Instrument Serif', serif;
-    --sans: 'Geist', sans-serif;
-  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:        #0d1117;
+    --bg-card:   #161b22;
+    --border:    #21262d;
+    --border-hover: #30363d;
+    --teal:      #1b5c58;
+    --teal-light: #238b85;
+    --teal-glow: rgba(27,92,88,0.18);
+    --text:      #e6edf3;
+    --muted:     #8b949e;
+    --muted-dim: #484f58;
+    --warning:   #d29922;
+    --warning-bg: rgba(210,153,34,0.08);
+    --danger:    #f85149;
+    --success:   #3fb950;
+    --font-sans: 'Inter', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+    --sidebar-w: 220px;
+  }
 
   html { scroll-behavior: smooth; }
 
   body {
-    background: var(--bg);
+    font-family: var(--font-sans);
+    background-color: var(--bg);
     color: var(--text);
-    font-family: var(--sans);
+    line-height: 1.6;
     font-size: 15px;
-    line-height: 1.7;
     min-height: 100vh;
   }
 
-  /* Subtle grid texture */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(var(--border) 1px, transparent 1px),
-      linear-gradient(90deg, var(--border) 1px, transparent 1px);
-    background-size: 40px 40px;
-    opacity: 0.3;
-    pointer-events: none;
-    z-index: 0;
-  }
-
+  /* ── Layout ─────────────────────────────────────────────────── */
   .layout {
     display: flex;
-    min-height: 100vh;
-    position: relative;
-    z-index: 1;
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 0 24px;
+    gap: 48px;
   }
 
-  /* ── Sidebar Nav ── */
+  /* ── Sidebar ─────────────────────────────────────────────────── */
   .sidebar {
-    width: 220px;
+    width: var(--sidebar-w);
     flex-shrink: 0;
     position: sticky;
-    top: 0;
-    height: 100vh;
-    overflow-y: auto;
-    padding: 48px 0 48px 32px;
-    border-right: 1px solid var(--border);
+    top: 32px;
+    height: fit-content;
+    padding-top: 48px;
   }
 
-  .sidebar-logo {
-    font-family: var(--mono);
-    font-size: 13px;
+  .sidebar-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
     font-weight: 600;
-    color: var(--teal-bright);
-    letter-spacing: 0.05em;
-    margin-bottom: 32px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted-dim);
+    margin-bottom: 16px;
+    padding-left: 12px;
+  }
+
+  .nav-list { list-style: none; display: flex; flex-direction: column; gap: 2px; }
+
+  .nav-list a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.15s ease;
+    border-left: 2px solid transparent;
+  }
+
+  .nav-list a:hover { color: var(--text); background: rgba(255,255,255,0.04); border-left-color: var(--border-hover); }
+  .nav-list a.active { color: var(--teal-light); background: var(--teal-glow); border-left-color: var(--teal-light); }
+
+  .nav-num { font-family: var(--font-mono); font-size: 10px; color: var(--muted-dim); min-width: 16px; }
+
+  /* ── Main ────────────────────────────────────────────────────── */
+  .main {
+    flex: 1;
+    min-width: 0;
+    padding: 48px 0 120px;
+    max-width: 700px;
+  }
+
+  /* ── Header ──────────────────────────────────────────────────── */
+  .doc-header {
+    margin-bottom: 64px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid var(--border);
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .doc-header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+
+  .logo-text { font-size: 22px; font-weight: 800; letter-spacing: -0.03em; color: var(--text); }
+  .logo-text span { color: var(--teal-light); }
+
+  .badge {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--teal);
+    color: var(--teal-light);
+    background: var(--teal-glow);
+  }
+
+  .doc-title {
+    font-size: 38px;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1.15;
+    color: var(--text);
+    margin-bottom: 12px;
+  }
+
+  .doc-subtitle { font-size: 16px; color: var(--muted); font-weight: 400; margin-bottom: 24px; }
+
+  .doc-meta { display: flex; gap: 24px; flex-wrap: wrap; }
+
+  .doc-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--muted-dim);
+    font-family: var(--font-mono);
+  }
+  .doc-meta-item span { color: var(--muted); }
+
+  /* ── Section ─────────────────────────────────────────────────── */
+  .section { margin-bottom: 64px; animation: fadeUp 0.5s ease both; }
+  .section:nth-child(2) { animation-delay: 0.05s; }
+  .section:nth-child(3) { animation-delay: 0.1s; }
+  .section:nth-child(4) { animation-delay: 0.15s; }
+  .section:nth-child(5) { animation-delay: 0.2s; }
+  .section:nth-child(6) { animation-delay: 0.25s; }
+  .section:nth-child(7) { animation-delay: 0.3s; }
+
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--teal-light);
+    margin-bottom: 8px;
     display: flex;
     align-items: center;
     gap: 8px;
   }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
-  .sidebar-logo::before {
-    content: '';
-    display: block;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--teal-bright);
-    box-shadow: 0 0 8px var(--teal-bright);
-  }
+  .section-title { font-size: 24px; font-weight: 700; letter-spacing: -0.025em; color: var(--text); margin-bottom: 20px; }
+  .section-desc { color: var(--muted); font-size: 14px; margin-bottom: 24px; line-height: 1.7; }
 
-  .nav-section {
-    margin-bottom: 8px;
-  }
-
-  .nav-label {
-    font-family: var(--mono);
-    font-size: 10px;
-    letter-spacing: 0.12em;
-    color: var(--muted-dim);
-    text-transform: uppercase;
-    padding: 0 0 6px 12px;
-  }
-
-  .nav-link {
-    display: block;
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 13px;
-    color: var(--muted);
-    text-decoration: none;
-    transition: all 0.15s;
-    border-left: 2px solid transparent;
-    margin-bottom: 1px;
-  }
-
-  .nav-link:hover {
-    color: var(--text);
-    background: var(--bg-card);
-    border-left-color: var(--border-light);
-  }
-
-  .nav-link.active {
-    color: var(--teal-bright);
-    border-left-color: var(--teal-bright);
-    background: var(--teal-dim);
-  }
-
-  /* ── Main Content ── */
-  .main {
-    flex: 1;
-    max-width: 860px;
-    padding: 64px 48px 120px;
-    overflow-x: hidden;
-  }
-
-  /* ── Header ── */
-  .doc-header {
-    margin-bottom: 72px;
-    animation: fadeUp 0.6s ease both;
-  }
-
-  .doc-meta {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 24px;
-  }
-
-  .badge {
-    font-family: var(--mono);
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    padding: 3px 10px;
-    border-radius: 100px;
-  }
-
-  .badge-teal {
-    background: var(--teal-dim);
-    color: var(--teal-bright);
-    border: 1px solid var(--teal-bright)30;
-  }
-
-  .badge-muted {
-    background: var(--bg-card);
-    color: var(--muted);
-    border: 1px solid var(--border);
-  }
-
-  .doc-title {
-    font-family: var(--serif);
-    font-size: 52px;
-    line-height: 1.1;
-    color: var(--text);
-    margin-bottom: 16px;
-    letter-spacing: -0.02em;
-  }
-
-  .doc-title em {
-    color: var(--teal-bright);
-    font-style: italic;
-  }
-
-  .doc-subtitle {
-    font-size: 18px;
-    color: var(--muted);
-    font-weight: 300;
-    max-width: 560px;
-    line-height: 1.5;
-  }
-
-  .doc-divider {
-    height: 1px;
-    background: linear-gradient(to right, var(--teal-bright)40, var(--border), transparent);
-    margin-top: 40px;
-  }
-
-  /* ── Sections ── */
-  .section {
-    margin-bottom: 80px;
-    animation: fadeUp 0.5s ease both;
-  }
-
-  .section-number {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--teal-bright);
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    margin-bottom: 8px;
-  }
-
-  .section-title {
-    font-family: var(--serif);
-    font-size: 32px;
-    color: var(--text);
-    margin-bottom: 8px;
-    letter-spacing: -0.01em;
-  }
-
-  .section-desc {
-    color: var(--muted);
-    margin-bottom: 32px;
-    font-size: 14px;
-  }
-
-  /* ── Option Cards ── */
-  .options-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-  }
+  /* ── Option Cards ────────────────────────────────────────────── */
+  .option-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
 
   .option-card {
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: 12px;
-    padding: 24px;
+    padding: 20px;
     position: relative;
-    transition: all 0.2s;
+    transition: border-color 0.2s, transform 0.2s;
+    display: flex;
+    flex-direction: column;
   }
 
-  .option-card:hover {
-    border-color: var(--border-light);
-    background: var(--bg-card-hover);
-  }
+  .option-card:hover { border-color: var(--border-hover); transform: translateY(-2px); }
 
   .option-card.recommended {
-    border-color: var(--teal-bright)50;
-    background: linear-gradient(135deg, var(--bg-card) 0%, #1a2e2d 100%);
+    border-color: var(--teal);
+    background: linear-gradient(145deg, #161b22 0%, rgba(27,92,88,0.08) 100%);
   }
 
   .option-card.recommended::before {
     content: '';
     position: absolute;
     inset: -1px;
-    border-radius: 13px;
-    background: linear-gradient(135deg, var(--teal-bright)30, transparent 60%);
-    z-index: -1;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--teal) 0%, transparent 60%);
+    opacity: 0.15;
+    pointer-events: none;
   }
 
   .option-badge {
-    font-family: var(--mono);
-    font-size: 9px;
-    font-weight: 600;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    padding: 2px 8px;
-    border-radius: 100px;
-    margin-bottom: 16px;
-    display: inline-block;
-  }
-
-  .badge-recommended { background: var(--teal-dim); color: var(--teal-bright); border: 1px solid var(--teal-bright)40; }
-  .badge-heavy { background: var(--amber-dim); color: var(--amber); border: 1px solid var(--amber)30; }
-  .badge-minimal { background: var(--bg); color: var(--muted); border: 1px solid var(--border); }
-
-  .option-name {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 4px;
-  }
-
-  .option-sub {
-    font-size: 12px;
-    color: var(--muted);
-    margin-bottom: 16px;
-  }
-
-  .option-stat {
-    display: flex;
-    justify-content: space-between;
+    display: inline-flex;
     align-items: center;
-    padding: 6px 0;
-    border-bottom: 1px solid var(--border);
-    font-size: 12px;
+    gap: 4px;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 4px;
+    margin-bottom: 14px;
+    width: fit-content;
   }
 
-  .option-stat:last-of-type { border-bottom: none; }
-  .option-stat-label { color: var(--muted); }
-  .option-stat-value { font-family: var(--mono); color: var(--text); font-size: 11px; }
+  .option-badge.rec   { background: var(--teal-glow); color: var(--teal-light); border: 1px solid var(--teal); }
+  .option-badge.alt   { background: rgba(139,148,158,0.08); color: var(--muted); border: 1px solid var(--border); }
+  .option-badge.quick { background: rgba(63,185,80,0.08); color: var(--success); border: 1px solid rgba(63,185,80,0.3); }
 
-  .pro-con-list {
-    margin-top: 16px;
-    space-y: 4px;
-  }
+  .option-name { font-size: 16px; font-weight: 700; letter-spacing: -0.02em; color: var(--text); margin-bottom: 6px; }
+  .option-sub  { font-size: 12px; color: var(--muted); margin-bottom: 16px; line-height: 1.6; }
 
-  .pro-con-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 6px;
-    font-size: 12px;
+  .option-effort { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+
+  .pill {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.04);
     color: var(--muted);
-    margin-bottom: 4px;
-    line-height: 1.4;
+    border: 1px solid var(--border);
   }
 
-  .pro-con-item .icon { flex-shrink: 0; margin-top: 1px; }
-  .pro { color: var(--green); }
-  .con { color: var(--red); }
+  .option-timeline { font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 16px; }
 
-  /* ── Timeline ── */
-  .timeline {
-    position: relative;
-    padding-left: 32px;
-  }
+  .pro-con-list { list-style: none; display: flex; flex-direction: column; gap: 6px; margin-top: auto; }
+  .pro-con-list li { font-size: 12px; color: var(--muted); display: flex; gap: 7px; align-items: flex-start; line-height: 1.5; }
+  .pro-con-list li .icon { flex-shrink: 0; margin-top: 1px; font-size: 11px; }
+  .pro { color: var(--success); }
+  .con { color: var(--danger); }
+
+  /* ── Timeline ────────────────────────────────────────────────── */
+  .timeline { position: relative; padding-left: 40px; display: flex; flex-direction: column; gap: 0; }
 
   .timeline::before {
     content: '';
     position: absolute;
-    left: 11px;
-    top: 8px;
-    bottom: 8px;
-    width: 1px;
-    background: linear-gradient(to bottom, var(--teal-bright), var(--border));
+    left: 14px;
+    top: 16px;
+    bottom: 16px;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--teal), transparent);
+    border-radius: 2px;
   }
 
-  .timeline-item {
-    position: relative;
-    margin-bottom: 32px;
-  }
+  .timeline-item { position: relative; padding-bottom: 32px; }
+  .timeline-item:last-child { padding-bottom: 0; }
 
-  .timeline-item::before {
-    content: '';
+  .timeline-dot {
     position: absolute;
-    left: -25px;
-    top: 8px;
-    width: 10px;
-    height: 10px;
+    left: -33px;
+    top: 3px;
+    width: 18px;
+    height: 18px;
     border-radius: 50%;
-    background: var(--teal-bright);
-    border: 2px solid var(--bg);
-    box-shadow: 0 0 0 3px var(--teal-bright)30;
+    background: var(--bg-card);
+    border: 2px solid var(--teal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
   }
 
-  .timeline-phase {
-    font-family: var(--mono);
+  .timeline-dot-inner { width: 6px; height: 6px; border-radius: 50%; background: var(--teal-light); }
+
+  .timeline-week {
+    font-family: var(--font-mono);
     font-size: 10px;
-    color: var(--teal-bright);
-    letter-spacing: 0.1em;
+    font-weight: 600;
+    color: var(--teal-light);
     text-transform: uppercase;
+    letter-spacing: 0.1em;
     margin-bottom: 4px;
   }
 
-  .timeline-title {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 8px;
-  }
+  .timeline-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
 
-  .timeline-body {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 16px 20px;
-  }
+  .timeline-tasks { list-style: none; display: flex; flex-direction: column; gap: 3px; margin-top: 8px; }
+  .timeline-tasks li { font-size: 13px; color: var(--muted); display: flex; align-items: flex-start; gap: 8px; line-height: 1.5; }
+  .timeline-tasks li::before { content: '→'; font-family: var(--font-mono); font-size: 11px; color: var(--teal-light); flex-shrink: 0; margin-top: 1px; }
+  .timeline-tasks code { font-family: var(--font-mono); font-size: 11px; background: rgba(255,255,255,0.05); padding: 1px 5px; border-radius: 3px; color: var(--text); }
 
-  .timeline-task {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    color: var(--muted);
-    padding: 3px 0;
-  }
+  /* ── Cost Cards ──────────────────────────────────────────────── */
+  .cost-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
 
-  .timeline-task::before {
-    content: '→';
-    color: var(--teal-bright);
-    font-size: 11px;
-    flex-shrink: 0;
-  }
-
-  /* ── Kosten ── */
-  .costs-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 16px;
-  }
-
-  .cost-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 24px;
-  }
+  .cost-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
 
   .cost-card-title {
-    font-family: var(--mono);
-    font-size: 10px;
-    letter-spacing: 0.12em;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 20px;
+    color: var(--muted-dim);
+    font-family: var(--font-mono);
+    margin-bottom: 16px;
   }
 
   .cost-row {
     display: flex;
-    justify-content: space-between;
     align-items: baseline;
-    padding: 10px 0;
+    justify-content: space-between;
+    padding: 8px 0;
     border-bottom: 1px solid var(--border);
     gap: 12px;
   }
 
   .cost-row:last-child { border-bottom: none; }
+  .cost-label { font-size: 13px; color: var(--muted); flex: 1; line-height: 1.4; }
+  .cost-value { font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; }
 
-  .cost-label {
-    font-size: 13px;
-    color: var(--muted);
-    flex: 1;
-  }
+  .risk-card { background: var(--warning-bg); border: 1px solid rgba(210,153,34,0.25); border-radius: 10px; padding: 20px; }
 
-  .cost-value {
-    font-family: var(--mono);
-    font-size: 14px;
+  .risk-card-title {
+    font-size: 11px;
     font-weight: 600;
-    color: var(--text);
-    white-space: nowrap;
-  }
-
-  .cost-value.highlight { color: var(--teal-bright); }
-
-  .cost-total-card {
-    background: linear-gradient(135deg, var(--teal-dim), var(--bg-card));
-    border: 1px solid var(--teal-bright)30;
-    border-radius: 12px;
-    padding: 20px 24px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .cost-total-label {
-    font-size: 14px;
-    color: var(--muted);
-  }
-
-  .cost-total-value {
-    font-family: var(--mono);
-    font-size: 28px;
-    font-weight: 600;
-    color: var(--teal-bright);
-  }
-
-  .risk-list {
-    background: var(--amber-dim);
-    border: 1px solid var(--amber)20;
-    border-radius: 12px;
-    padding: 20px 24px;
-    margin-top: 16px;
-  }
-
-  .risk-title {
-    font-family: var(--mono);
-    font-size: 10px;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--amber);
-    margin-bottom: 12px;
-  }
-
-  .risk-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
-    font-size: 13px;
-    color: #c9a227;
-    margin-bottom: 8px;
-    line-height: 1.4;
-  }
-
-  .risk-item:last-child { margin-bottom: 0; }
-  .risk-item::before { content: '⚠'; flex-shrink: 0; }
-
-  /* ── Tech Split ── */
-  .tech-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-  }
-
-  .tech-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 24px;
-  }
-
-  .tech-card.stays { border-color: var(--green)30; }
-  .tech-card.changes { border-color: var(--amber)20; }
-
-  .tech-card-title {
-    font-size: 13px;
-    font-weight: 600;
+    color: var(--warning);
+    font-family: var(--font-mono);
     margin-bottom: 16px;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
   }
+
+  /* ── Tech Split ──────────────────────────────────────────────── */
+  .tech-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  .tech-col { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+  .tech-col.stays { border-color: rgba(63,185,80,0.3); }
+  .tech-col.changes { border-color: rgba(248,81,73,0.25); }
+
+  .tech-col-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-family: var(--font-mono);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .tech-col.stays .tech-col-title { color: var(--success); }
+  .tech-col.changes .tech-col-title { color: var(--danger); }
 
   .tech-item {
     display: flex;
     align-items: flex-start;
     gap: 8px;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--border);
     font-size: 13px;
     color: var(--muted);
-    margin-bottom: 10px;
-    line-height: 1.4;
+    line-height: 1.5;
   }
 
-  .tech-item code {
-    font-family: var(--mono);
-    font-size: 11px;
-    background: var(--bg);
-    padding: 1px 6px;
-    border-radius: 4px;
-    border: 1px solid var(--border);
-    color: var(--text);
-    white-space: nowrap;
-  }
+  .tech-item:last-child { border-bottom: none; }
+  .tech-item code { font-family: var(--font-mono); font-size: 11px; background: rgba(255,255,255,0.05); padding: 1px 5px; border-radius: 3px; color: var(--text); }
 
-  /* ── Alert ── */
-  .alert {
-    border-radius: 12px;
-    padding: 20px 24px;
-    margin-bottom: 16px;
-  }
+  /* ── Alert ───────────────────────────────────────────────────── */
+  .alert { border-radius: 10px; padding: 20px 22px; }
 
-  .alert-warning {
-    background: var(--amber-dim);
-    border: 1px solid var(--amber)25;
-  }
+  .alert.warning { background: var(--warning-bg); border: 1px solid rgba(210,153,34,0.3); }
 
-  .alert-success {
-    background: var(--teal-dim);
-    border: 1px solid var(--teal-bright)30;
-  }
+  .alert-title { font-size: 14px; font-weight: 700; color: var(--warning); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .alert-body { font-size: 14px; color: var(--muted); line-height: 1.7; }
+  .alert-body strong { color: var(--text); font-weight: 600; }
+  .alert-body code { font-family: var(--font-mono); font-size: 12px; background: rgba(255,255,255,0.05); padding: 1px 5px; border-radius: 3px; color: var(--text); }
 
-  .alert-title {
-    font-weight: 600;
-    font-size: 14px;
-    margin-bottom: 8px;
+  .alert-arrow {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 8px;
-  }
-
-  .alert-warning .alert-title { color: var(--amber); }
-  .alert-success .alert-title { color: var(--teal-bright); }
-
-  .alert-body {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(210,153,34,0.15);
     font-size: 13px;
-    line-height: 1.6;
+    color: var(--muted);
   }
 
-  .alert-warning .alert-body { color: #c9a227; }
-  .alert-success .alert-body { color: #7ecdc8; }
+  .alert-arrow::before { content: '→'; font-family: var(--font-mono); color: var(--warning); flex-shrink: 0; font-weight: 600; }
 
-  /* ── Recommendation Box ── */
+  /* ── Recommendation ──────────────────────────────────────────── */
   .recommendation {
-    background: linear-gradient(135deg, #1a2e2d 0%, #162524 50%, var(--bg-card) 100%);
-    border: 1px solid var(--teal-bright)40;
-    border-radius: 16px;
-    padding: 32px;
+    background: linear-gradient(135deg, rgba(27,92,88,0.15) 0%, rgba(27,92,88,0.05) 100%);
+    border: 1px solid var(--teal);
+    border-radius: 12px;
+    padding: 28px;
+    margin-bottom: 32px;
     position: relative;
     overflow: hidden;
-    margin-bottom: 32px;
   }
 
   .recommendation::before {
-    content: '★';
+    content: '';
     position: absolute;
-    right: 24px;
-    top: 24px;
-    font-size: 64px;
-    color: var(--teal-bright)10;
-    line-height: 1;
+    top: -40px; right: -40px;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(27,92,88,0.2) 0%, transparent 70%);
+    pointer-events: none;
   }
 
-  .recommendation-label {
-    font-family: var(--mono);
-    font-size: 10px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--teal-bright);
-    margin-bottom: 12px;
-  }
+  .rec-label { font-family: var(--font-mono); font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--teal-light); margin-bottom: 10px; }
+  .rec-title { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 8px; letter-spacing: -0.02em; }
+  .rec-body { font-size: 14px; color: rgba(230,237,243,0.7); line-height: 1.7; }
 
-  .recommendation-text {
-    font-family: var(--serif);
-    font-size: 22px;
-    color: var(--text);
-    line-height: 1.4;
-    max-width: 600px;
-  }
-
-  /* ── Steps ── */
-  .steps-list {
-    counter-reset: steps;
-    list-style: none;
-  }
+  /* ── Steps ───────────────────────────────────────────────────── */
+  .steps-list { display: flex; flex-direction: column; gap: 10px; }
 
   .step-item {
-    counter-increment: steps;
     display: flex;
-    gap: 16px;
-    margin-bottom: 12px;
     align-items: flex-start;
+    gap: 14px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    transition: border-color 0.15s;
   }
 
+  .step-item:hover { border-color: var(--border-hover); }
+
   .step-num {
-    flex-shrink: 0;
-    width: 28px;
-    height: 28px;
+    width: 26px;
+    height: 26px;
     border-radius: 50%;
-    background: var(--bg-card);
-    border: 1px solid var(--border-light);
+    background: var(--teal-glow);
+    border: 1px solid var(--teal);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: var(--mono);
+    font-family: var(--font-mono);
     font-size: 11px;
-    color: var(--teal-bright);
-    margin-top: 2px;
-  }
-
-  .step-body {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 12px 16px;
-    flex: 1;
-    font-size: 13px;
-    color: var(--muted);
-    transition: all 0.2s;
-  }
-
-  .step-body:hover {
-    border-color: var(--border-light);
-    color: var(--text);
-  }
-
-  .step-body strong { color: var(--text); font-weight: 600; }
-  .step-body .cost-tag {
-    float: right;
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--teal-bright);
-    background: var(--teal-dim);
-    padding: 1px 8px;
-    border-radius: 100px;
-  }
-
-  /* ── Footer ── */
-  .doc-footer {
-    border-top: 1px solid var(--border);
-    padding-top: 40px;
-    margin-top: 80px;
-  }
-
-  .footer-note {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 16px 20px;
-    font-size: 13px;
-    color: var(--muted);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 24px;
-  }
-
-  .footer-note::before {
-    content: '💻';
-    font-size: 20px;
+    font-weight: 700;
+    color: var(--teal-light);
     flex-shrink: 0;
   }
 
-  .footer-bottom {
+  .step-content { flex: 1; }
+  .step-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+  .step-note  { font-size: 12px; color: var(--muted); }
+  .step-note code { font-family: var(--font-mono); font-size: 11px; background: rgba(255,255,255,0.05); padding: 1px 5px; border-radius: 3px; color: var(--text); }
+  .step-cost  { font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--warning); white-space: nowrap; align-self: center; }
+
+  /* ── Footer Note ─────────────────────────────────────────────── */
+  .footer-note {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--muted-dim);
+    align-items: flex-start;
+    gap: 14px;
+    background: rgba(210,153,34,0.05);
+    border: 1px solid rgba(210,153,34,0.2);
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-top: 32px;
   }
 
-  /* ── Animations ── */
+  .footer-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .footer-text { font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .footer-text strong { color: var(--warning); font-weight: 600; }
+
+  /* ── Animation ───────────────────────────────────────────────── */
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(16px); }
-    to { opacity: 1; transform: translateY(0); }
+    to   { opacity: 1; transform: translateY(0); }
   }
 
-  .section:nth-child(2) { animation-delay: 0.05s; }
-  .section:nth-child(3) { animation-delay: 0.1s; }
-  .section:nth-child(4) { animation-delay: 0.15s; }
-  .section:nth-child(5) { animation-delay: 0.2s; }
-  .section:nth-child(6) { animation-delay: 0.25s; }
-
-  /* ── Responsive ── */
+  /* ── Responsive ──────────────────────────────────────────────── */
   @media (max-width: 900px) {
+    .option-grid { grid-template-columns: 1fr 1fr; }
+  }
+
+  @media (max-width: 768px) {
+    .layout { flex-direction: column; padding: 0 16px; gap: 0; }
     .sidebar { display: none; }
-    .main { padding: 32px 20px 80px; }
-    .options-grid { grid-template-columns: 1fr; }
-    .costs-grid { grid-template-columns: 1fr; }
+    .main { padding: 32px 0 80px; }
+    .option-grid { grid-template-columns: 1fr; }
+    .cost-grid { grid-template-columns: 1fr; }
     .tech-grid { grid-template-columns: 1fr; }
-    .doc-title { font-size: 36px; }
+    .doc-title { font-size: 28px; }
   }
 </style>
 </head>
@@ -751,909 +512,381 @@
 <div class="layout">
 
   <!-- Sidebar -->
-  <nav class="sidebar">
-    <div class="sidebar-logo">TeileniX</div>
-
-    <div class="nav-section">
-      <div class="nav-label">Konzept</div>
-      <a href="#tech" class="nav-link">Technologiestrategie</a>
-      <a href="#roadmap" class="nav-link">Roadmap</a>
-      <a href="#kosten" class="nav-link">Kosten</a>
-      <a href="#technik" class="nav-link">Technische Änderungen</a>
-      <a href="#herausforderung" class="nav-link">Herausforderungen</a>
-      <a href="#offline" class="nav-link">Offline-Fähigkeit</a>
-      <a href="#ki" class="nav-link">KI & Spracheingabe</a>
-      <a href="#pwa" class="nav-link">PWA: KI & Offline</a>
-      <a href="#empfehlung" class="nav-link">Empfehlung</a>
-    </div>
-  </nav>
+  <aside class="sidebar">
+    <div class="sidebar-label">Inhalt</div>
+    <nav>
+      <ul class="nav-list">
+        <li><a href="#strategy" class="active"><span class="nav-num">01</span>Technologiestrategie</a></li>
+        <li><a href="#roadmap"><span class="nav-num">02</span>Roadmap: Capacitor</a></li>
+        <li><a href="#kosten"><span class="nav-num">03</span>Kosten-Übersicht</a></li>
+        <li><a href="#technical"><span class="nav-num">04</span>Technische Änderungen</a></li>
+        <li><a href="#challenge"><span class="nav-num">05</span>Herausforderungen</a></li>
+        <li><a href="#next-steps"><span class="nav-num">06</span>Nächste Schritte</a></li>
+      </ul>
+    </nav>
+  </aside>
 
   <!-- Main -->
   <main class="main">
 
     <!-- Header -->
-    <header class="doc-header" id="top">
-      <div class="doc-meta">
-        <span class="badge badge-teal">Mobile App Konzept</span>
-        <span class="badge badge-muted">März 2026</span>
-        <span class="badge badge-muted">v1.0</span>
+    <header class="doc-header">
+      <div class="doc-header-top">
+        <div class="logo-text">Teileni<span>X</span></div>
+        <div class="badge">Mobile App Konzept</div>
       </div>
-      <h1 class="doc-title">TeileniX für<br><em>iOS & Android</em></h1>
-      <p class="doc-subtitle">Strategieplan zur nativen Veröffentlichung der Reisekostenapp im Apple App Store und Google Play Store.</p>
-      <div class="doc-divider"></div>
+      <h1 class="doc-title">Strategieplan zur nativen<br>iOS &amp; Android Veröffentlichung</h1>
+      <p class="doc-subtitle">Analyse der Migrationspfade und Empfehlung für die optimale Umsetzung der TeileniX WebApp als native App.</p>
+      <div class="doc-meta">
+        <div class="doc-meta-item">📅 <span>März 2026</span></div>
+        <div class="doc-meta-item">⚙️ <span>Version 1.0</span></div>
+        <div class="doc-meta-item">🎯 <span>iOS &amp; Android</span></div>
+        <div class="doc-meta-item">🔧 <span>Next.js + Supabase</span></div>
+      </div>
     </header>
 
-    <!-- 1. Technologiestrategie -->
-    <section class="section" id="tech">
-      <div class="section-number">01 — Technologiestrategie</div>
-      <h2 class="section-title">Drei Wege zur App</h2>
-      <p class="section-desc">Vergleich der möglichen Ansätze zur Portierung der bestehenden Next.js WebApp auf native Plattformen.</p>
+    <!-- 01: Technologiestrategie -->
+    <section class="section" id="strategy">
+      <div class="section-label">01 &nbsp;·&nbsp; Technologiestrategie</div>
+      <h2 class="section-title">Welcher Weg zur nativen App?</h2>
+      <p class="section-desc">Drei realisierbare Ansätze, die die vorhandene Next.js + Supabase Infrastruktur unterschiedlich stark nutzen. Bewertet nach Aufwand, Code-Wiederverwendung und Ergebnis.</p>
 
-      <div class="options-grid">
+      <div class="option-grid">
 
-        <!-- Option A -->
         <div class="option-card recommended">
-          <div class="option-badge badge-recommended">★ Empfohlen</div>
+          <div class="option-badge rec">⭐ Empfohlen</div>
           <div class="option-name">Capacitor</div>
-          <div class="option-sub">Hybrid-App mit WebView</div>
-
-          <div class="option-stat">
-            <span class="option-stat-label">Aufwand</span>
-            <span class="option-stat-value">🟢 Gering</span>
+          <div class="option-sub">Bestehenden Next.js Code in eine native App verpacken — minimaler Umbau, maximale Geschwindigkeit.</div>
+          <div class="option-effort">
+            <span class="pill">Aufwand: Gering</span>
+            <span class="pill">Code: Minimal</span>
           </div>
-          <div class="option-stat">
-            <span class="option-stat-label">Dauer</span>
-            <span class="option-stat-value">2–4 Wochen</span>
-          </div>
-          <div class="option-stat">
-            <span class="option-stat-label">Code-Änderung</span>
-            <span class="option-stat-value">~5%</span>
-          </div>
-          <div class="option-stat">
-            <span class="option-stat-label">Kosten (Entwicklung)</span>
-            <span class="option-stat-value">Niedrig</span>
-          </div>
-
-          <div class="pro-con-list">
-            <div class="pro-con-item"><span class="icon pro">✓</span> 95% Code-Wiederverwendung</div>
-            <div class="pro-con-item"><span class="icon pro">✓</span> Schnell & günstig</div>
-            <div class="pro-con-item"><span class="icon pro">✓</span> Native Plugins möglich</div>
-            <div class="pro-con-item"><span class="icon con">✗</span> Keine 100% native Performance</div>
-            <div class="pro-con-item"><span class="icon con">✗</span> WebView-basiert (kein nativer Look)</div>
-          </div>
+          <div class="option-timeline">⏱ 2–4 Wochen</div>
+          <ul class="pro-con-list">
+            <li><span class="icon pro">✓</span>95% Code-Wiederverwendung</li>
+            <li><span class="icon pro">✓</span>Schnell &amp; kostengünstig</li>
+            <li><span class="icon pro">✓</span>Native Plugins verfügbar</li>
+            <li><span class="icon con">✗</span>Kein vollständig nativer Look</li>
+            <li><span class="icon con">✗</span>WebView-Basis (Performance)</li>
+          </ul>
         </div>
 
-        <!-- Option B -->
         <div class="option-card">
-          <div class="option-badge badge-heavy">Großer Aufwand</div>
+          <div class="option-badge alt">Alternative</div>
           <div class="option-name">React Native / Expo</div>
-          <div class="option-sub">Natives Frontend neu schreiben</div>
-
-          <div class="option-stat">
-            <span class="option-stat-label">Aufwand</span>
-            <span class="option-stat-value">🔴 Hoch</span>
+          <div class="option-sub">Komplett neues Frontend in React Native — Supabase Backend bleibt unverändert.</div>
+          <div class="option-effort">
+            <span class="pill">Aufwand: Hoch</span>
+            <span class="pill">Code: Neu</span>
           </div>
-          <div class="option-stat">
-            <span class="option-stat-label">Dauer</span>
-            <span class="option-stat-value">8–16 Wochen</span>
-          </div>
-          <div class="option-stat">
-            <span class="option-stat-label">Code-Änderung</span>
-            <span class="option-stat-value">Frontend neu</span>
-          </div>
-          <div class="option-stat">
-            <span class="option-stat-label">Kosten (Entwicklung)</span>
-            <span class="option-stat-value">Hoch</span>
-          </div>
-
-          <div class="pro-con-list">
-            <div class="pro-con-item"><span class="icon pro">✓</span> Echte native Performance</div>
-            <div class="pro-con-item"><span class="icon pro">✓</span> Nativer Look & Feel</div>
-            <div class="pro-con-item"><span class="icon pro">✓</span> Supabase-Backend bleibt</div>
-            <div class="pro-con-item"><span class="icon con">✗</span> Doppelter Code (Web + App)</div>
-            <div class="pro-con-item"><span class="icon con">✗</span> Sehr hoher Zeitaufwand</div>
-          </div>
+          <div class="option-timeline">⏱ 8–16 Wochen</div>
+          <ul class="pro-con-list">
+            <li><span class="icon pro">✓</span>Echte native Performance</li>
+            <li><span class="icon pro">✓</span>Nativer Look &amp; Feel</li>
+            <li><span class="icon con">✗</span>Frontend komplett neu schreiben</li>
+            <li><span class="icon con">✗</span>Doppelter Code (Web + App)</li>
+            <li><span class="icon con">✗</span>Sehr hoher Zeitaufwand</li>
+          </ul>
         </div>
 
-        <!-- Option C -->
         <div class="option-card">
-          <div class="option-badge badge-minimal">Kein App Store</div>
+          <div class="option-badge quick">Schnellstart</div>
           <div class="option-name">PWA</div>
-          <div class="option-sub">Progressive Web App</div>
-
-          <div class="option-stat">
-            <span class="option-stat-label">Aufwand</span>
-            <span class="option-stat-value">🟡 Minimal</span>
+          <div class="option-sub">Progressive Web App — Browser-basiert mit „Zum Startbildschirm hinzufügen".</div>
+          <div class="option-effort">
+            <span class="pill">Aufwand: Minimal</span>
+            <span class="pill">Kein App Store</span>
           </div>
-          <div class="option-stat">
-            <span class="option-stat-label">Dauer</span>
-            <span class="option-stat-value">1–2 Wochen</span>
-          </div>
-          <div class="option-stat">
-            <span class="option-stat-label">Code-Änderung</span>
-            <span class="option-stat-value">~1%</span>
-          </div>
-          <div class="option-stat">
-            <span class="option-stat-label">Kosten (Entwicklung)</span>
-            <span class="option-stat-value">Minimal</span>
-          </div>
-
-          <div class="pro-con-list">
-            <div class="pro-con-item"><span class="icon pro">✓</span> Quasi kein extra Code</div>
-            <div class="pro-con-item"><span class="icon pro">✓</span> Sofort verfügbar</div>
-            <div class="pro-con-item"><span class="icon con">✗</span> Kein App Store</div>
-            <div class="pro-con-item"><span class="icon con">✗</span> Kein Push auf iOS</div>
-            <div class="pro-con-item"><span class="icon con">✗</span> Eingeschränkte Features</div>
-          </div>
+          <div class="option-timeline">⏱ 1–2 Wochen</div>
+          <ul class="pro-con-list">
+            <li><span class="icon pro">✓</span>Kein zusätzlicher Code nötig</li>
+            <li><span class="icon pro">✓</span>Sofort verfügbar</li>
+            <li><span class="icon con">✗</span>Kein App Store Eintrag</li>
+            <li><span class="icon con">✗</span>Kein Push auf iOS</li>
+            <li><span class="icon con">✗</span>Eingeschränkte native Features</li>
+          </ul>
         </div>
 
       </div>
     </section>
 
-    <!-- 2. Roadmap -->
+    <!-- 02: Roadmap -->
     <section class="section" id="roadmap">
-      <div class="section-number">02 — Empfohlener Weg</div>
-      <h2 class="section-title">Roadmap mit Capacitor</h2>
-      <p class="section-desc">4-Wochen-Plan für die Umsetzung des Hybrid-Ansatzes — von der Installation bis zur App Store Submission.</p>
+      <div class="section-label">02 &nbsp;·&nbsp; Empfohlener Weg: Capacitor</div>
+      <h2 class="section-title">4-Wochen Roadmap</h2>
+      <p class="section-desc">Schritt-für-Schritt Plan mit Capacitor als Wrapper. Die Web-App läuft in einem nativen WebView-Container mit Zugang zu nativen iOS- und Android-APIs.</p>
 
       <div class="timeline">
 
         <div class="timeline-item">
-          <div class="timeline-phase">Woche 1</div>
-          <div class="timeline-title">Setup & Konfiguration</div>
-          <div class="timeline-body">
-            <div class="timeline-task">Capacitor in bestehendes Next.js Projekt installieren</div>
-            <div class="timeline-task">Xcode (Mac) und Android Studio einrichten</div>
-            <div class="timeline-task">Next.js auf <code style="font-family:var(--mono);font-size:11px;background:var(--bg);padding:1px 5px;border-radius:3px;border:1px solid var(--border)">output: 'export'</code> umstellen</div>
-            <div class="timeline-task">iOS & Android Projekt initialisieren</div>
-            <div class="timeline-task">Ersten Test-Build auf Simulator ausführen</div>
-          </div>
+          <div class="timeline-dot"><div class="timeline-dot-inner"></div></div>
+          <div class="timeline-week">Phase 1 · Woche 1</div>
+          <div class="timeline-title">Setup &amp; Konfiguration</div>
+          <ul class="timeline-tasks">
+            <li>Capacitor CLI installieren und in Next.js Projekt integrieren</li>
+            <li>Xcode (Mac) und Android Studio einrichten</li>
+            <li>Native Projekte generieren: <code>npx cap add ios</code> / <code>npx cap add android</code></li>
+            <li>Vercel API-URL als Basis-Endpunkt konfigurieren</li>
+          </ul>
         </div>
 
         <div class="timeline-item">
-          <div class="timeline-phase">Woche 2</div>
-          <div class="timeline-title">Native Features & Assets</div>
-          <div class="timeline-body">
-            <div class="timeline-task">Push Notifications via Capacitor Plugin konfigurieren</div>
-            <div class="timeline-task">Haptic Feedback für Interaktionen einbauen</div>
-            <div class="timeline-task">Share-Sheet Plugin für Einladungslinks</div>
-            <div class="timeline-task">App Icon (1024×1024px) und Splashscreen erstellen</div>
-            <div class="timeline-task">Deep Links für <code style="font-family:var(--mono);font-size:11px;background:var(--bg);padding:1px 5px;border-radius:3px;border:1px solid var(--border)">/join/[code]</code> konfigurieren</div>
-          </div>
+          <div class="timeline-dot"><div class="timeline-dot-inner"></div></div>
+          <div class="timeline-week">Phase 2 · Woche 2</div>
+          <div class="timeline-title">Native Features &amp; Assets</div>
+          <ul class="timeline-tasks">
+            <li>Push Notifications via Capacitor Plugin (APNs für iOS, FCM für Android)</li>
+            <li>Haptic Feedback und Share-Dialog einbinden</li>
+            <li>App Icon (1024×1024px) für beide Plattformen generieren</li>
+            <li>Splashscreen Design und Animation konfigurieren</li>
+          </ul>
         </div>
 
         <div class="timeline-item">
-          <div class="timeline-phase">Woche 3</div>
-          <div class="timeline-title">Testen & Bugfixing</div>
-          <div class="timeline-body">
-            <div class="timeline-task">Auf echten Geräten (iPhone + Android) testen</div>
-            <div class="timeline-task">Safe Area Insets (Notch, Dynamic Island) anpassen</div>
-            <div class="timeline-task">Keyboard-Verhalten auf Mobile optimieren</div>
-            <div class="timeline-task">Beta-Tester via TestFlight (iOS) einladen</div>
-            <div class="timeline-task">Google Play Internal Testing Track starten</div>
-          </div>
+          <div class="timeline-dot"><div class="timeline-dot-inner"></div></div>
+          <div class="timeline-week">Phase 3 · Woche 3</div>
+          <div class="timeline-title">Build, Test &amp; Bugfixing</div>
+          <ul class="timeline-tasks">
+            <li>iOS Build in Xcode erstellen und auf Simulator testen</li>
+            <li>Android Build in Android Studio und auf Emulator testen</li>
+            <li>Deep Links für <code>/join/[code]</code> konfigurieren</li>
+            <li>Auth-Flow mit Token-Persistenz testen (kein Cookie-Zugriff in WebView)</li>
+          </ul>
         </div>
 
         <div class="timeline-item">
-          <div class="timeline-phase">Woche 4</div>
-          <div class="timeline-title">App Store Submission</div>
-          <div class="timeline-body">
-            <div class="timeline-task">App Store Screenshots erstellen (6,7" + 5,5" + iPad)</div>
-            <div class="timeline-task">App Store Beschreibung, Keywords, Datenschutz-URL</div>
-            <div class="timeline-task">Apple Review einreichen (1–7 Tage Wartezeit)</div>
-            <div class="timeline-task">Google Play Review einreichen (2–3 Tage)</div>
-            <div class="timeline-task">Veröffentlichung & Monitoring</div>
-          </div>
+          <div class="timeline-dot"><div class="timeline-dot-inner"></div></div>
+          <div class="timeline-week">Phase 4 · Woche 4</div>
+          <div class="timeline-title">Store Submission &amp; Review</div>
+          <ul class="timeline-tasks">
+            <li>App Store Connect: Metadaten, Screenshots, Datenschutz-Informationen</li>
+            <li>TestFlight Beta-Test mit echten Nutzern (iOS)</li>
+            <li>Google Play Internal Testing Track einrichten (Android)</li>
+            <li>App Store Submission → Review-Prozess abwarten (1–7 Tage)</li>
+          </ul>
         </div>
 
       </div>
     </section>
 
-    <!-- 3. Kosten -->
+    <!-- 03: Kosten -->
     <section class="section" id="kosten">
-      <div class="section-number">03 — Kostenübersicht</div>
-      <h2 class="section-title">Was es kostet</h2>
-      <p class="section-desc">Alle anfallenden Kosten für Entwicklung, Accounts und laufenden Betrieb im Überblick.</p>
+      <div class="section-label">03 &nbsp;·&nbsp; Kosten-Übersicht</div>
+      <h2 class="section-title">Was kostet die App-Veröffentlichung?</h2>
 
-      <div class="costs-grid">
+      <div class="cost-grid">
+
         <div class="cost-card">
-          <div class="cost-card-title">Einmalige Kosten</div>
+          <div class="cost-card-title">💳 Einmalige Kosten</div>
           <div class="cost-row">
             <span class="cost-label">Apple Developer Account</span>
-            <span class="cost-value highlight">99 USD/Jahr</span>
+            <span class="cost-value">99 USD/Jahr</span>
           </div>
           <div class="cost-row">
-            <span class="cost-label">Google Play Developer</span>
-            <span class="cost-value highlight">25 USD</span>
+            <span class="cost-label">Google Play Console</span>
+            <span class="cost-value">25 USD</span>
           </div>
           <div class="cost-row">
-            <span class="cost-label">App Icon Design</span>
-            <span class="cost-value">0–200 USD</span>
-          </div>
-          <div class="cost-row">
-            <span class="cost-label">Capacitor Setup & Anpassung</span>
-            <span class="cost-value">20–40h Arbeit</span>
+            <span class="cost-label">Capacitor Setup &amp; Anpassung</span>
+            <span class="cost-value">20–40h Dev</span>
           </div>
         </div>
 
         <div class="cost-card">
-          <div class="cost-card-title">Laufende Kosten / Monat</div>
+          <div class="cost-card-title">🔄 Laufende Kosten / Monat</div>
           <div class="cost-row">
-            <span class="cost-label">Apple Developer (anteilig)</span>
-            <span class="cost-value">~8 USD/Monat</span>
+            <span class="cost-label">Apple Developer (p. a.)</span>
+            <span class="cost-value">99 USD/Jahr</span>
           </div>
           <div class="cost-row">
             <span class="cost-label">Supabase (aktuell Free Tier)</span>
-            <span class="cost-value highlight">0–25 USD</span>
+            <span class="cost-value">0–25 USD</span>
           </div>
           <div class="cost-row">
             <span class="cost-label">Vercel Hosting (aktuell Free)</span>
-            <span class="cost-value highlight">0–20 USD</span>
-          </div>
-          <div class="cost-row">
-            <span class="cost-label">Push Notification Service</span>
-            <span class="cost-value">0 USD (Supabase)</span>
+            <span class="cost-value">0–20 USD</span>
           </div>
         </div>
+
       </div>
 
-      <div class="cost-total-card">
-        <div>
-          <div class="cost-total-label">Gesamtkosten Einstieg (ohne Entwicklungszeit)</div>
-          <div style="font-size:12px;color:var(--muted);margin-top:2px">Apple + Google Accounts im ersten Jahr</div>
+      <div class="risk-card">
+        <div class="risk-card-title">⚠️ Versteckte Kosten &amp; Risiken</div>
+        <div class="cost-row">
+          <span class="cost-label">Apple Review-Wartezeit</span>
+          <span class="cost-value" style="color: var(--warning)">1–7 Tage</span>
         </div>
-        <div class="cost-total-value">124 USD</div>
-      </div>
-
-      <div class="risk-list">
-        <div class="risk-title">Versteckte Kosten & Risiken</div>
-        <div class="risk-item">Apple Review kann abgelehnt werden — Überarbeitungszeit nicht einplanen vergessen</div>
-        <div class="risk-item">iOS Push Notifications erfordern APNs-Zertifikate und extra Backend-Konfiguration</div>
-        <div class="risk-item">Over-the-Air Updates: Capacitor Live Update Plugin (optional, kostenpflichtig bei Appflow)</div>
-        <div class="risk-item">Mac Computer zwingend erforderlich für iOS-Build — kein Mac = kein iOS-Release</div>
-        <div class="risk-item">Supabase Free Tier hat Limits: 500 MB DB, 1 GB Storage, 50.000 MAU</div>
+        <div class="cost-row">
+          <span class="cost-label">Android Review-Wartezeit</span>
+          <span class="cost-value" style="color: var(--warning)">2–3 Tage</span>
+        </div>
+        <div class="cost-row">
+          <span class="cost-label">iOS Push Notifications (APNs Zertifikate)</span>
+          <span class="cost-value" style="color: var(--warning)">Extra Setup</span>
+        </div>
+        <div class="cost-row">
+          <span class="cost-label">Over-the-Air Updates (Capacitor Live Update)</span>
+          <span class="cost-value" style="color: var(--warning)">Lösung nötig</span>
+        </div>
       </div>
     </section>
 
-    <!-- 4. Technische Änderungen -->
-    <section class="section" id="technik">
-      <div class="section-number">04 — Technische Änderungen</div>
-      <h2 class="section-title">Was bleibt, was ändert sich</h2>
-      <p class="section-desc">Beim Capacitor-Ansatz bleibt der Großteil des bestehenden Codes unverändert.</p>
+    <!-- 04: Technische Änderungen -->
+    <section class="section" id="technical">
+      <div class="section-label">04 &nbsp;·&nbsp; Technische Änderungen</div>
+      <h2 class="section-title">Was bleibt, was ändert sich?</h2>
+      <p class="section-desc">Beim Capacitor-Ansatz mit Vercel API bleibt der Großteil des Codes unverändert. Nur wenige kritische Bereiche müssen angepasst werden.</p>
 
       <div class="tech-grid">
-        <div class="tech-card stays">
-          <div class="tech-card-title" style="color:var(--green)">
-            <span>✓</span> Bleibt gleich
-          </div>
-          <div class="tech-item">✓ &nbsp;Supabase Backend & Datenbank vollständig</div>
-          <div class="tech-item">✓ &nbsp;Alle API Routes auf Vercel</div>
-          <div class="tech-item">✓ &nbsp;Gesamte Business Logic & Settlement-Algorithmus</div>
-          <div class="tech-item">✓ &nbsp;Supabase Auth (Google Sign-In)</div>
-          <div class="tech-item">✓ &nbsp;Alle React-Komponenten & UI</div>
-          <div class="tech-item">✓ &nbsp;Tailwind CSS & Design-System</div>
-          <div class="tech-item">✓ &nbsp;RLS Policies & Migrations</div>
+
+        <div class="tech-col stays">
+          <div class="tech-col-title">✓ &nbsp;Bleibt gleich</div>
+          <div class="tech-item">Supabase Backend &amp; Datenbank</div>
+          <div class="tech-item">Alle API Routes (auf Vercel)</div>
+          <div class="tech-item">Gesamte Business Logic</div>
+          <div class="tech-item">Auth via Supabase Auth</div>
+          <div class="tech-item">RLS-Policies &amp; Security</div>
+          <div class="tech-item">Alle React Components</div>
         </div>
 
-        <div class="tech-card changes">
-          <div class="tech-card-title" style="color:var(--amber)">
-            ⚡ Muss angepasst werden
-          </div>
-          <div class="tech-item">→ &nbsp;<code>next.config.ts</code>: <code>output: 'export'</code> hinzufügen</div>
-          <div class="tech-item">→ &nbsp;Server Components prüfen — einige müssen zu Client Components</div>
-          <div class="tech-item">→ &nbsp;<code>cookies()</code> nicht verfügbar → Token-basierte Auth</div>
-          <div class="tech-item">→ &nbsp;Deep Links konfigurieren für <code>/join/[code]</code></div>
-          <div class="tech-item">→ &nbsp;Safe Area CSS für iPhone Notch/Dynamic Island</div>
-          <div class="tech-item">→ &nbsp;App Icon + Splashscreen in allen Größen</div>
-          <div class="tech-item">→ &nbsp;<code>capacitor.config.ts</code> erstellen</div>
+        <div class="tech-col changes">
+          <div class="tech-col-title">✗ &nbsp;Muss angepasst werden</div>
+          <div class="tech-item"><code>output: 'export'</code> aktivieren</div>
+          <div class="tech-item">Server Components → Client-only</div>
+          <div class="tech-item">Kein <code>cookies()</code> → Token-Auth</div>
+          <div class="tech-item">Deep Links für <code>/join/[code]</code></div>
+          <div class="tech-item">Supabase Session in LocalStorage</div>
+          <div class="tech-item">Safe Area Insets (Notch/Statusbar)</div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 05: Herausforderungen -->
+    <section class="section" id="challenge">
+      <div class="section-label">05 &nbsp;·&nbsp; Kritische Herausforderung</div>
+      <h2 class="section-title">Das größte technische Problem</h2>
+
+      <div class="alert warning">
+        <div class="alert-title">⚠️ Next.js Server Components in nativer App nicht möglich</div>
+        <div class="alert-body">
+          Next.js <strong>Server Components und API Routes</strong> erfordern einen laufenden Node.js-Server. Eine native App (iOS/Android) hat keinen Server — der Code läuft ausschließlich auf dem Gerät des Nutzers.<br><br>
+          Das bedeutet: Alle <code>async</code> Seiten-Komponenten, Server Actions und API Route Handlers können in der nativen App <strong>nicht</strong> direkt ausgeführt werden.
+        </div>
+        <div class="alert-arrow">
+          <span><strong style="color: var(--text)">Empfohlene Lösung:</strong> API auf Vercel belassen. Die native App kommuniziert per HTTPS mit den bestehenden Vercel API-Routes. Dadurch funktionieren <strong>~95% des Codes</strong> ohne Änderung — nur die Auth-Session-Verwaltung und das statische Rendering müssen angepasst werden.</span>
         </div>
       </div>
     </section>
 
-    <!-- 5. Herausforderung -->
-    <section class="section" id="herausforderung">
-      <div class="section-number">05 — Kritische Herausforderung</div>
-      <h2 class="section-title">Das größte Problem</h2>
-      <p class="section-desc">Ein technisches Detail, das frühzeitig bedacht werden muss.</p>
-
-      <div class="alert alert-warning">
-        <div class="alert-title">⚠ Next.js Server Components in nativer App</div>
-        <div class="alert-body">
-          Next.js Server Components und API Routes benötigen einen laufenden Node.js-Server. Eine native App kann keinen Server starten — sie ist eine statische Datei. Das bedeutet: <strong style="color:var(--amber)">Server-seitige Logik funktioniert nicht direkt in der App.</strong>
-        </div>
-      </div>
-
-      <div class="alert alert-success">
-        <div class="alert-title">✓ Empfohlene Lösung: Hybrid-Ansatz</div>
-        <div class="alert-body">
-          Die App kommuniziert via HTTPS mit den bestehenden API Routes auf <strong style="color:var(--teal-bright)">Vercel</strong>. Die Next.js App bleibt auf Vercel deployed — die native App ist nur ein WebView-Wrapper, der diese URL lädt. Damit funktionieren <strong style="color:var(--teal-bright)">95% des bestehenden Codes ohne jede Änderung</strong>. Server Components, API Routes, Auth — alles bleibt wie gehabt.
-        </div>
-      </div>
-    </section>
-
-    <!-- 6. Offline -->
-    <section class="section" id="offline">
-      <div class="section-number">06 — Offline-Fähigkeit</div>
-      <h2 class="section-title">Ausgaben ohne Internet erfassen</h2>
-      <p class="section-desc">Mit Capacitor ist echte Offline-Unterstützung machbar — Ausgaben lokal speichern, bei Verbindung automatisch synchronisieren.</p>
-
-      <div class="alert alert-success" style="margin-bottom:24px">
-        <div class="alert-title">✓ Mit Capacitor grundsätzlich umsetzbar</div>
-        <div class="alert-body">
-          Capacitor bietet Zugang zu nativen Storage-APIs und SQLite direkt auf dem Gerät. Damit können Ausgaben lokal gespeichert und später mit Supabase synchronisiert werden — auch wenn Tage vergehen.
-        </div>
-      </div>
-
-      <div class="tech-grid" style="margin-bottom:16px">
-        <div class="cost-card">
-          <div class="cost-card-title">Wie es funktioniert</div>
-          <div class="tech-item" style="margin-bottom:10px">→ &nbsp;Neue Ausgabe wird zuerst lokal in <code>SQLite</code> oder <code>Capacitor Preferences</code> gespeichert</div>
-          <div class="tech-item" style="margin-bottom:10px">→ &nbsp;App erkennt automatisch ob Online- oder Offline-Status</div>
-          <div class="tech-item" style="margin-bottom:10px">→ &nbsp;Bei Verbindungsrückkehr: automatischer Sync zu Supabase</div>
-          <div class="tech-item" style="margin-bottom:10px">→ &nbsp;Konfliktlösung: Timestamp-basiert (neuere Einträge gewinnen)</div>
-          <div class="tech-item">→ &nbsp;Offline-Badge in der App zeigt Sync-Status</div>
-        </div>
-        <div class="cost-card">
-          <div class="cost-card-title">Benötigte Pakete</div>
-          <div class="cost-row">
-            <span class="cost-label">@capacitor-community/sqlite</span>
-            <span class="cost-value highlight">Kostenlos</span>
-          </div>
-          <div class="cost-row">
-            <span class="cost-label">@capacitor/network</span>
-            <span class="cost-value highlight">Kostenlos</span>
-          </div>
-          <div class="cost-row">
-            <span class="cost-label">Supabase Realtime</span>
-            <span class="cost-value highlight">Inklusive</span>
-          </div>
-          <div class="cost-row">
-            <span class="cost-label">PowerSync (Alternative)</span>
-            <span class="cost-value">0–50 USD/Monat</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="tech-grid" style="margin-bottom:16px">
-        <div class="tech-card stays">
-          <div class="tech-card-title" style="color:var(--green)">✓ Offline möglich</div>
-          <div class="tech-item">✓ &nbsp;Ausgaben erfassen & speichern</div>
-          <div class="tech-item">✓ &nbsp;Eigene Ausgaben ansehen</div>
-          <div class="tech-item">✓ &nbsp;Zuletzt geladene Ausgaben lesen</div>
-          <div class="tech-item">✓ &nbsp;Kategorien & Teilnehmer (gecacht)</div>
-        </div>
-        <div class="tech-card changes">
-          <div class="tech-card-title" style="color:var(--red)">✗ Nur mit Internet</div>
-          <div class="tech-item">✗ &nbsp;Reise beitreten via Einladungscode</div>
-          <div class="tech-item">✗ &nbsp;Ausgaben anderer Teilnehmer sehen</div>
-          <div class="tech-item">✗ &nbsp;Abrechnung berechnen</div>
-          <div class="tech-item">✗ &nbsp;Einladungslinks teilen</div>
-        </div>
-      </div>
-
-      <div class="cost-card" style="margin-bottom:16px">
-        <div class="cost-card-title">Aufwand-Einschätzung</div>
-        <div class="cost-row">
-          <span class="cost-label">Einfach: Eingabe lokal puffern, bei Online-Rückkehr senden</span>
-          <span class="cost-value highlight">+1–2 Wochen</span>
-        </div>
-        <div class="cost-row">
-          <span class="cost-label">Mittel: Lokale SQLite-Datenbank mit vollständigem Sync</span>
-          <span class="cost-value" style="color:var(--amber)">+3–5 Wochen</span>
-        </div>
-        <div class="cost-row">
-          <span class="cost-label">PowerSync (fertige Offline-First Sync-Lösung für Supabase)</span>
-          <span class="cost-value" style="color:var(--amber)">+1–2 Wochen</span>
-        </div>
-      </div>
-
-      <div class="alert alert-warning">
-        <div class="alert-title">⚠ Empfehlung: Einfache Variante zuerst</div>
-        <div class="alert-body">
-          Start mit der einfachen Variante: Formular-Eingaben lokal im Gerätespeicher puffern (<code style="font-size:11px;background:#0d1117;padding:1px 5px;border-radius:3px">Capacitor Preferences</code>), bei Verbindungsrückkehr automatisch absenden. Das deckt 90% des Offline-Bedarfs mit minimalem Aufwand. Vollständiges bidirektionales Sync (alle fremden Ausgaben offline lesen) ist deutlich komplexer und kann in Phase 2 nachgeliefert werden.
-        </div>
-      </div>
-    </section>
-
-    <!-- 7. KI & Sprache -->
-    <section class="section" id="ki">
-      <div class="section-number">07 — KI & Spracheingabe</div>
-      <h2 class="section-title">Ausgaben per Sprache erfassen</h2>
-      <p class="section-desc">„Abendessen 48 Euro, bezahlt von Anna, aufteilen auf alle" — KI versteht und befüllt das Formular automatisch.</div>
-
-      <div class="alert alert-success" style="margin-bottom:24px">
-        <div class="alert-title">✓ Mit allen drei Ansätzen umsetzbar — Capacitor ist ideal</div>
-        <div class="alert-body">
-          Die Kombination aus nativem Mikrofon-Zugang via Capacitor und der Claude API (Anthropic) oder OpenAI macht dies sehr elegant umsetzbar. <strong style="color:var(--teal-bright)">Kein MCP nötig</strong> — MCP ist ein Protokoll für KI-Agenten-Tools, nicht für Spracheingabe. Für Sprache braucht es: Speech-to-Text + KI-Parsing.
-        </div>
-      </div>
-
-      <!-- Flow-Diagramm als Steps -->
-      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:16px">
-        <div class="cost-card-title" style="margin-bottom:20px">Technischer Ablauf</div>
-        <div style="display:flex;align-items:center;gap:0;flex-wrap:wrap;gap:8px">
-
-          <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px 16px;text-align:center;min-width:130px">
-            <div style="font-size:24px;margin-bottom:6px">🎙</div>
-            <div style="font-size:12px;font-weight:600;color:var(--text)">Sprache</div>
-            <div style="font-size:11px;color:var(--muted)">Nutzer spricht</div>
-          </div>
-
-          <div style="color:var(--teal-bright);font-size:18px;font-weight:300">→</div>
-
-          <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px 16px;text-align:center;min-width:130px">
-            <div style="font-size:24px;margin-bottom:6px">📝</div>
-            <div style="font-size:12px;font-weight:600;color:var(--text)">Speech-to-Text</div>
-            <div style="font-size:11px;color:var(--muted)">iOS/Android nativ<br>oder Whisper API</div>
-          </div>
-
-          <div style="color:var(--teal-bright);font-size:18px;font-weight:300">→</div>
-
-          <div style="background:var(--teal-dim);border:1px solid var(--teal-bright)30;border-radius:10px;padding:12px 16px;text-align:center;min-width:130px">
-            <div style="font-size:24px;margin-bottom:6px">🧠</div>
-            <div style="font-size:12px;font-weight:600;color:var(--teal-bright)">Claude API</div>
-            <div style="font-size:11px;color:#7ecdc8">Parst Betrag, Titel,<br>Kategorie, Personen</div>
-          </div>
-
-          <div style="color:var(--teal-bright);font-size:18px;font-weight:300">→</div>
-
-          <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px 16px;text-align:center;min-width:130px">
-            <div style="font-size:24px;margin-bottom:6px">✅</div>
-            <div style="font-size:12px;font-weight:600;color:var(--text)">Formular</div>
-            <div style="font-size:11px;color:var(--muted)">Vorausgefüllt,<br>Nutzer bestätigt</div>
-          </div>
-
-        </div>
-      </div>
-
-      <div class="tech-grid" style="margin-bottom:16px">
-        <div class="cost-card">
-          <div class="cost-card-title">Speech-to-Text Optionen</div>
-          <div class="cost-row">
-            <span class="cost-label">iOS Speech Recognition (nativ)</span>
-            <span class="cost-value highlight">Kostenlos</span>
-          </div>
-          <div class="cost-row">
-            <span class="cost-label">Android SpeechRecognizer (nativ)</span>
-            <span class="cost-value highlight">Kostenlos</span>
-          </div>
-          <div class="cost-row">
-            <span class="cost-label">OpenAI Whisper API</span>
-            <span class="cost-value">~0,006 USD/min</span>
-          </div>
-          <div class="cost-row">
-            <span class="cost-label">Web Speech API (Browser)</span>
-            <span class="cost-value highlight">Kostenlos</span>
-          </div>
-        </div>
-        <div class="cost-card">
-          <div class="cost-card-title">KI-Parsing: Claude API</div>
-          <div class="cost-row">
-            <span class="cost-label">Claude Haiku (günstigst)</span>
-            <span class="cost-value highlight">~0,0003 USD/Anfrage</span>
-          </div>
-          <div class="cost-row">
-            <span class="cost-label">Claude Sonnet (empfohlen)</span>
-            <span class="cost-value">~0,003 USD/Anfrage</span>
-          </div>
-          <div class="cost-row">
-            <span class="cost-label">Bei 1.000 Eingaben/Monat</span>
-            <span class="cost-value highlight">ca. 0,30–3 USD</span>
-          </div>
-          <div class="cost-row">
-            <span class="cost-label">Anthropic API Key</span>
-            <span class="cost-value highlight">Kostenlos (Pay-as-go)</span>
-          </div>
-        </div>
-      </div>
-
-      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:16px">
-        <div class="cost-card-title" style="margin-bottom:16px">Beispiel: Was Claude aus Sprache extrahiert</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-          <div>
-            <div style="font-size:11px;color:var(--muted);margin-bottom:8px;font-family:var(--mono);letter-spacing:0.05em">GESPROCHENER TEXT</div>
-            <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:13px;color:var(--muted);font-style:italic;line-height:1.5">
-              „Abendessen am Hafen, 48 Euro 50, bezahlt von Anna, aufteilen auf alle außer Thomas"
-            </div>
-          </div>
-          <div>
-            <div style="font-size:11px;color:var(--teal-bright);margin-bottom:8px;font-family:var(--mono);letter-spacing:0.05em">ERKANNT VON KI</div>
-            <div style="background:var(--bg);border:1px solid var(--teal-bright)20;border-radius:8px;padding:12px;font-family:var(--mono);font-size:11px;color:var(--text);line-height:1.8">
-              title: <span style="color:var(--teal-bright)">"Abendessen am Hafen"</span><br>
-              amount: <span style="color:var(--teal-bright)">4850</span> <span style="color:var(--muted)">// Cent</span><br>
-              paidBy: <span style="color:var(--teal-bright)">"Anna"</span><br>
-              exclude: <span style="color:var(--teal-bright)">["Thomas"]</span><br>
-              category: <span style="color:var(--teal-bright)">"food"</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="tech-grid" style="margin-bottom:16px">
-        <div class="cost-card">
-          <div class="cost-card-title">Aufwand</div>
-          <div class="cost-row">
-            <span class="cost-label">Capacitor Speech Plugin einbinden</span>
-            <span class="cost-value highlight">~2h</span>
-          </div>
-          <div class="cost-row">
-            <span class="cost-label">Claude API Prompt entwickeln & testen</span>
-            <span class="cost-value highlight">~4–8h</span>
-          </div>
-          <div class="cost-row">
-            <span class="cost-label">UI: Mikrofon-Button im Formular</span>
-            <span class="cost-value highlight">~2h</span>
-          </div>
-          <div class="cost-row">
-            <span class="cost-label">Gesamtaufwand</span>
-            <span class="cost-value" style="color:var(--teal-bright)">~1–2 Tage</span>
-          </div>
-        </div>
-        <div class="cost-card">
-          <div class="cost-card-title">Varianten-Vergleich</div>
-          <div class="cost-row">
-            <span class="cost-label">Capacitor (Empfohlen)</span>
-            <span class="cost-value highlight">✓ Ideal</span>
-          </div>
-          <div class="cost-row">
-            <span class="cost-label">React Native</span>
-            <span class="cost-value highlight">✓ Ideal</span>
-          </div>
-          <div class="cost-row">
-            <span class="cost-label">PWA (Browser)</span>
-            <span class="cost-value" style="color:var(--amber)">⚠ Eingeschränkt</span>
-          </div>
-          <div class="cost-row">
-            <span class="cost-label">Web Speech API auf iOS</span>
-            <span class="cost-value" style="color:var(--red)">✗ Unzuverlässig</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="alert alert-warning">
-        <div class="alert-title">ℹ Was ist MCP?</div>
-        <div class="alert-body">
-          MCP (Model Context Protocol) ist ein Standard von Anthropic, mit dem KI-Assistenten externe Tools aufrufen können — z.B. Datenbanken lesen, APIs steuern. Für TeileniX wäre ein MCP-Server denkbar, der Claude erlaubt direkt Ausgaben in Supabase zu schreiben. Das ist jedoch eine fortgeschrittene Architektur und für den Nutzer nicht sichtbar anders als die einfachere API-Variante. <strong style="color:var(--amber)">Empfehlung: Zuerst einfache Claude API nutzen, MCP später als Erweiterung.</strong>
-        </div>
-      </div>
-    </section>
-
-    <!-- 9. PWA: KI & Offline -->
-    <section class="section" id="pwa">
-      <div class="section-number">09 — PWA: KI & Offline im Detail</div>
-      <h2 class="section-title">PWA auf iPhone & Android</h2>
-      <p class="section-desc">Was ist mit einer Progressive Web App konkret möglich — ohne App Store, direkt im Browser? Ein realistischer Blick auf KI-Anbindung und Offline-Fähigkeit.</p>
-
-      <!-- PWA Grundlage -->
-      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:16px">
-        <div class="cost-card-title" style="margin-bottom:16px">Was eine PWA ist</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
-          <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center">
-            <div style="font-size:28px;margin-bottom:8px">📲</div>
-            <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px">Installierbar</div>
-            <div style="font-size:11px;color:var(--muted)">„Zum Homescreen hinzufügen" — sieht aus wie eine App</div>
-          </div>
-          <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center">
-            <div style="font-size:28px;margin-bottom:8px">⚡</div>
-            <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px">Kein App Store</div>
-            <div style="font-size:11px;color:var(--muted)">Direkt via URL, kein Review, sofortige Updates</div>
-          </div>
-          <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center">
-            <div style="font-size:28px;margin-bottom:8px">🌐</div>
-            <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px">Web-Technologie</div>
-            <div style="font-size:11px;color:var(--muted)">Läuft in Safari (iOS) oder Chrome (Android)</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- KI / Sprache bei PWA -->
-      <div class="section-number" style="margin-bottom:8px;margin-top:32px">Spracheingabe mit PWA</div>
-      <h3 style="font-size:20px;font-family:var(--serif);color:var(--text);margin-bottom:8px">KI-Anbindung im Browser</h3>
-      <p style="font-size:14px;color:var(--muted);margin-bottom:20px">Zwei technische Wege — mit unterschiedlicher Browserunterstützung auf iOS und Android.</p>
-
-      <div class="tech-grid" style="margin-bottom:16px">
-        <div class="cost-card">
-          <div class="cost-card-title">Weg A — Web Speech API</div>
-          <div style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.5">Browser erkennt Sprache direkt — kein Upload, keine API-Kosten für Speech-to-Text.</div>
-          <div class="cost-row">
-            <span class="cost-label">Android Chrome</span>
-            <span class="cost-value highlight">✓ Funktioniert sehr gut</span>
-          </div>
-          <div class="cost-row">
-            <span class="cost-label">iOS Safari</span>
-            <span class="cost-value" style="color:var(--amber)">⚠ Seit iOS 14.5, instabil</span>
-          </div>
-          <div class="cost-row">
-            <span class="cost-label">Offline-Erkennung</span>
-            <span class="cost-value" style="color:var(--red)">✗ Braucht Internet</span>
-          </div>
-          <div class="cost-row">
-            <span class="cost-label">Kosten</span>
-            <span class="cost-value highlight">0 USD</span>
-          </div>
-        </div>
-
-        <div class="cost-card" style="border-color:var(--teal-bright)30">
-          <div class="cost-card-title" style="color:var(--teal-bright)">Weg B — MediaRecorder + Whisper (Empfohlen)</div>
-          <div style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.5">Browser nimmt Audio auf, sendet es an OpenAI Whisper zur Transkription, dann Claude API zum Parsen.</div>
-          <div class="cost-row">
-            <span class="cost-label">Android Chrome</span>
-            <span class="cost-value highlight">✓ Vollständig</span>
-          </div>
-          <div class="cost-row">
-            <span class="cost-label">iOS Safari</span>
-            <span class="cost-value highlight">✓ Seit iOS 14.5</span>
-          </div>
-          <div class="cost-row">
-            <span class="cost-label">Qualität</span>
-            <span class="cost-value highlight">Sehr hoch (Whisper)</span>
-          </div>
-          <div class="cost-row">
-            <span class="cost-label">Kosten pro Aufnahme</span>
-            <span class="cost-value">~0,01 USD</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- iOS vs Android Vergleich -->
-      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px">
-        <div style="display:grid;grid-template-columns:1fr 1fr">
-          <div style="padding:20px 24px;border-right:1px solid var(--border)">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
-              <span style="font-size:20px"></span>
-              <span style="font-size:13px;font-weight:600;color:var(--text)">iPhone (Safari)</span>
-            </div>
-            <div class="tech-item" style="margin-bottom:8px;font-size:13px">
-              <span style="color:var(--green)">✓</span>&nbsp; MediaRecorder: funktioniert seit iOS 14.5
-            </div>
-            <div class="tech-item" style="margin-bottom:8px;font-size:13px">
-              <span style="color:var(--green)">✓</span>&nbsp; Mikrofon-Zugriff per getUserMedia
-            </div>
-            <div class="tech-item" style="margin-bottom:8px;font-size:13px">
-              <span style="color:var(--amber)">⚠</span>&nbsp; Web Speech API: unzuverlässig, bricht ab
-            </div>
-            <div class="tech-item" style="margin-bottom:8px;font-size:13px">
-              <span style="color:var(--red)">✗</span>&nbsp; Background Sync: nicht unterstützt
-            </div>
-            <div class="tech-item" style="font-size:13px">
-              <span style="color:var(--green)">✓</span>&nbsp; Push Notifications seit iOS 16.4
-            </div>
-          </div>
-          <div style="padding:20px 24px">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
-              <span style="font-size:20px">🤖</span>
-              <span style="font-size:13px;font-weight:600;color:var(--text)">Android (Chrome)</span>
-            </div>
-            <div class="tech-item" style="margin-bottom:8px;font-size:13px">
-              <span style="color:var(--green)">✓</span>&nbsp; MediaRecorder: vollständig unterstützt
-            </div>
-            <div class="tech-item" style="margin-bottom:8px;font-size:13px">
-              <span style="color:var(--green)">✓</span>&nbsp; Web Speech API: funktioniert zuverlässig
-            </div>
-            <div class="tech-item" style="margin-bottom:8px;font-size:13px">
-              <span style="color:var(--green)">✓</span>&nbsp; Background Sync: unterstützt
-            </div>
-            <div class="tech-item" style="margin-bottom:8px;font-size:13px">
-              <span style="color:var(--green)">✓</span>&nbsp; Push Notifications: vollständig
-            </div>
-            <div class="tech-item" style="font-size:13px">
-              <span style="color:var(--green)">✓</span>&nbsp; Offline-First deutlich besser als iOS
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Offline PWA -->
-      <div class="section-number" style="margin-bottom:8px;margin-top:32px">Offline-Fähigkeit mit PWA</div>
-      <h3 style="font-size:20px;font-family:var(--serif);color:var(--text);margin-bottom:8px">Was ohne Internet geht</h3>
-      <p style="font-size:14px;color:var(--muted);margin-bottom:20px">PWAs nutzen Service Workers und IndexedDB — das sind Browser-native Mechanismen für Offline-Betrieb.</p>
-
-      <div class="tech-grid" style="margin-bottom:16px">
-        <div class="tech-card stays">
-          <div class="tech-card-title" style="color:var(--green)">✓ Offline möglich (PWA)</div>
-          <div class="tech-item">✓ &nbsp;App-Shell (UI) vollständig gecacht</div>
-          <div class="tech-item">✓ &nbsp;Bereits geladene Ausgaben lesen</div>
-          <div class="tech-item">✓ &nbsp;Neue Ausgabe erfassen → lokal in IndexedDB</div>
-          <div class="tech-item">✓ &nbsp;Teilnehmer & Kategorien gecacht</div>
-          <div class="tech-item">✓ &nbsp;Letzte Abrechnung offline einsehbar</div>
-          <div class="tech-item">✓ &nbsp;Android: automatischer Sync via Background Sync</div>
-        </div>
-        <div class="tech-card changes">
-          <div class="tech-card-title" style="color:var(--red)">✗ Nur mit Internet (PWA)</div>
-          <div class="tech-item">✗ &nbsp;Spracheingabe (Whisper/Web Speech braucht Internet)</div>
-          <div class="tech-item">✗ &nbsp;Ausgaben anderer Teilnehmer live sehen</div>
-          <div class="tech-item">✗ &nbsp;Reise beitreten</div>
-          <div class="tech-item">✗ &nbsp;Neue Abrechnung berechnen</div>
-          <div class="tech-item">✗ &nbsp;iOS: Sync erst beim nächsten App-Öffnen</div>
-          <div class="tech-item">✗ &nbsp;Push Notifications nur iOS 16.4+</div>
-        </div>
-      </div>
-
-      <!-- Technische Umsetzung -->
-      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:16px">
-        <div class="cost-card-title" style="margin-bottom:16px">Technische Bausteine für PWA-Offline</div>
-        <div class="cost-row">
-          <span class="cost-label"><strong style="color:var(--text)">Service Worker</strong> — Netz abfangen, aus Cache bedienen</span>
-          <span class="cost-value highlight">next-pwa Plugin</span>
-        </div>
-        <div class="cost-row">
-          <span class="cost-label"><strong style="color:var(--text)">IndexedDB</strong> — Pending-Ausgaben lokal speichern</span>
-          <span class="cost-value highlight">idb-keyval (2kb)</span>
-        </div>
-        <div class="cost-row">
-          <span class="cost-label"><strong style="color:var(--text)">Background Sync</strong> — Android: automatisch senden wenn online</span>
-          <span class="cost-value highlight">Service Worker API</span>
-        </div>
-        <div class="cost-row">
-          <span class="cost-label"><strong style="color:var(--text)">Network Status</strong> — Online/Offline erkennen</span>
-          <span class="cost-value highlight">navigator.onLine</span>
-        </div>
-        <div class="cost-row">
-          <span class="cost-label"><strong style="color:var(--text)">Web App Manifest</strong> — Installierbar, Splashscreen, Icon</span>
-          <span class="cost-value highlight">manifest.json</span>
-        </div>
-      </div>
-
-      <!-- Aufwand PWA -->
-      <div class="costs-grid" style="margin-bottom:16px">
-        <div class="cost-card">
-          <div class="cost-card-title">Aufwand PWA-Offline</div>
-          <div class="cost-row">
-            <span class="cost-label">next-pwa einrichten + Manifest</span>
-            <span class="cost-value highlight">~4–8h</span>
-          </div>
-          <div class="cost-row">
-            <span class="cost-label">Offline-Ausgabe in IndexedDB</span>
-            <span class="cost-value highlight">~8–12h</span>
-          </div>
-          <div class="cost-row">
-            <span class="cost-label">Sync-Logik + Konfliktbehandlung</span>
-            <span class="cost-value" style="color:var(--amber)">~12–20h</span>
-          </div>
-          <div class="cost-row">
-            <span class="cost-label">Gesamt</span>
-            <span class="cost-value" style="color:var(--teal-bright)">~3–5 Tage</span>
-          </div>
-        </div>
-        <div class="cost-card">
-          <div class="cost-card-title">Aufwand PWA-Spracheingabe</div>
-          <div class="cost-row">
-            <span class="cost-label">MediaRecorder + Mikrofon UI</span>
-            <span class="cost-value highlight">~4h</span>
-          </div>
-          <div class="cost-row">
-            <span class="cost-label">Whisper API anbinden</span>
-            <span class="cost-value highlight">~2h</span>
-          </div>
-          <div class="cost-row">
-            <span class="cost-label">Claude API Prompt (Parsing)</span>
-            <span class="cost-value highlight">~4–6h</span>
-          </div>
-          <div class="cost-row">
-            <span class="cost-label">Gesamt</span>
-            <span class="cost-value" style="color:var(--teal-bright)">~1–2 Tage</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="alert alert-success">
-        <div class="alert-title">✓ PWA-Fazit: Solide Grundlage, mit klaren Grenzen</div>
-        <div class="alert-body">
-          Eine PWA für TeileniX ist <strong style="color:var(--teal-bright)">heute schon sehr gut umsetzbar</strong> — Offline-Erfassung, KI-Spracheingabe und Installierbarkeit sind alle machbar. Die größte Einschränkung ist iOS: kein Background Sync (Sync erst beim nächsten Öffnen der App) und Web Speech API ist unzuverlässig → daher Whisper-Variante bevorzugen. Android verhält sich deutlich näher an einer nativen App. <strong style="color:var(--teal-bright)">Empfehlung: PWA als schneller erster Schritt, später mit Capacitor zu nativer App erweitern.</strong>
-        </div>
-      </div>
-    </section>
-
-    <!-- 10. Empfehlung -->
-    <section class="section" id="empfehlung">
-      <div class="section-number">10 — Empfehlung & nächste Schritte</div>
-      <h2 class="section-title">Wie vorgehen</h2>
-      <p class="section-desc">Klare Handlungsempfehlung und konkrete erste Schritte.</p>
+    <!-- 06: Empfehlung & Nächste Schritte -->
+    <section class="section" id="next-steps">
+      <div class="section-label">06 &nbsp;·&nbsp; Empfehlung &amp; Nächste Schritte</div>
+      <h2 class="section-title">Wie jetzt vorgehen?</h2>
 
       <div class="recommendation">
-        <div class="recommendation-label">Strategische Empfehlung</div>
-        <div class="recommendation-text">
-          Starte mit <em style="font-style:italic;color:var(--teal-bright)">Capacitor + Vercel API</em> als Hybrid-Ansatz. Minimaler Aufwand, maximale Code-Wiederverwendung. Die App läuft als WebView mit nativen Erweiterungen — schnell, günstig und erweiterbar.
+        <div class="rec-label">⭐ Empfehlung</div>
+        <div class="rec-title">Capacitor + Vercel API — der Hybrid-Ansatz</div>
+        <div class="rec-body">
+          Starte mit Capacitor als WebView-Wrapper und behalte die Vercel API als Backend. Minimaler Aufwand, maximale Code-Wiederverwendung. Die App läuft als WebView mit nativen Erweiterungen (Push, Haptics, Share) — und landet trotzdem im App Store.
         </div>
       </div>
 
-      <ol class="steps-list">
-        <li class="step-item">
-          <div class="step-num">1</div>
-          <div class="step-body">
-            <span class="cost-tag">99 USD</span>
-            <strong>Apple Developer Account anlegen</strong><br>
-            Unter developer.apple.com registrieren. Pflicht für jeden App Store Upload und TestFlight-Test.
-          </div>
-        </li>
-        <li class="step-item">
-          <div class="step-num">2</div>
-          <div class="step-body">
-            <span class="cost-tag">25 USD</span>
-            <strong>Google Play Console Account anlegen</strong><br>
-            Einmalige Gebühr, danach unbegrenzte App-Veröffentlichungen unter diesem Account.
-          </div>
-        </li>
-        <li class="step-item">
-          <div class="step-num">3</div>
-          <div class="step-body">
-            <span class="cost-tag">~4h</span>
-            <strong>Capacitor installieren & konfigurieren</strong><br>
-            <code>npm install @capacitor/core @capacitor/cli @capacitor/ios @capacitor/android</code> — dann iOS & Android Projekte initialisieren.
-          </div>
-        </li>
-        <li class="step-item">
-          <div class="step-num">4</div>
-          <div class="step-body">
-            <span class="cost-tag">Design</span>
-            <strong>App Icon & Splashscreen erstellen</strong><br>
-            Benötigt: 1024×1024px PNG (iOS) und diverse Splash-Größen. Capacitor Assets Plugin automatisiert die Größen-Generierung.
-          </div>
-        </li>
-        <li class="step-item">
-          <div class="step-num">5</div>
-          <div class="step-body">
-            <span class="cost-tag">Mac nötig</span>
-            <strong>iOS Build via Xcode</strong><br>
-            Xcode läuft ausschließlich auf macOS. Für Windows-Nutzer: Mac Mini mieten (MacStadium) oder Mac-Freund fragen.
-          </div>
-        </li>
-        <li class="step-item">
-          <div class="step-num">6</div>
-          <div class="step-body">
-            <span class="cost-tag">Win/Mac</span>
-            <strong>Android Build via Android Studio</strong><br>
-            Funktioniert auf Windows, Mac und Linux. Android Studio kostenlos verfügbar.
-          </div>
-        </li>
-        <li class="step-item">
-          <div class="step-num">7</div>
-          <div class="step-body">
-            <strong>Beta-Test: TestFlight (iOS) & Play Internal Testing (Android)</strong><br>
-            Bis zu 10.000 Tester kostenlos via TestFlight. Feedback sammeln, Bugs beheben.
-          </div>
-        </li>
-        <li class="step-item">
-          <div class="step-num">8</div>
-          <div class="step-body">
-            <strong>App Store & Google Play Submission</strong><br>
-            Screenshots, Beschreibung, Datenschutzrichtlinie (Pflicht!), Kategorien auswählen — einreichen und Review abwarten.
-          </div>
-        </li>
-      </ol>
-    </section>
+      <div class="steps-list">
 
-    <!-- Footer -->
-    <footer class="doc-footer">
+        <div class="step-item">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <div class="step-title">Apple Developer Account anlegen</div>
+            <div class="step-note">Pflicht für App Store Veröffentlichung und iOS-Build-Signing</div>
+          </div>
+          <div class="step-cost">99 USD/Jahr</div>
+        </div>
+
+        <div class="step-item">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <div class="step-title">Google Play Console Account anlegen</div>
+            <div class="step-note">Einmalige Gebühr, danach unbegrenzt Apps veröffentlichen</div>
+          </div>
+          <div class="step-cost">25 USD</div>
+        </div>
+
+        <div class="step-item">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <div class="step-title">Capacitor installieren &amp; konfigurieren</div>
+            <div class="step-note"><code>npm install @capacitor/core @capacitor/cli</code> — dann iOS &amp; Android Projekte generieren</div>
+          </div>
+        </div>
+
+        <div class="step-item">
+          <div class="step-num">4</div>
+          <div class="step-content">
+            <div class="step-title">App Icon &amp; Splashscreen Design</div>
+            <div class="step-note">Benötigt: 1024×1024px Icon (PNG, kein transparenter Hintergrund für iOS)</div>
+          </div>
+        </div>
+
+        <div class="step-item">
+          <div class="step-num">5</div>
+          <div class="step-content">
+            <div class="step-title">iOS Build via Xcode</div>
+            <div class="step-note">Xcode läuft nur auf macOS — Mac Computer zwingend erforderlich</div>
+          </div>
+        </div>
+
+        <div class="step-item">
+          <div class="step-num">6</div>
+          <div class="step-content">
+            <div class="step-title">Android Build via Android Studio</div>
+            <div class="step-note">Läuft auf Windows, Mac und Linux — kein besonderes Gerät nötig</div>
+          </div>
+        </div>
+
+        <div class="step-item">
+          <div class="step-num">7</div>
+          <div class="step-content">
+            <div class="step-title">Beta-Test via TestFlight &amp; Play Internal Testing</div>
+            <div class="step-note">Bis zu 10.000 externe Tester auf iOS, unbegrenzt auf Android</div>
+          </div>
+        </div>
+
+        <div class="step-item">
+          <div class="step-num">8</div>
+          <div class="step-content">
+            <div class="step-title">App Store &amp; Google Play Submission</div>
+            <div class="step-note">Review-Prozess: 1–7 Tage (iOS), 2–3 Tage (Android)</div>
+          </div>
+        </div>
+
+      </div>
+
       <div class="footer-note">
-        <strong>Wichtig:</strong> &nbsp;Ein Mac Computer ist zwingend erforderlich für iOS-Builds. Xcode läuft ausschließlich auf macOS. Für den Android-Build ist kein Mac nötig.
+        <div class="footer-icon">🖥️</div>
+        <div class="footer-text">
+          <strong>Wichtiger Hinweis:</strong> Ein Mac Computer ist Pflicht für iOS-Builds. Xcode — die offizielle Apple-Entwicklungsumgebung — läuft ausschließlich unter macOS. Alternativ kann ein Cloud-Build-Service wie <strong>Codemagic</strong> oder <strong>Expo EAS</strong> genutzt werden, der iOS-Builds in der Cloud ausführt.
+        </div>
       </div>
-      <div class="footer-bottom">
-        <span>TeileniX · Mobile App Konzept · März 2026</span>
-        <span>Capacitor + Vercel API (Empfohlen)</span>
-      </div>
-    </footer>
+
+    </section>
 
   </main>
 </div>
 
 <script>
-  // Active nav link on scroll
-  const sections = document.querySelectorAll('section[id], header[id]');
-  const navLinks = document.querySelectorAll('.nav-link');
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('.nav-list a');
 
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         navLinks.forEach(link => {
-          link.classList.remove('active');
-          if (link.getAttribute('href') === '#' + entry.target.id) {
-            link.classList.add('active');
-          }
+          link.classList.toggle('active', link.getAttribute('href') === '#' + entry.target.id);
         });
       }
     });
-  }, { threshold: 0.3 });
+  }, { rootMargin: '-20% 0px -70% 0px' });
 
   sections.forEach(s => observer.observe(s));
 </script>

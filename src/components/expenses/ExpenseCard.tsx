@@ -32,6 +32,16 @@ export default function ExpenseCard({ expense, myParticipantId, tripId, canEdit,
   const payerGroup = payer?.group_id && participantMap ? participantMap.get(payer.group_id) : null
   const payerName = payerGroup?.name ?? payer?.name ?? 'Unbekannt'
 
+  // Co-payer names
+  const coPayers = expense.co_payers ?? []
+  const coPayerNames = participantMap
+    ? coPayers.map(cp => {
+        const cp_p = participantMap.get(cp.participant_id)
+        const cp_g = cp_p?.group_id ? participantMap.get(cp_p.group_id) : null
+        return cp_g?.name ?? cp_p?.name ?? null
+      }).filter(Boolean)
+    : []
+
   const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation()
     if (!confirm('Ausgabe löschen?')) return
@@ -56,6 +66,9 @@ export default function ExpenseCard({ expense, myParticipantId, tripId, canEdit,
         <p className="font-semibold text-foreground text-[14px] truncate leading-tight">{expense.title}</p>
         <p className="text-xs text-muted-foreground mt-0.5">
           <span className={cn(iPaid && 'text-primary font-semibold')}>{payerName}</span>
+          {coPayerNames.length > 0 && (
+            <span className="text-muted-foreground/70">{' + '}{coPayerNames.join(', ')}</span>
+          )}
           {' · '}{categoryLabels[expense.category as keyof typeof categoryLabels] ?? expense.category}
         </p>
       </div>

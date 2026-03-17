@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { createExpenseSchema } from '@/lib/validations/expense'
 
@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
   }
 
   const {
-    tripId, paidByParticipantId, title, description, amountCents,
+    tripId, paidByParticipantId, coPayers, title, description, amountCents,
     currency, category, expenseDate, splitMode, splits
   } = parsed.data
 
@@ -35,6 +35,14 @@ export async function POST(request: NextRequest) {
   if (error) {
     console.error('create_expense_with_splits error:', error)
     return NextResponse.json({ error: 'Ausgabe konnte nicht gespeichert werden' }, { status: 500 })
+  }
+
+  // Store co_payers if multiple payers
+  if (coPayers && coPayers.length > 0) {
+    const admin = createAdminClient()
+    await admin.from('expenses').update({
+      co_payers: coPayers.map(cp => ({ participant_id: cp.participantId, amount_cents: cp.amountCents }))
+    }).eq('id', expenseId)
   }
 
   return NextResponse.json({ expenseId }, { status: 201 })

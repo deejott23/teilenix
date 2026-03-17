@@ -54,6 +54,7 @@ export type Database = {
         Row: {
           amount_cents: number
           category: string
+          co_payers: { participant_id: string; amount_cents: number }[] | null
           created_at: string
           currency: string
           description: string | null
@@ -68,6 +69,7 @@ export type Database = {
         Insert: {
           amount_cents: number
           category?: string
+          co_payers?: { participant_id: string; amount_cents: number }[] | null
           created_at?: string
           currency?: string
           description?: string | null
@@ -82,6 +84,7 @@ export type Database = {
         Update: {
           amount_cents?: number
           category?: string
+          co_payers?: { participant_id: string; amount_cents: number }[] | null
           created_at?: string
           currency?: string
           description?: string | null
