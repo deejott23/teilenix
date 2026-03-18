@@ -28,8 +28,8 @@ const securityHeaders = [
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       // Fonts: Google Fonts
       "font-src 'self' https://fonts.gstatic.com",
-      // Images: self + data URIs (used for inline SVGs/noise texture)
-      "img-src 'self' data: blob: https://lh3.googleusercontent.com",
+      // Images: self + data URIs + Google avatars + Supabase Storage
+      "img-src 'self' data: blob: https://lh3.googleusercontent.com https://*.supabase.co https://*.supabase.com",
       // Connect: Supabase + Google OAuth
       "connect-src 'self' https://*.supabase.co https://*.supabase.com wss://*.supabase.co https://accounts.google.com https://storage.googleapis.com",
       // Frames: none allowed
