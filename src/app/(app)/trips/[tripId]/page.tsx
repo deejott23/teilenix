@@ -66,6 +66,15 @@ export default async function TripOverviewPage({
   const myBalance   = settlement.balances.find(b => b.participantId === myParticipantId)
   const isActive    = trip.status === 'active'
 
+  // Billable entities only (groups + standalone individuals, no group members)
+  const billable    = participants.filter(p => !p.group_id)
+  const groupCount  = billable.filter(p => p.is_group).length
+  const personCount = billable.filter(p => !p.is_group).length
+  const participantLabel = [
+    groupCount  > 0 ? `${groupCount} Gruppe${groupCount > 1 ? 'n' : ''}` : '',
+    personCount > 0 ? `${personCount} Person${personCount > 1 ? 'en' : ''}` : '',
+  ].filter(Boolean).join(' · ')
+
   const dateRange = trip.start_date && trip.end_date
     ? `${formatDate(trip.start_date as string)} – ${formatDate(trip.end_date as string)}`
     : trip.start_date ? `ab ${formatDate(trip.start_date as string)}` : null
@@ -84,7 +93,7 @@ export default async function TripOverviewPage({
           )}
           <span className="flex items-center gap-1.5">
             <Users className="w-3.5 h-3.5" strokeWidth={2} />
-            {participants.length} Teilnehmer
+            {participantLabel}
           </span>
         </div>
 
