@@ -48,6 +48,7 @@ export default function TripParticipantList({
   const [showGroupForm, setShowGroupForm] = useState(false)
   const [groupName, setGroupName] = useState('')
   const [groupShares, setGroupShares] = useState(2)
+  const [selectedMemberIds, setSelectedMemberIds] = useState<string[]>([])
   const [addingGroup, setAddingGroup] = useState(false)
 
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -101,9 +102,23 @@ export default function TripParticipantList({
         body: JSON.stringify({ name: groupName.trim(), shares: groupShares, is_group: true }),
       })
       if (!res.ok) throw new Error((await res.json()).error ?? 'Fehler')
+      const { participant: newGroup } = await res.json()
+
+      // Assign selected members to the new group in parallel
+      if (selectedMemberIds.length > 0) {
+        await Promise.all(selectedMemberIds.map(id =>
+          fetch(`/api/trips/${tripId}/participants/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ group_id: newGroup.id }),
+          })
+        ))
+      }
+
       toast.success(`Gruppe "${groupName.trim()}" erstellt`)
       setGroupName('')
       setGroupShares(2)
+      setSelectedMemberIds([])
       setShowGroupForm(false)
       router.refresh()
     } catch (e: unknown) {
@@ -112,6 +127,9 @@ export default function TripParticipantList({
       setAddingGroup(false)
     }
   }
+
+  const toggleMember = (id: string) =>
+    setSelectedMemberIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
 
   const startEdit = (p: TripParticipant) => {
     setEditingId(p.id)
@@ -234,11 +252,47 @@ export default function TripParticipantList({
                   </button>
                 </div>
               </div>
+              {/* Assign existing ungrouped participants */}
+              {ungrouped.length > 0 && (
+                <div className="space-y-1.5">
+                  <p className="text-xs text-muted-foreground">Teilnehmer direkt zuordnen (optional):</p>
+                  {ungrouped.map(p => {
+                    const checked = selectedMemberIds.includes(p.id)
+                    return (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => toggleMember(p.id)}
+                        className={cn(
+                          'w-full flex items-center gap-2.5 px-3 py-2 rounded-xl border text-left transition-colors',
+                          checked
+                            ? 'bg-primary/10 border-primary/30 text-foreground'
+                            : 'bg-background border-border text-muted-foreground hover:border-primary/20'
+                        )}
+                      >
+                        <div className={cn('w-4 h-4 rounded flex items-center justify-center flex-shrink-0 border transition-colors',
+                          checked ? 'bg-primary border-primary' : 'border-border'
+                        )}>
+                          {checked && <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />}
+                        </div>
+                        <div className={cn('w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-bold flex-shrink-0', getAvatarColor(p.name))}>
+                          {p.name.charAt(0).toUpperCase()}
+                        </div>
+                        <span className="text-sm font-medium flex-1">{p.name}</span>
+                        {!p.user_id && (
+                          <span className="text-[9px] font-semibold text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full">Gast</span>
+                        )}
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+
               <div className="flex gap-2">
                 <Button size="sm" disabled={addingGroup || !groupName.trim()} onClick={handleAddGroup} className="rounded-xl h-9 flex-1">
-                  {addingGroup ? '…' : 'Gruppe erstellen'}
+                  {addingGroup ? '…' : selectedMemberIds.length > 0 ? `Gruppe erstellen & ${selectedMemberIds.length} zuordnen` : 'Gruppe erstellen'}
                 </Button>
-                <button onClick={() => setShowGroupForm(false)} className="text-muted-foreground hover:text-foreground px-2">
+                <button onClick={() => { setShowGroupForm(false); setSelectedMemberIds([]) }} className="text-muted-foreground hover:text-foreground px-2">
                   <X className="w-4 h-4" />
                 </button>
               </div>
