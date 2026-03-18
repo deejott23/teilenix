@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from 'next/navigation'
@@ -17,6 +17,54 @@ import type { CustomCategory } from '@/components/trips/TripCategorySettings'
 const ALL_STANDARD_CATEGORIES: ExpenseCategory[] = [
   'food', 'transport', 'accommodation', 'activities', 'shopping', 'health', 'other'
 ]
+
+const CATEGORY_KEYWORDS: Record<string, string[]> = {
+  food: [
+    'pizza', 'burger', 'restaurant', 'essen', 'abendessen', 'mittagessen', 'frühstück',
+    'café', 'cafe', 'coffee', 'kaffee', 'bar', 'bier', 'wein', 'winery', 'supermarkt',
+    'rewe', 'lidl', 'aldi', 'edeka', 'spar', 'snack', 'döner', 'pasta', 'sushi',
+    'brunch', 'tapas', 'kebab', 'eis', 'ice cream', 'bäckerei', 'metzger', 'markt',
+    'speise', 'küche', 'gasthaus', 'wirtshaus', 'trattoria', 'bistro', 'food',
+  ],
+  transport: [
+    'taxi', 'uber', 'lyft', 'bolt', 'bahn', 'bus', 'tram', 'metro', 'u-bahn',
+    'flug', 'fliegen', 'flugticket', 'zug', 'ticket', 'fahrt', 'mietwagen',
+    'parkhaus', 'parken', 'parkplatz', 'tanken', 'benzin', 'sprit', 'diesel',
+    'fähre', 'ferry', 'shuttle', 'transfer', 'blablacar', 'mietwagen', 'rental',
+    'airport', 'flughafen', 'bahnhof', 'öpnv', 'fahrrad', 'bike', 'scooter',
+  ],
+  accommodation: [
+    'hotel', 'hostel', 'airbnb', 'unterkunft', 'wohnung', 'apartment', 'motel',
+    'pension', 'hütte', 'villa', 'resort', 'booking', 'zimmer', 'übernachtung',
+    'b&b', 'bed', 'breakfast', 'camping', 'campingplatz', 'stellplatz',
+  ],
+  activities: [
+    'museum', 'tour', 'eintritt', 'aktivität', 'führung', 'ausflug', 'konzert',
+    'show', 'theater', 'kino', 'zoo', 'kletter', 'tauchen', 'surfen', 'skipass',
+    'spa', 'massage', 'wellness', 'ticket', 'event', 'festival', 'guided',
+    'sightseeing', 'besichtigung', 'bootstour', 'kayak', 'rafting', 'safari',
+    'golf', 'tennis', 'kurs', 'workshop', 'escape', 'freizeitpark',
+  ],
+  shopping: [
+    'souvenir', 'geschenk', 'shopping', 'kleidung', 'shop', 'boutique', 'laden',
+    'zara', 'h&m', 'primark', 'outlet', 'kaufhaus', 'drogerie', 'apotheke',
+    'elektronik', 'buchhandlung', 'buchladen',
+  ],
+  health: [
+    'apotheke', 'arzt', 'medizin', 'arztbesuch', 'krankenhaus', 'zahnarzt',
+    'dm', 'rossmann', 'müller', 'tabletten', 'pflaster', 'salbe', 'rezept',
+    'praxis', 'klinik', 'notaufnahme', 'pharmacy',
+  ],
+}
+
+function suggestCategory(title: string): string | null {
+  const lower = title.toLowerCase().trim()
+  if (!lower) return null
+  for (const [cat, keywords] of Object.entries(CATEGORY_KEYWORDS)) {
+    if (keywords.some(kw => lower.includes(kw))) return cat
+  }
+  return null
+}
 
 function parseCustomCats(raw: string[]): CustomCategory[] {
   return raw.flatMap(s => { try { return [JSON.parse(s) as CustomCategory] } catch { return [] } })
@@ -62,6 +110,27 @@ export default function ExpenseForm({
   const participantLookup = new Map(participants.map(p => [p.id, p]))
 
   const [selectedCategory, setSelectedCategory] = useState<string>(initialData?.category ?? 'other')
+  // Track whether current category was set by auto-suggestion (vs manual pick)
+  const categoryManuallySet = useRef(!!initialData?.category)
+  const [autoSuggested, setAutoSuggested] = useState(false)
+
+  const pickCategory = (cat: string) => {
+    categoryManuallySet.current = true
+    setAutoSuggested(false)
+    setSelectedCategory(cat)
+  }
+
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!categoryManuallySet.current) {
+      const suggested = suggestCategory(e.target.value)
+      if (suggested) {
+        setSelectedCategory(suggested)
+        setAutoSuggested(true)
+      } else {
+        setAutoSuggested(false)
+      }
+    }
+  }
   const [splitMode, setSplitMode] = useState<'all' | 'custom'>(
     initialData?.splitMode === 'custom' ? 'custom' : 'all'
   )
@@ -223,7 +292,7 @@ export default function ExpenseForm({
             placeholder="z.B. Abendessen am Hafen"
             className="h-11 text-base"
             autoFocus={!isEdit}
-            {...form.register('title')}
+            {...form.register('title', { onChange: handleTitleChange })}
           />
           {form.formState.errors.title && (
             <p className="text-xs text-destructive mt-1">{form.formState.errors.title.message}</p>
@@ -260,18 +329,22 @@ export default function ExpenseForm({
             <span className="ml-1.5 text-primary normal-case tracking-normal font-semibold">
               · {categoryLabels[selectedCategory as ExpenseCategory] ?? enabledCustom.find(c => c.key === selectedCategory)?.label ?? selectedCategory}
             </span>
+            {autoSuggested && (
+              <span className="ml-2 text-[10px] text-muted-foreground/70 font-normal normal-case tracking-normal">
+                ✦ Vorschlag
+              </span>
+            )}
           </label>
-          <p className="text-[10px] text-muted-foreground/60 -mt-1 mb-1">Das Icon der Ausgabe richtet sich nach der gewählten Kategorie.</p>
           <div className="flex flex-wrap gap-2">
             {standardVisible.map(cat => (
-              <button key={cat} type="button" onClick={() => setSelectedCategory(cat)} title={categoryLabels[cat]}
+              <button key={cat} type="button" onClick={() => pickCategory(cat)} title={categoryLabels[cat]}
                 className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0 transition-all ${
                   selectedCategory === cat ? 'bg-primary text-primary-foreground shadow-sm scale-105' : 'bg-muted text-foreground hover:bg-muted/80'
                 }`}
               >{categoryEmoji[cat]}</button>
             ))}
             {enabledCustom.map(cat => (
-              <button key={cat.key} type="button" onClick={() => setSelectedCategory(cat.key)} title={cat.label}
+              <button key={cat.key} type="button" onClick={() => pickCategory(cat.key)} title={cat.label}
                 className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0 transition-all ${
                   selectedCategory === cat.key ? 'bg-primary text-primary-foreground shadow-sm scale-105' : 'bg-muted text-foreground hover:bg-muted/80'
                 }`}
