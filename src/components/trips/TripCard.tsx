@@ -3,20 +3,18 @@ import { ArrowRight, Calendar } from 'lucide-react'
 import { formatDate } from '@/lib/formatting'
 import type { Trip } from '@/types/app'
 import { cn } from '@/lib/utils'
+import { pickFallbackEmoji } from '@/lib/tripEmojis'
 
 interface TripCardProps {
   trip: Trip
 }
-
-const FALLBACK_EMOJIS = ['🌴', '🏔️', '🗺️', '🌅', '⛵', '🏖️', '🌍', '🏕️']
-const pickEmoji = (name: string) => FALLBACK_EMOJIS[name.charCodeAt(0) % FALLBACK_EMOJIS.length]
 
 export default function TripCard({ trip }: TripCardProps) {
   const dateRange = trip.start_date && trip.end_date
     ? `${formatDate(trip.start_date)} – ${formatDate(trip.end_date)}`
     : trip.start_date ? `ab ${formatDate(trip.start_date)}` : null
   const active = trip.status === 'active'
-  const emoji = (trip.cover_emoji as string | null) ?? pickEmoji(trip.name)
+  const emoji = (trip.cover_emoji as string | null) ?? pickFallbackEmoji(trip.name)
 
   return (
     <Link href={`/trips/${trip.id}`} className="block group">

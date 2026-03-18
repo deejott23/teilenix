@@ -6,7 +6,10 @@ export const createTripSchema = z.object({
   startDate: z.string().optional(),
   endDate: z.string().optional(),
   coverEmoji: z.string().max(8).optional(),
-})
+}).refine(data => {
+  if (data.startDate && data.endDate) return data.startDate <= data.endDate
+  return true
+}, { message: 'Enddatum muss nach dem Startdatum liegen', path: ['endDate'] })
 
 export const joinTripSchema = z.object({
   shares: z.coerce.number().int().min(1, 'Mindestens 1 Anteil').max(20, 'Maximal 20 Anteile'),

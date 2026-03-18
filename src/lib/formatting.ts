@@ -13,11 +13,23 @@ export function formatCurrency(cents: number, currency = 'EUR', locale = 'de-DE'
 }
 
 /**
- * Parse a currency string or number input to cents
- * Handles both "12.50" and "12,50"
+ * Parse a currency string or number input to cents.
+ * Handles German format "1.250,50" and English format "1,250.50".
  */
 export function parseToCents(value: string): number {
-  const normalized = value.replace(',', '.')
+  if (!value) return 0
+  const trimmed = value.trim()
+  // Detect format: if last separator is comma → German (1.250,50), else English (1,250.50)
+  const lastComma = trimmed.lastIndexOf(',')
+  const lastDot = trimmed.lastIndexOf('.')
+  let normalized: string
+  if (lastComma > lastDot) {
+    // German: dots are thousand-separators, comma is decimal
+    normalized = trimmed.replace(/\./g, '').replace(',', '.')
+  } else {
+    // English: commas are thousand-separators, dot is decimal
+    normalized = trimmed.replace(/,/g, '')
+  }
   const parsed = parseFloat(normalized)
   if (isNaN(parsed)) return 0
   return Math.round(parsed * 100)
@@ -90,8 +102,14 @@ export function formatBalance(cents: number, currency = 'EUR'): string {
 }
 
 /**
- * Get today's date as ISO string (YYYY-MM-DD)
+ * Get today's date as ISO string (YYYY-MM-DD) in local time.
+ * new Date().toISOString() returns UTC — which gives the wrong date
+ * for users in UTC+ timezones after midnight UTC.
  */
 export function todayISO(): string {
-  return new Date().toISOString().split('T')[0]
+  const d = new Date()
+  const year = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 }

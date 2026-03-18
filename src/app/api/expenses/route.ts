@@ -40,9 +40,14 @@ export async function POST(request: NextRequest) {
   // Store co_payers if multiple payers
   if (coPayers && coPayers.length > 0) {
     const admin = createAdminClient()
-    await admin.from('expenses').update({
+    const { error: coPayerError } = await admin.from('expenses').update({
       co_payers: coPayers.map(cp => ({ participant_id: cp.participantId, amount_cents: cp.amountCents }))
     }).eq('id', expenseId)
+    if (coPayerError) {
+      console.error('co_payers update error:', coPayerError)
+      // Expense was created but co_payers failed — surface the error
+      return NextResponse.json({ error: 'Ausgabe erstellt, aber Mitbezahler konnten nicht gespeichert werden' }, { status: 500 })
+    }
   }
 
   return NextResponse.json({ expenseId }, { status: 201 })

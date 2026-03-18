@@ -5,12 +5,7 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { ImagePlus, X, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-
-const TRIP_EMOJIS = [
-  '🌍', '🌴', '🏔️', '🏖️', '🗺️', '🌅', '⛵', '🏕️',
-  '✈️', '🚂', '🚗', '🚢', '🗼', '🏰', '🌊', '🎿',
-  '🏄', '🧗', '🎭', '🌋', '🏜️', '🎪', '🌺', '🎡',
-]
+import { TRIP_EMOJIS } from '@/lib/tripEmojis'
 
 /** Compress image to max 1200px, JPEG 85% */
 function compressImage(file: File): Promise<Blob> {

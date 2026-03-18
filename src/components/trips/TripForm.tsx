@@ -10,12 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { createTripSchema, type CreateTripInput } from '@/lib/validations/trip'
 import { todayISO } from '@/lib/formatting'
-
-const TRIP_EMOJIS = [
-  '🌍', '🌴', '🏔️', '🏖️', '🗺️', '🌅', '⛵', '🏕️',
-  '✈️', '🚂', '🚗', '🚢', '🗼', '🏰', '🌊', '🎿',
-  '🏄', '🧗', '🎭', '🌋', '🏜️', '🎪', '🌺', '🎡',
-]
+import { TRIP_EMOJIS } from '@/lib/tripEmojis'
 
 export default function TripForm() {
   const router = useRouter()

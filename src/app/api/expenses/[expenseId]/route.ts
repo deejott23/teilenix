@@ -58,11 +58,15 @@ export async function PATCH(
   // Update co_payers (null clears them, array sets them)
   if (coPayers !== undefined) {
     const admin = createAdminClient()
-    await admin.from('expenses').update({
+    const { error: coPayerError } = await admin.from('expenses').update({
       co_payers: coPayers.length > 0
         ? coPayers.map(cp => ({ participant_id: cp.participantId, amount_cents: cp.amountCents }))
         : null
     }).eq('id', expenseId)
+    if (coPayerError) {
+      console.error('co_payers update error:', coPayerError)
+      return NextResponse.json({ error: 'Ausgabe gespeichert, aber Mitbezahler konnten nicht aktualisiert werden' }, { status: 500 })
+    }
   }
 
   return NextResponse.json({ success: true })

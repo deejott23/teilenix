@@ -5,9 +5,7 @@ import AddExpenseFab from '@/components/trips/AddExpenseFab'
 import TripEmojiPicker from '@/components/trips/TripEmojiPicker'
 import { ChevronLeft } from 'lucide-react'
 import Link from 'next/link'
-
-const FALLBACK_EMOJIS = ['🌴', '🏔️', '🗺️', '🌅', '⛵', '🏖️', '🌍', '🏕️']
-const pickEmoji = (name: string) => FALLBACK_EMOJIS[name.charCodeAt(0) % FALLBACK_EMOJIS.length]
+import { pickFallbackEmoji } from '@/lib/tripEmojis'
 
 export default async function TripLayout({
   children,
@@ -31,7 +29,7 @@ export default async function TripLayout({
 
   const isActive = trip.status === 'active'
   // Same fallback logic as TripCard to keep emoji consistent
-  const coverEmoji = (trip.cover_emoji as string | null) ?? pickEmoji(trip.name as string)
+  const coverEmoji = (trip.cover_emoji as string | null) ?? pickFallbackEmoji(trip.name as string)
   const coverImageUrl = (trip.cover_image_url as string | null) ?? null
 
   // Check if user is a participant (to allow emoji changes for all participants)

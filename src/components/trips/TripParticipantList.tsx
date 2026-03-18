@@ -106,13 +106,17 @@ export default function TripParticipantList({
 
       // Assign selected members to the new group in parallel
       if (selectedMemberIds.length > 0) {
-        await Promise.all(selectedMemberIds.map(id =>
+        const results = await Promise.allSettled(selectedMemberIds.map(id =>
           fetch(`/api/trips/${tripId}/participants/${id}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ group_id: newGroup.id }),
           })
         ))
+        const failed = results.filter(r => r.status === 'rejected').length
+        if (failed > 0) {
+          toast.error(`${failed} Teilnehmer konnten nicht zugeordnet werden`)
+        }
       }
 
       toast.success(`Gruppe "${groupName.trim()}" erstellt`)
