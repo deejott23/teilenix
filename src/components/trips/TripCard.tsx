@@ -8,14 +8,15 @@ interface TripCardProps {
   trip: Trip
 }
 
-const EMOJIS = ['🌴', '🏔️', '🗺️', '🌅', '⛵', '🏖️', '🌍', '🏕️']
-const pickEmoji = (name: string) => EMOJIS[name.charCodeAt(0) % EMOJIS.length]
+const FALLBACK_EMOJIS = ['🌴', '🏔️', '🗺️', '🌅', '⛵', '🏖️', '🌍', '🏕️']
+const pickEmoji = (name: string) => FALLBACK_EMOJIS[name.charCodeAt(0) % FALLBACK_EMOJIS.length]
 
 export default function TripCard({ trip }: TripCardProps) {
   const dateRange = trip.start_date && trip.end_date
     ? `${formatDate(trip.start_date)} – ${formatDate(trip.end_date)}`
     : trip.start_date ? `ab ${formatDate(trip.start_date)}` : null
   const active = trip.status === 'active'
+  const emoji = (trip.cover_emoji as string | null) ?? pickEmoji(trip.name)
 
   return (
     <Link href={`/trips/${trip.id}`} className="block group">
@@ -27,7 +28,7 @@ export default function TripCard({ trip }: TripCardProps) {
           'w-11 h-11 rounded-xl flex items-center justify-center text-xl flex-shrink-0 transition-transform duration-200 group-hover:scale-105',
           active ? 'bg-primary/12' : 'bg-muted/70'
         )}>
-          {pickEmoji(trip.name)}
+          {emoji}
         </div>
 
         <div className="flex-1 min-w-0">

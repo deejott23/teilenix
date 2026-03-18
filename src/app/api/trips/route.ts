@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 })
   }
 
-  const { name, startDate, endDate } = parsed.data
+  const { name, startDate, endDate, coverEmoji } = parsed.data
 
   // Use SECURITY DEFINER RPC: creates trip + adds creator as first participant
   const { data: tripId, error } = await supabase.rpc('create_trip_with_participant', {
@@ -25,6 +25,13 @@ export async function POST(request: NextRequest) {
   if (error) {
     console.error('create_trip_with_participant error:', error)
     return NextResponse.json({ error: 'Reise konnte nicht erstellt werden' }, { status: 500 })
+  }
+
+  // Set cover emoji if provided
+  if (coverEmoji) {
+    const { createAdminClient } = await import('@/lib/supabase/server')
+    const admin = createAdminClient()
+    await admin.from('trips').update({ cover_emoji: coverEmoji }).eq('id', tripId)
   }
 
   return NextResponse.json({ trip: { id: tripId } }, { status: 201 })

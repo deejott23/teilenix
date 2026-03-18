@@ -45,11 +45,12 @@ export async function PATCH(
   if (parsed.data.status !== undefined) updates.status = parsed.data.status
   if (parsed.data.enabledCategories !== undefined) updates.enabled_categories = parsed.data.enabledCategories
   if (parsed.data.customCategories !== undefined) updates.custom_categories = parsed.data.customCategories
+  if (parsed.data.coverEmoji !== undefined) updates.cover_emoji = parsed.data.coverEmoji
 
   const admin = createAdminClient()
 
   // Sensitive fields (name, status, dates) require creator rights
-  const hasSensitiveField = ['name', 'description', 'startDate', 'endDate', 'status']
+  const hasSensitiveField = ['name', 'description', 'startDate', 'endDate', 'status', 'coverEmoji']
     .some(f => parsed.data[f as keyof typeof parsed.data] !== undefined)
 
   if (hasSensitiveField) {

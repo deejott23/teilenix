@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import TripTabNav from '@/components/layout/TripTabNav'
 import AddExpenseFab from '@/components/trips/AddExpenseFab'
+import TripEmojiPicker from '@/components/trips/TripEmojiPicker'
 import { ChevronLeft } from 'lucide-react'
 import Link from 'next/link'
 
@@ -19,19 +20,35 @@ export default async function TripLayout({
 
   const { data: trip } = await supabase
     .from('trips')
-    .select('id, name, status')
+    .select('id, name, status, cover_emoji, created_by')
     .eq('id', tripId)
     .maybeSingle()
 
   if (!trip) notFound()
 
   const isActive = trip.status === 'active'
+  const coverEmoji = (trip.cover_emoji as string | null) ?? null
+  const isCreator = trip.created_by === user.id
 
   return (
     <div>
-      {/* Teal header */}
-      <div className="-mx-4 -mt-7 mb-5 px-5 pt-8 pb-5 rounded-b-3xl" style={{ background: 'linear-gradient(150deg, #1b5c58 0%, #134844 100%)' }}>
-        <div className="flex items-center gap-3">
+      {/* Teal header with large decorative emoji */}
+      <div
+        className="-mx-4 -mt-7 mb-5 px-5 pt-8 pb-5 rounded-b-3xl relative overflow-hidden"
+        style={{ background: 'linear-gradient(150deg, #1b5c58 0%, #134844 100%)' }}
+      >
+        {/* Big background emoji */}
+        {coverEmoji && (
+          <span
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-[80px] leading-none select-none pointer-events-none"
+            style={{ opacity: 0.18, filter: 'blur(1px)' }}
+            aria-hidden
+          >
+            {coverEmoji}
+          </span>
+        )}
+
+        <div className="flex items-center gap-3 relative">
           <Link
             href="/dashboard"
             className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-xl transition-colors"
@@ -39,6 +56,14 @@ export default async function TripLayout({
           >
             <ChevronLeft className="w-5 h-5" strokeWidth={2} />
           </Link>
+
+          {/* Emoji badge — tappable to change */}
+          <TripEmojiPicker
+            tripId={tripId}
+            currentEmoji={coverEmoji ?? '🌍'}
+            canEdit={isCreator}
+          />
+
           <h1 className="text-[18px] font-bold text-white truncate flex-1">{trip.name as string}</h1>
           <span className="flex-shrink-0 px-2.5 py-1 rounded-full text-[10px] font-bold" style={{
             background: isActive ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.1)',

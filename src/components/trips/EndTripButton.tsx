@@ -49,18 +49,25 @@ export default function EndTripButton({ tripId }: { tripId: string }) {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Reise beenden?</DialogTitle>
+            <DialogTitle>Reise wirklich beenden?</DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-muted-foreground py-2">
-            Wenn du die Reise beendest, können keine neuen Ausgaben mehr hinzugefügt werden.
-            Die Abrechnung wird erstellt und ist für alle Mitreisenden sichtbar.
-          </p>
+          <div className="space-y-3 py-1">
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Wenn du die Reise beendest, können <strong className="text-foreground">keine neuen Ausgaben</strong> mehr hinzugefügt oder bearbeitet werden.
+            </p>
+            <div className="flex gap-2.5 bg-destructive/8 border border-destructive/20 rounded-xl px-3.5 py-3">
+              <span className="text-base flex-shrink-0">⚠️</span>
+              <p className="text-xs text-foreground/80 leading-relaxed">
+                <strong>Diese Aktion kann nicht rückgängig gemacht werden.</strong> Stelle sicher, dass alle Ausgaben vollständig erfasst sind.
+              </p>
+            </div>
+          </div>
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setOpen(false)}>
               Abbrechen
             </Button>
-            <Button onClick={handleEnd} disabled={loading}>
-              {loading ? 'Wird beendet...' : 'Reise beenden'}
+            <Button variant="destructive" onClick={handleEnd} disabled={loading}>
+              {loading ? 'Wird beendet...' : 'Ja, Reise beenden'}
             </Button>
           </DialogFooter>
         </DialogContent>

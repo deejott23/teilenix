@@ -108,40 +108,42 @@ export default async function StatsPage({
         </div>
       )}
 
-      <div>
-        <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-3">Bestenliste</h3>
-        <div className="space-y-3">
-          <LeaderboardCard
-            title="Großzügigster Teilnehmer"
-            emoji="💸"
-            items={mostGenerous.map(b => ({
-              label: b.participantName,
-              value: formatCurrency(b.totalPaidCents),
-              highlight: mostGenerous[0]?.participantId === b.participantId,
-            }))}
-          />
-          <LeaderboardCard
-            title="Meiste Ausgaben erfasst"
-            emoji="📋"
-            items={mostExpenses.map(b => ({
-              label: b.participantName,
-              value: `${b.count} Ausgaben`,
-              highlight: mostExpenses[0]?.participantId === b.participantId,
-            }))}
-          />
-          {mostDebt[0]?.netBalanceCents < 0 && (
+      {settlement.totalSpentCents > 0 && (
+        <div>
+          <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-3">Bestenliste</h3>
+          <div className="space-y-3">
             <LeaderboardCard
-              title="Größte Schulden"
-              emoji="🔴"
-              items={mostDebt.filter(b => b.netBalanceCents < 0).map(b => ({
+              title="Großzügigster Teilnehmer"
+              emoji="💸"
+              items={mostGenerous.filter(b => b.totalPaidCents > 0).map(b => ({
                 label: b.participantName,
-                value: formatCurrency(Math.abs(b.netBalanceCents)),
-                highlight: false,
+                value: formatCurrency(b.totalPaidCents),
+                highlight: mostGenerous[0]?.participantId === b.participantId,
               }))}
             />
-          )}
+            <LeaderboardCard
+              title="Meiste Ausgaben erfasst"
+              emoji="📋"
+              items={mostExpenses.filter(b => b.count > 0).map(b => ({
+                label: b.participantName,
+                value: `${b.count} Ausgabe${b.count === 1 ? '' : 'n'}`,
+                highlight: mostExpenses[0]?.participantId === b.participantId && b.count > 0,
+              }))}
+            />
+            {mostDebt[0]?.netBalanceCents < 0 && (
+              <LeaderboardCard
+                title="Größte Schulden"
+                emoji="🔴"
+                items={mostDebt.filter(b => b.netBalanceCents < 0).map(b => ({
+                  label: b.participantName,
+                  value: formatCurrency(Math.abs(b.netBalanceCents)),
+                  highlight: false,
+                }))}
+              />
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }

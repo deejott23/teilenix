@@ -261,6 +261,7 @@ export default function ExpenseForm({
               · {categoryLabels[selectedCategory as ExpenseCategory] ?? enabledCustom.find(c => c.key === selectedCategory)?.label ?? selectedCategory}
             </span>
           </label>
+          <p className="text-[10px] text-muted-foreground/60 -mt-1 mb-1">Das Icon der Ausgabe richtet sich nach der gewählten Kategorie.</p>
           <div className="flex flex-wrap gap-2">
             {standardVisible.map(cat => (
               <button key={cat} type="button" onClick={() => setSelectedCategory(cat)} title={categoryLabels[cat]}

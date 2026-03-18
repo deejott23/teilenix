@@ -5,6 +5,7 @@ export const createTripSchema = z.object({
   description: z.string().max(500, 'Maximal 500 Zeichen').optional(),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
+  coverEmoji: z.string().max(8).optional(),
 })
 
 export const joinTripSchema = z.object({
@@ -19,6 +20,7 @@ export const updateTripSchema = z.object({
   status: z.enum(['active', 'ended']).optional(),
   enabledCategories: z.array(z.string()).optional(),
   customCategories: z.array(z.string()).optional(),
+  coverEmoji: z.string().max(8).nullable().optional(),
 })
 
 export type CreateTripInput = z.infer<typeof createTripSchema>

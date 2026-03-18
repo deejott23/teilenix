@@ -215,6 +215,7 @@ export type Database = {
       }
       trips: {
         Row: {
+          cover_emoji: string | null
           created_at: string
           created_by: string
           custom_categories: string[] | null
@@ -229,6 +230,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          cover_emoji?: string | null
           created_at?: string
           created_by: string
           custom_categories?: string[] | null
@@ -243,6 +245,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          cover_emoji?: string | null
           created_at?: string
           created_by?: string
           custom_categories?: string[] | null
