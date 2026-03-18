@@ -46,13 +46,30 @@ export async function PATCH(
   if (parsed.data.enabledCategories !== undefined) updates.enabled_categories = parsed.data.enabledCategories
   if (parsed.data.customCategories !== undefined) updates.custom_categories = parsed.data.customCategories
 
-  // Use admin client to bypass RLS for trip settings update
   const admin = createAdminClient()
+
+  // Sensitive fields (name, status, dates) require creator rights
+  const hasSensitiveField = ['name', 'description', 'startDate', 'endDate', 'status']
+    .some(f => parsed.data[f as keyof typeof parsed.data] !== undefined)
+
+  if (hasSensitiveField) {
+    // Must be trip creator
+    const { data: tripCheck } = await admin
+      .from('trips').select('created_by').eq('id', tripId).maybeSingle()
+    if (tripCheck?.created_by !== user.id)
+      return NextResponse.json({ error: 'Nur der Ersteller kann dies ändern' }, { status: 403 })
+  } else {
+    // Category updates: any participant may update
+    const { data: participation } = await supabase
+      .from('trip_participants').select('id').eq('trip_id', tripId).eq('user_id', user.id).maybeSingle()
+    if (!participation)
+      return NextResponse.json({ error: 'Kein Zugriff' }, { status: 403 })
+  }
+
   const { data: trip, error } = await admin
     .from('trips')
     .update(updates)
     .eq('id', tripId)
-    .eq('created_by', user.id)
     .select()
     .single()
 
