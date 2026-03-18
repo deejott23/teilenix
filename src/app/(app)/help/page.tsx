@@ -1,4 +1,4 @@
-import { HelpCircle, Plane, Users, Receipt, BarChart2, CreditCard, Tag, LogOut, QrCode, UserPlus, Split, ChevronRight } from 'lucide-react'
+import { HelpCircle, Plane, Users, Receipt, BarChart2, CreditCard, Tag, LogOut, QrCode, UserCircle, ChevronRight, ImageIcon } from 'lucide-react'
 
 interface SectionProps {
   id: string
@@ -47,7 +47,7 @@ function Tip({ children }: { children: React.ReactNode }) {
 function InfoRow({ label, desc }: { label: string; desc: string }) {
   return (
     <div className="flex gap-3 py-2 border-b border-border/50 last:border-0">
-      <span className="text-xs font-semibold text-primary w-28 flex-shrink-0 pt-0.5">{label}</span>
+      <span className="text-xs font-semibold text-primary w-36 flex-shrink-0 pt-0.5">{label}</span>
       <span className="text-xs text-muted-foreground leading-relaxed">{desc}</span>
     </div>
   )
@@ -62,6 +62,7 @@ export default function HelpPage() {
     { id: 'ausgaben',    label: 'Ausgaben'              },
     { id: 'kategorien',  label: 'Kategorien'            },
     { id: 'abrechnung',  label: 'Abrechnung'            },
+    { id: 'profil',      label: 'Profil'                },
     { id: 'abschluss',   label: 'Reise abschließen'    },
   ]
 
@@ -108,8 +109,8 @@ export default function HelpPage() {
           </p>
           <div className="space-y-3">
             <Step num={1} title="Mit Google anmelden" desc="Nutze deinen Google-Account für die schnelle und sichere Anmeldung — kein Passwort nötig." />
-            <Step num={2} title="Anzeigename festlegen" desc="Im Profil kannst du deinen Namen anpassen, der anderen Teilnehmern in Reisen angezeigt wird." />
-            <Step num={3} title="Reise erstellen oder beitreten" desc="Erstelle deine erste Reise oder tritt einer bestehenden Reise über einen Einladungscode bei." />
+            <Step num={2} title="Anzeigename prüfen" desc="Im Profil (unten rechts) kannst du deinen Namen anpassen, der anderen Teilnehmern in Reisen angezeigt wird." />
+            <Step num={3} title="Reise erstellen oder beitreten" desc="Erstelle deine erste Reise über «Neue Reise planen» oder tritt einer bestehenden Reise über «Einladung erhalten?» bei." />
           </div>
           <Tip>Du musst nichts vorkonfigurieren — einfach loslegen und die erste Ausgabe eintragen!</Tip>
         </Section>
@@ -120,15 +121,16 @@ export default function HelpPage() {
             Jede Reise ist ein eigenständiger Bereich mit eigenen Teilnehmern, Ausgaben und einer Abrechnung.
           </p>
           <div className="space-y-2">
-            <InfoRow label="Neue Reise" desc="Über den Button «Neue Reise» auf dem Dashboard eine Reise anlegen. Name, optionale Beschreibung und Reisedaten angeben." />
-            <InfoRow label="Reisestatus" desc="Aktive Reisen (grün) ermöglichen neue Ausgaben. Abgeschlossene Reisen (grau) sind gesperrt, die Abrechnung bleibt abrufbar." />
+            <InfoRow label="Neue Reise" desc="Über «Neue Reise planen» auf dem Dashboard eine Reise anlegen. Name, optional Beschreibung, Start- und Enddatum sowie ein Emoji-Icon wählen." />
+            <InfoRow label="Icon & Titelbild" desc="Jede Reise hat ein Emoji als Icon. Durch Antippen des Icons im Header kann das Emoji geändert oder ein eigenes Foto hochgeladen werden, das als Hintergrundbild erscheint. Alle Teilnehmer können das Bild ändern." />
+            <InfoRow label="Reisestatus" desc="Aktive Reisen ermöglichen neue Ausgaben. Abgeschlossene Reisen sind gesperrt, die Abrechnung bleibt dauerhaft abrufbar." />
+            <InfoRow label="Dashboard" desc="Alle aktiven Reisen erscheinen oben. Abgeschlossene Reisen sind eingeklappt und können über «Abgeschlossen (N)» aufgeklappt werden." />
             <InfoRow label="Übersicht-Tab" desc="Zeigt den aktuellen Saldo aller Teilnehmer, die letzten Ausgaben und schnellen Zugriff auf alle Funktionen." />
-            <InfoRow label="Dashboard" desc="Auf dem Dashboard siehst du alle deine Reisen sortiert nach Status. Aktive Reisen werden oben angezeigt." />
           </div>
           <div className="space-y-3 mt-2">
-            <Step num={1} title="Neue Reise anlegen" desc="Tippe auf «Neue Reise», vergib einen Namen (z.B. «Mallorca 2026») und optional Start- und Enddatum." />
-            <Step num={2} title="Teilnehmer einladen" desc="Im Tab «Einstellungen» findest du den Einladungscode. Teile ihn mit deiner Gruppe." />
-            <Step num={3} title="Ausgaben erfassen" desc="Sobald alle dabei sind, können Ausgaben eingetragen werden." />
+            <Step num={1} title="Neue Reise anlegen" desc="Tippe auf «Neue Reise planen», wähle ein Emoji, vergib einen Namen (z.B. «Mallorca 2026») und optional Start- und Enddatum." />
+            <Step num={2} title="Titelbild setzen (optional)" desc="Im Header der Reise das Emoji antippen → Tab «Foto» → Bild hochladen (JPG, PNG, WebP, max. 5 MB)." />
+            <Step num={3} title="Teilnehmer einladen" desc="Im Tab «Einstellungen» findest du den Einladungscode. Teile ihn mit deiner Gruppe." />
           </div>
         </Section>
 
@@ -186,16 +188,23 @@ export default function HelpPage() {
           </p>
 
           <div className="space-y-3">
-            <Step num={1} title="«Neue Ausgabe» tippen" desc="Im Tab «Ausgaben» auf den grünen Button «Neue Ausgabe» oben tippen." />
-            <Step num={2} title="Details eingeben" desc="Bezeichnung, Betrag, Kategorie und Datum ausfüllen." />
-            <Step num={3} title="Bezahlt von" desc="Auswählen, wer den Betrag vorstreckt hat." />
-            <Step num={4} title="Aufteilung wählen" desc="«Alle» teilt proportional zu den Anteilen auf. «Individuell» ermöglicht manuelle Auswahl der Beteiligten." />
+            <Step num={1} title="«Neue Ausgabe» tippen" desc="Im Tab «Ausgaben» auf den Button «Neue Ausgabe» oben tippen." />
+            <Step num={2} title="Details eingeben" desc="Bezeichnung eingeben — die Kategorie wird automatisch vorgeschlagen. Betrag und Datum ergänzen." />
+            <Step num={3} title="Bezahlt von" desc="Auswählen, wer den Betrag vorstreckt hat. Es können auch mehrere Zahler mit je eigenem Betrag angegeben werden." />
+            <Step num={4} title="Aufteilung wählen" desc="«Alle» teilt proportional zu den Anteilen auf. «Individuell» ermöglicht manuelle Auswahl der Beteiligten und eigene Anteile." />
           </div>
 
           <div className="space-y-2 mt-2">
             <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Aufteilungsmodi</p>
             <InfoRow label="Alle (Standard)" desc="Der Betrag wird auf alle Teilnehmer proportional zu ihren Anteilen aufgeteilt." />
-            <InfoRow label="Individuell" desc="Du wählst manuell aus, welche Teilnehmer beteiligt sind. Ideal für Ausgaben, die nur einige betreffen." />
+            <InfoRow label="Individuell" desc="Du wählst manuell aus, welche Teilnehmer beteiligt sind und kannst die Anteile anpassen. Ideal für Ausgaben, die nur einige betreffen." />
+          </div>
+
+          <div className="space-y-2 mt-2">
+            <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Mehrere Zahler</p>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Hat mehr als eine Person an einer Ausgabe gezahlt, können beim Erfassen mehrere Teilnehmer als Zahler ausgewählt werden. Jeder Zahler gibt seinen Teilbetrag an — die Summe muss dem Gesamtbetrag entsprechen.
+            </p>
           </div>
 
           <Tip>Ausgaben können nachträglich bearbeitet oder gelöscht werden — solange die Reise aktiv ist.</Tip>
@@ -204,15 +213,24 @@ export default function HelpPage() {
         {/* 6. Kategorien */}
         <Section id="kategorien" icon={<Tag className="w-4 h-4" strokeWidth={2} />} title="Kategorien anpassen">
           <p className="text-sm text-muted-foreground leading-relaxed">
-            Im Tab «Einstellungen» kannst du die Ausgabenkategorien für jede Reise individuell anpassen.
+            Im Tab «Einstellungen» kannst du die Ausgabenkategorien für jede Reise individuell anpassen — aktivieren, umbenennen oder eigene anlegen.
           </p>
           <div className="space-y-2">
-            <InfoRow label="Standardkategorien" desc="7 vordefinierte Kategorien: Essen, Transport, Unterkunft, Aktivitäten, Einkauf, Gesundheit, Sonstiges." />
+            <InfoRow label="Standardkategorien" desc="7 vordefinierte Kategorien: Essen & Trinken, Transport, Unterkunft, Aktivitäten, Einkauf, Gesundheit, Sonstiges." />
             <InfoRow label="Aktivieren/Deaktivieren" desc="Nicht benötigte Kategorien einfach deaktivieren — sie erscheinen dann nicht mehr beim Erfassen einer Ausgabe." />
-            <InfoRow label="Sonstiges" desc="Diese Kategorie kann nicht deaktiviert werden — sie dient als universeller Fallback." />
+            <InfoRow label="Umbenennen" desc="Das Stift-Icon neben einer Kategorie (Standard oder eigene) antippen, um Name und Emoji zu ändern. Standard-Umbenennung kann jederzeit zurückgesetzt werden." />
             <InfoRow label="Eigene Kategorien" desc="Über «+ Eigene» können individuelle Kategorien mit eigenem Emoji und Namen erstellt werden." />
+            <InfoRow label="Sonstiges" desc="Diese Kategorie kann nicht deaktiviert werden — sie dient als universeller Fallback." />
           </div>
-          <Tip>Eigene Kategorien sind ideal für spezielle Reisen — z.B. «🎿 Skipass» oder «🎵 Konzert».</Tip>
+
+          <div className="space-y-2 mt-2">
+            <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Automatischer Vorschlag</p>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Beim Eingeben des Ausgabentitels erkennt die App Schlüsselwörter und wählt automatisch eine passende Kategorie — erkennbar am <span className="text-foreground font-medium">✦ Vorschlag</span>-Hinweis. Der Vorschlag kann jederzeit durch manuelles Antippen einer anderen Kategorie überschrieben werden.
+            </p>
+          </div>
+
+          <Tip>Eigene Kategorien sind ideal für spezielle Reisen — z.B. «🎿 Skipass» oder «🎵 Konzert». Umbenannte Standardkategorien helfen, den Vorschlag besser auf die eigene Reise abzustimmen.</Tip>
         </Section>
 
         {/* 7. Abrechnung */}
@@ -222,9 +240,9 @@ export default function HelpPage() {
           </p>
 
           <div className="space-y-2">
-            <InfoRow label="Salden-Übersicht" desc="Zeigt für jeden Teilnehmer: Gesamtbetrag bezahlt, Anteil laut Aufteilung und die Differenz (positiv = bekommt Geld, negativ = schuldet noch)." />
+            <InfoRow label="Salden-Übersicht" desc="Zeigt für jeden Teilnehmer: Gesamtbetrag bezahlt, Anteil laut Aufteilung und die Differenz (positiv = bekommt Geld zurück, negativ = schuldet noch)." />
             <InfoRow label="Überweisungen" desc="TeileniX berechnet die minimale Anzahl an Zahlungen, um alle Schulden auszugleichen. Jeder sieht, wem er wie viel zahlen muss." />
-            <InfoRow label="Statistiken" desc="Im Tab «Statistiken» gibt es eine Übersicht nach Kategorien — ideal zur Analyse der Reiseausgaben." />
+            <InfoRow label="Statistiken" desc="Im Tab «Statistiken» gibt es eine Ausgabenübersicht nach Kategorien sowie eine Bestenliste der größten Zahler — ideal zur Analyse der Reiseausgaben." />
           </div>
 
           <div className="bg-muted rounded-xl p-3.5 space-y-1.5">
@@ -237,14 +255,27 @@ export default function HelpPage() {
           </div>
         </Section>
 
-        {/* 8. Reise abschließen */}
+        {/* 8. Profil */}
+        <Section id="profil" icon={<UserCircle className="w-4 h-4" strokeWidth={2} />} title="Profil">
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Im Profil (Tab unten rechts) kannst du deinen Anzeigenamen anpassen.
+          </p>
+          <div className="space-y-2">
+            <InfoRow label="Name ändern" desc="Auf den Stift neben deinem Namen tippen, neuen Namen eingeben und mit Enter oder ✓ bestätigen." />
+            <InfoRow label="E-Mail-Adresse" desc="Wird über deinen Google-Account verwaltet und kann in TeileniX nicht geändert werden." />
+            <InfoRow label="Profilbild" desc="Wird automatisch von Google übernommen." />
+          </div>
+          <Tip>Dein Anzeigename ist für alle Mitreisenden in gemeinsamen Reisen sichtbar.</Tip>
+        </Section>
+
+        {/* 9. Reise abschließen */}
         <Section id="abschluss" icon={<LogOut className="w-4 h-4" strokeWidth={2} />} title="Reise abschließen">
           <p className="text-sm text-muted-foreground leading-relaxed">
             Wenn alle Ausgaben erfasst sind, kann der Ersteller der Reise diese abschließen.
           </p>
           <div className="space-y-3">
             <Step num={1} title="Tab «Einstellungen» öffnen" desc="Nur der Ersteller der Reise sieht den Abschluss-Button." />
-            <Step num={2} title="«Reise abschließen» tippen" desc="Der Status wechselt zu «Abgeschlossen» — keine neuen Ausgaben mehr möglich." />
+            <Step num={2} title="«Reise abschließen» tippen" desc="Nach Bestätigung wechselt der Status zu «Fertig» — keine neuen Ausgaben mehr möglich." />
             <Step num={3} title="Finale Abrechnung" desc="Die Abrechnung bleibt dauerhaft abrufbar. Alle Teilnehmer können sie weiterhin einsehen." />
           </div>
 
@@ -260,7 +291,7 @@ export default function HelpPage() {
         <div className="bg-card card-shadow rounded-2xl p-5 text-center">
           <p className="text-sm font-semibold text-foreground mb-1">Noch Fragen?</p>
           <p className="text-xs text-muted-foreground leading-relaxed">
-            TeileniX v1.0 · Entwickelt für stressfreie Reisen und faire Abrechnungen.
+            TeileniX · Entwickelt für stressfreie Reisen und faire Abrechnungen.
           </p>
         </div>
 
