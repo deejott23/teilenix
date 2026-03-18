@@ -3,12 +3,13 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { Tag, Plus, X } from 'lucide-react'
+import { Tag, Plus, X, Pencil, Check } from 'lucide-react'
 
 export interface CustomCategory {
   key: string
   emoji: string
   label: string
+  isOverride?: boolean // true = renames a standard category
 }
 
 const STANDARD_CATEGORIES = [
@@ -51,6 +52,41 @@ export default function TripCategorySettings({
   const [showAddForm, setShowAddForm] = useState(false)
   const [newEmoji, setNewEmoji] = useState('🎯')
   const [newLabel, setNewLabel] = useState('')
+
+  // Inline edit state
+  const [editingKey, setEditingKey] = useState<string | null>(null)
+  const [editEmoji, setEditEmoji] = useState('')
+  const [editLabel, setEditLabel] = useState('')
+
+  // Override map: standard category key → override entry
+  const overrideMap = new Map(custom.filter(c => c.isOverride).map(c => [c.key, c]))
+  // True custom categories (not overrides)
+  const trueCustom = custom.filter(c => !c.isOverride)
+
+  const startEdit = (key: string, emoji: string, label: string) => {
+    setEditingKey(key)
+    setEditEmoji(emoji)
+    setEditLabel(label)
+    setShowAddForm(false)
+  }
+
+  const cancelEdit = () => { setEditingKey(null); setEditEmoji(''); setEditLabel('') }
+
+  const saveEdit = async () => {
+    if (!editLabel.trim() || !editingKey) return
+    const isStandard = STANDARD_CATEGORIES.some(c => c.key === editingKey)
+    let nextCustom: CustomCategory[]
+    if (isStandard) {
+      // Upsert override for this standard category
+      const existing = custom.filter(c => c.key !== editingKey)
+      nextCustom = [...existing, { key: editingKey, emoji: editEmoji, label: editLabel.trim(), isOverride: true }]
+    } else {
+      nextCustom = custom.map(c => c.key === editingKey ? { ...c, emoji: editEmoji, label: editLabel.trim() } : c)
+    }
+    setCustom(nextCustom)
+    cancelEdit()
+    try { await save(enabled, nextCustom) } catch { setCustom(custom) }
+  }
 
   const save = async (nextEnabled: Set<string>, nextCustom: CustomCategory[]) => {
     setSaving(true)
@@ -116,6 +152,13 @@ export default function TripCategorySettings({
     }
   }
 
+  const resetStandardLabel = async (key: string) => {
+    const nextCustom = custom.filter(c => c.key !== key)
+    setCustom(nextCustom)
+    cancelEdit()
+    try { await save(enabled, nextCustom) } catch { setCustom(custom) }
+  }
+
   return (
     <div className="bg-card card-shadow rounded-2xl overflow-hidden">
       <div className="flex items-center gap-2 px-4 py-3 border-b border-border">
@@ -136,58 +179,132 @@ export default function TripCategorySettings({
         <p className="px-4 py-3 text-xs text-muted-foreground">Kategorien können nur bei aktiven Reisen geändert werden.</p>
       )}
 
+      {/* Inline edit form (shared for standard + custom) */}
+      {editingKey && isActive && (() => {
+        const isStandard = STANDARD_CATEGORIES.some(c => c.key === editingKey)
+        return (
+          <div className="border-b border-border bg-muted/30 px-4 py-3 space-y-3">
+            <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Umbenennen</p>
+            <div className="flex flex-wrap gap-1.5">
+              {EMOJI_SUGGESTIONS.map(e => (
+                <button key={e} type="button" onClick={() => setEditEmoji(e)}
+                  className={`w-9 h-9 rounded-lg text-lg flex items-center justify-center transition-all ${editEmoji === e ? 'bg-primary/20 ring-2 ring-primary' : 'bg-muted hover:bg-muted/80'}`}
+                >{e}</button>
+              ))}
+              <input type="text" value={!EMOJI_SUGGESTIONS.includes(editEmoji) ? editEmoji : ''}
+                onChange={e => setEditEmoji(e.target.value.slice(-2) || editEmoji)}
+                placeholder="✏️"
+                className="w-9 h-9 rounded-lg bg-muted text-center text-lg border border-border focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+            <div className="flex gap-2">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-xl flex-shrink-0">{editEmoji}</div>
+              <input type="text" value={editLabel} onChange={e => setEditLabel(e.target.value)}
+                maxLength={30} autoFocus
+                className="flex-1 h-10 px-3 rounded-xl bg-background border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                onKeyDown={e => { if (e.key === 'Enter') saveEdit(); if (e.key === 'Escape') cancelEdit() }}
+              />
+            </div>
+            <div className="flex gap-2">
+              <button onClick={saveEdit} disabled={saving || !editLabel.trim()}
+                className="flex-1 h-9 rounded-xl bg-primary text-primary-foreground text-sm font-semibold disabled:opacity-50"
+              ><Check className="w-4 h-4 inline mr-1" strokeWidth={2.5} />Speichern</button>
+              {isStandard && overrideMap.has(editingKey) && (
+                <button onClick={() => resetStandardLabel(editingKey)} disabled={saving}
+                  className="px-3 h-9 rounded-xl bg-muted text-xs font-semibold text-muted-foreground"
+                >Zurücksetzen</button>
+              )}
+              <button onClick={cancelEdit}
+                className="px-4 h-9 rounded-xl bg-muted text-sm font-semibold text-muted-foreground"
+              >Abbrechen</button>
+            </div>
+          </div>
+        )
+      })()}
+
       {/* Standard categories */}
       <div className="divide-y divide-border/50">
         {STANDARD_CATEGORIES.map(cat => {
+          const override = overrideMap.get(cat.key)
+          const displayEmoji = override?.emoji ?? cat.emoji
+          const displayLabel = override?.label ?? cat.label
           const isEnabled = enabled.has(cat.key)
           const isFixed = cat.key === 'other'
+          const isEditing = editingKey === cat.key
           return (
-            <button
-              key={cat.key}
-              onClick={() => toggleStandard(cat.key)}
-              disabled={saving || isFixed || !isActive}
-              className="w-full flex items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-muted/40 disabled:cursor-default"
-            >
-              <span className="text-xl w-8 text-center flex-shrink-0">{cat.emoji}</span>
-              <span className={`flex-1 text-sm font-medium ${isEnabled ? 'text-foreground' : 'text-muted-foreground line-through'}`}>
-                {cat.label}
-              </span>
+            <div key={cat.key} className={`flex items-center gap-3 px-4 py-3.5 transition-colors ${!isFixed && isActive ? 'hover:bg-muted/40' : ''} ${isEditing ? 'bg-muted/20' : ''}`}>
+              <button
+                onClick={() => toggleStandard(cat.key)}
+                disabled={saving || isFixed || !isActive}
+                className="flex items-center gap-3 flex-1 text-left disabled:cursor-default min-w-0"
+              >
+                <span className="text-xl w-8 text-center flex-shrink-0">{displayEmoji}</span>
+                <span className={`flex-1 text-sm font-medium truncate ${isEnabled ? 'text-foreground' : 'text-muted-foreground line-through'}`}>
+                  {displayLabel}
+                  {override && <span className="ml-1.5 text-[10px] text-primary/60 font-normal">(umbenannt)</span>}
+                </span>
+              </button>
+              {isActive && !isFixed && (
+                <button
+                  onClick={() => isEditing ? cancelEdit() : startEdit(cat.key, displayEmoji, displayLabel)}
+                  className={`w-7 h-7 flex items-center justify-center rounded-full transition-colors flex-shrink-0 ${isEditing ? 'bg-primary/10 text-primary' : 'text-muted-foreground/40 hover:text-foreground hover:bg-muted'}`}
+                >
+                  <Pencil className="w-3.5 h-3.5" strokeWidth={2} />
+                </button>
+              )}
               {isFixed ? (
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1.5 flex-shrink-0">
                   <div className="w-10 h-6 rounded-full bg-muted flex items-center px-0.5 opacity-40">
                     <div className="w-5 h-5 rounded-full bg-white shadow-sm translate-x-4" />
                   </div>
                   <span className="text-[10px] text-muted-foreground/60 font-medium">immer aktiv</span>
                 </div>
               ) : (
-                <div className={`w-10 h-6 rounded-full transition-colors flex-shrink-0 flex items-center px-0.5 ${isEnabled ? 'bg-primary' : 'bg-muted'}`}>
-                  <div className={`w-5 h-5 rounded-full bg-white shadow-sm transition-transform ${isEnabled ? 'translate-x-4' : 'translate-x-0'}`} />
-                </div>
+                <button
+                  onClick={() => toggleStandard(cat.key)}
+                  disabled={saving || !isActive}
+                  className="flex-shrink-0"
+                >
+                  <div className={`w-10 h-6 rounded-full transition-colors flex items-center px-0.5 ${isEnabled ? 'bg-primary' : 'bg-muted'}`}>
+                    <div className={`w-5 h-5 rounded-full bg-white shadow-sm transition-transform ${isEnabled ? 'translate-x-4' : 'translate-x-0'}`} />
+                  </div>
+                </button>
               )}
-            </button>
+            </div>
           )
         })}
       </div>
 
       {/* Custom categories */}
-      {custom.length > 0 && (
+      {trueCustom.length > 0 && (
         <div className="border-t border-border divide-y divide-border/50">
-          {custom.map(cat => (
-            <div key={cat.key} className="flex items-center gap-3 px-4 py-3.5">
-              <span className="text-xl w-8 text-center flex-shrink-0">{cat.emoji}</span>
-              <span className="flex-1 text-sm font-medium text-foreground">{cat.label}</span>
-              <span className="text-[10px] text-primary font-semibold px-2 py-0.5 rounded-full bg-primary/10 mr-2">eigene</span>
-              {isActive && (
-                <button
-                  onClick={() => deleteCustom(cat.key)}
-                  disabled={saving}
-                  className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
-                >
-                  <X className="w-3.5 h-3.5" strokeWidth={2.5} />
-                </button>
-              )}
-            </div>
-          ))}
+          {trueCustom.map(cat => {
+            const isEditing = editingKey === cat.key
+            return (
+              <div key={cat.key} className={`flex items-center gap-3 px-4 py-3.5 ${isEditing ? 'bg-muted/20' : ''}`}>
+                <span className="text-xl w-8 text-center flex-shrink-0">{cat.emoji}</span>
+                <span className="flex-1 text-sm font-medium text-foreground truncate">{cat.label}</span>
+                <span className="text-[10px] text-primary font-semibold px-2 py-0.5 rounded-full bg-primary/10 flex-shrink-0">eigene</span>
+                {isActive && (
+                  <>
+                    <button
+                      onClick={() => isEditing ? cancelEdit() : startEdit(cat.key, cat.emoji, cat.label)}
+                      className={`w-7 h-7 flex items-center justify-center rounded-full transition-colors flex-shrink-0 ${isEditing ? 'bg-primary/10 text-primary' : 'text-muted-foreground/40 hover:text-foreground hover:bg-muted'}`}
+                    >
+                      <Pencil className="w-3.5 h-3.5" strokeWidth={2} />
+                    </button>
+                    <button
+                      onClick={() => deleteCustom(cat.key)}
+                      disabled={saving}
+                      className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors flex-shrink-0"
+                    >
+                      <X className="w-3.5 h-3.5" strokeWidth={2.5} />
+                    </button>
+                  </>
+                )}
+              </div>
+            )
+          })}
         </div>
       )}
 

@@ -93,12 +93,22 @@ export default function ExpenseForm({
   initialData, enabledCategories, customCategoriesRaw = []
 }: ExpenseFormProps) {
   const customCats = parseCustomCats(customCategoriesRaw)
+  // Separate overrides (renamed standard categories) from true custom categories
+  const standardOverrides = new Map(customCats.filter(c => c.isOverride).map(c => [c.key, c]))
+  const trueCustomCats = customCats.filter(c => !c.isOverride)
+
   const standardVisible = enabledCategories
     ? ALL_STANDARD_CATEGORIES.filter(c => enabledCategories.includes(c))
     : ALL_STANDARD_CATEGORIES
   const enabledCustom = enabledCategories
-    ? customCats.filter(c => enabledCategories.includes(c.key))
-    : customCats
+    ? trueCustomCats.filter(c => enabledCategories.includes(c.key))
+    : trueCustomCats
+
+  // Helper: get label for a standard category (respects user rename)
+  const getStandardLabel = (key: string) =>
+    standardOverrides.get(key)?.label ?? categoryLabels[key as ExpenseCategory] ?? key
+  const getStandardEmoji = (key: string) =>
+    standardOverrides.get(key)?.emoji ?? categoryEmoji[key as ExpenseCategory] ?? '📦'
 
   const router  = useRouter()
   const isEdit  = !!expenseId
@@ -327,7 +337,9 @@ export default function ExpenseForm({
           <label className={fieldLabel}>
             Kategorie
             <span className="ml-1.5 text-primary normal-case tracking-normal font-semibold">
-              · {categoryLabels[selectedCategory as ExpenseCategory] ?? enabledCustom.find(c => c.key === selectedCategory)?.label ?? selectedCategory}
+              · {getStandardLabel(selectedCategory) !== selectedCategory
+                  ? getStandardLabel(selectedCategory)
+                  : enabledCustom.find(c => c.key === selectedCategory)?.label ?? selectedCategory}
             </span>
             {autoSuggested && (
               <span className="ml-2 text-[10px] text-muted-foreground/70 font-normal normal-case tracking-normal">
@@ -337,11 +349,11 @@ export default function ExpenseForm({
           </label>
           <div className="flex flex-wrap gap-2">
             {standardVisible.map(cat => (
-              <button key={cat} type="button" onClick={() => pickCategory(cat)} title={categoryLabels[cat]}
+              <button key={cat} type="button" onClick={() => pickCategory(cat)} title={getStandardLabel(cat)}
                 className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0 transition-all ${
                   selectedCategory === cat ? 'bg-primary text-primary-foreground shadow-sm scale-105' : 'bg-muted text-foreground hover:bg-muted/80'
                 }`}
-              >{categoryEmoji[cat]}</button>
+              >{getStandardEmoji(cat)}</button>
             ))}
             {enabledCustom.map(cat => (
               <button key={cat.key} type="button" onClick={() => pickCategory(cat.key)} title={cat.label}
