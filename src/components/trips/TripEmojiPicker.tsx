@@ -59,8 +59,8 @@ export default function TripEmojiPicker({ tripId, currentEmoji, canEdit }: TripE
           {/* Backdrop */}
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
 
-          {/* Picker panel */}
-          <div className="absolute left-0 top-11 z-50 bg-card border border-border rounded-2xl shadow-xl p-3 w-[220px]">
+          {/* Picker panel — fixed so it's never clipped by overflow-hidden parents */}
+          <div className="fixed left-4 top-24 z-50 bg-card border border-border rounded-2xl shadow-xl p-3 w-[220px]">
             <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2 px-1">
               Icon wählen
             </p>

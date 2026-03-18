@@ -50,7 +50,7 @@ export async function PATCH(
   const admin = createAdminClient()
 
   // Sensitive fields (name, status, dates) require creator rights
-  const hasSensitiveField = ['name', 'description', 'startDate', 'endDate', 'status', 'coverEmoji']
+  const hasSensitiveField = ['name', 'description', 'startDate', 'endDate', 'status']
     .some(f => parsed.data[f as keyof typeof parsed.data] !== undefined)
 
   if (hasSensitiveField) {

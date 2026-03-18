@@ -6,6 +6,9 @@ import TripEmojiPicker from '@/components/trips/TripEmojiPicker'
 import { ChevronLeft } from 'lucide-react'
 import Link from 'next/link'
 
+const FALLBACK_EMOJIS = ['🌴', '🏔️', '🗺️', '🌅', '⛵', '🏖️', '🌍', '🏕️']
+const pickEmoji = (name: string) => FALLBACK_EMOJIS[name.charCodeAt(0) % FALLBACK_EMOJIS.length]
+
 export default async function TripLayout({
   children,
   params,
@@ -27,26 +30,34 @@ export default async function TripLayout({
   if (!trip) notFound()
 
   const isActive = trip.status === 'active'
-  const coverEmoji = (trip.cover_emoji as string | null) ?? null
-  const isCreator = trip.created_by === user.id
+  // Same fallback logic as TripCard to keep emoji consistent
+  const coverEmoji = (trip.cover_emoji as string | null) ?? pickEmoji(trip.name as string)
+
+  // Check if user is a participant (to allow emoji changes for all participants)
+  const { data: myParticipant } = await supabase
+    .from('trip_participants')
+    .select('id')
+    .eq('trip_id', tripId)
+    .eq('user_id', user.id)
+    .maybeSingle()
+
+  const isParticipant = !!myParticipant
 
   return (
     <div>
-      {/* Teal header with large decorative emoji */}
+      {/* Teal header — NO overflow-hidden so the emoji picker popover is visible */}
       <div
-        className="-mx-4 -mt-7 mb-5 px-5 pt-8 pb-5 rounded-b-3xl relative overflow-hidden"
+        className="-mx-4 -mt-7 mb-5 px-5 pt-8 pb-5 rounded-b-3xl relative"
         style={{ background: 'linear-gradient(150deg, #1b5c58 0%, #134844 100%)' }}
       >
         {/* Big background emoji */}
-        {coverEmoji && (
-          <span
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-[80px] leading-none select-none pointer-events-none"
-            style={{ opacity: 0.18, filter: 'blur(1px)' }}
-            aria-hidden
-          >
-            {coverEmoji}
-          </span>
-        )}
+        <span
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-[80px] leading-none select-none pointer-events-none"
+          style={{ opacity: 0.18, filter: 'blur(1px)' }}
+          aria-hidden
+        >
+          {coverEmoji}
+        </span>
 
         <div className="flex items-center gap-3 relative">
           <Link
@@ -57,11 +68,11 @@ export default async function TripLayout({
             <ChevronLeft className="w-5 h-5" strokeWidth={2} />
           </Link>
 
-          {/* Emoji badge — tappable to change */}
+          {/* Emoji badge — any participant can change */}
           <TripEmojiPicker
             tripId={tripId}
-            currentEmoji={coverEmoji ?? '🌍'}
-            canEdit={isCreator}
+            currentEmoji={coverEmoji}
+            canEdit={isParticipant}
           />
 
           <h1 className="text-[18px] font-bold text-white truncate flex-1">{trip.name as string}</h1>
