@@ -180,36 +180,43 @@ export default function ExpenseForm({
     },
   })
 
+  /** Distribute totalCents equally across ids, remainder goes to first */
+  const distributeEqually = useCallback((ids: string[], total: number): Record<string, string> => {
+    if (ids.length === 0 || total <= 0) return {}
+    const base = Math.floor(total / ids.length)
+    const rem  = total - base * ids.length
+    const result: Record<string, string> = {}
+    ids.forEach((id, i) => {
+      const cents = base + (i === 0 ? rem : 0)
+      result[id] = (cents / 100).toFixed(2).replace('.', ',')
+    })
+    return result
+  }, [])
+
   const togglePayer = useCallback((id: string) => {
+    const total = parseToCents(form.getValues('amount'))
     setPayerIds(prev => {
       if (prev.includes(id)) {
-        if (prev.length === 1) return prev // must keep at least one
-        return prev.filter(p => p !== id)
-      }
-      return [...prev, id]
-    })
-    setPayerAmounts(prev => {
-      if (prev[id] !== undefined) {
-        const next = { ...prev }
-        delete next[id]
+        if (prev.length === 1) return prev
+        const next = prev.filter(p => p !== id)
+        // Re-distribute remaining payers equally when total is known
+        if (total > 0) setPayerAmounts(distributeEqually(next, total))
+        else setPayerAmounts(a => { const n = { ...a }; delete n[id]; return n })
         return next
       }
-      return { ...prev, [id]: '' }
+      const next = [...prev, id]
+      // Auto-distribute equally as soon as a second payer is added
+      if (total > 0) setPayerAmounts(distributeEqually(next, total))
+      else setPayerAmounts(a => ({ ...a, [id]: '' }))
+      return next
     })
-  }, [])
+  }, [distributeEqually, form])
 
   const splitEqually = useCallback(() => {
     const total = parseToCents(form.getValues('amount'))
     if (!total || payerIds.length < 2) return
-    const base = Math.floor(total / payerIds.length)
-    const rem  = total - base * payerIds.length
-    const newAmounts: Record<string, string> = {}
-    payerIds.forEach((id, i) => {
-      const cents = base + (i === 0 ? rem : 0)
-      newAmounts[id] = (cents / 100).toFixed(2).replace('.', ',')
-    })
-    setPayerAmounts(newAmounts)
-  }, [payerIds, form])
+    setPayerAmounts(distributeEqually(payerIds, total))
+  }, [payerIds, form, distributeEqually])
 
   const watchedAmount = form.watch('amount')
   const totalCents    = parseToCents(watchedAmount)
@@ -402,42 +409,84 @@ export default function ExpenseForm({
           </div>
 
           {/* Multi-payer amount split — only shown when >1 payer selected */}
-          {payerIds.length > 1 && (
-            <div className="mt-3 bg-muted/50 rounded-xl p-3 space-y-2">
-              {payerIds.map(id => {
-                const p = participantLookup.get(id)
-                if (!p) return null
-                return (
-                  <div key={id} className="flex items-center gap-2">
-                    <span className="flex-1 text-sm font-medium text-foreground truncate">{p.name}</span>
-                    <div className="relative w-28 flex-shrink-0">
-                      <Input
-                        type="text"
-                        inputMode="decimal"
-                        placeholder="0,00"
-                        value={payerAmounts[id] ?? ''}
-                        onChange={e => setPayerAmounts(prev => ({ ...prev, [id]: e.target.value }))}
-                        className="h-8 text-sm text-right pr-7 font-semibold"
-                      />
-                      <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">€</span>
-                    </div>
+          {payerIds.length > 1 && (() => {
+            const PAYER_COLORS = ['#1b5c58', '#2d8a84', '#4ab5ae', '#7dd1cc', '#b2e8e5']
+            const remainder = totalCents - payerTotal
+            return (
+              <div className="mt-3 space-y-2">
+                {/* Proportion bar */}
+                {totalCents > 0 && (
+                  <div className="flex h-1.5 rounded-full overflow-hidden gap-px">
+                    {payerIds.map((id, i) => {
+                      const cents = parseToCents(payerAmounts[id] ?? '0')
+                      const pct = Math.max(0, cents / totalCents * 100)
+                      return (
+                        <div
+                          key={id}
+                          style={{ width: `${pct}%`, background: PAYER_COLORS[i % PAYER_COLORS.length], transition: 'width 0.2s' }}
+                        />
+                      )
+                    })}
+                    {/* Unassigned portion */}
+                    {remainder > 0 && (
+                      <div style={{ flex: 1, background: 'hsl(var(--muted))' }} />
+                    )}
                   </div>
-                )
-              })}
-              <div className="flex items-center justify-between pt-1 border-t border-border/60">
-                <button
-                  type="button"
-                  onClick={splitEqually}
-                  className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors"
-                >
-                  Gleich aufteilen
-                </button>
-                <span className={`text-xs font-mono font-semibold ${payerTotalOk ? 'text-primary' : 'text-destructive'}`}>
-                  {formatCurrency(payerTotal)} / {formatCurrency(totalCents)}
-                </span>
+                )}
+
+                {/* Payer rows */}
+                <div className="bg-muted/50 rounded-xl overflow-hidden divide-y divide-border/40">
+                  {payerIds.map((id, i) => {
+                    const p = participantLookup.get(id)
+                    if (!p) return null
+                    const cents = parseToCents(payerAmounts[id] ?? '0')
+                    const pct = totalCents > 0 && cents > 0 ? Math.round(cents / totalCents * 100) : 0
+                    return (
+                      <div key={id} className="flex items-center gap-2.5 px-3 py-2.5">
+                        <div
+                          className="w-2 h-2 rounded-full flex-shrink-0"
+                          style={{ background: PAYER_COLORS[i % PAYER_COLORS.length] }}
+                        />
+                        <span className="flex-1 text-sm font-medium text-foreground truncate">{p.name}</span>
+                        <span className="text-[11px] text-muted-foreground w-8 text-right tabular-nums flex-shrink-0">
+                          {pct > 0 ? `${pct}%` : ''}
+                        </span>
+                        <div className="relative flex-shrink-0">
+                          <Input
+                            type="text"
+                            inputMode="decimal"
+                            placeholder="0,00"
+                            value={payerAmounts[id] ?? ''}
+                            onChange={e => setPayerAmounts(prev => ({ ...prev, [id]: e.target.value }))}
+                            className="h-8 text-sm text-right pr-6 font-semibold w-24"
+                          />
+                          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">€</span>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+
+                {/* Footer: quick action + status */}
+                <div className="flex items-center justify-between px-0.5">
+                  <button
+                    type="button"
+                    onClick={splitEqually}
+                    className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors"
+                  >
+                    Gleich aufteilen
+                  </button>
+                  {payerTotalOk ? (
+                    <span className="text-xs font-semibold text-primary">✓ Aufgeteilt</span>
+                  ) : totalCents > 0 ? (
+                    <span className="text-xs font-semibold text-destructive">
+                      {remainder > 0 ? `noch ${formatCurrency(remainder)}` : `${formatCurrency(-remainder)} zu viel`}
+                    </span>
+                  ) : null}
+                </div>
               </div>
-            </div>
-          )}
+            )
+          })()}
         </div>
 
         <div className="border-t border-border" />
