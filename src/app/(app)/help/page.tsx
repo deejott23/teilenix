@@ -140,7 +140,7 @@ export default function HelpPage() {
           <div className="space-y-2">
             <InfoRow label="Code finden" desc="Im Tab «Einstellungen» deiner Reise → Bereich «Teilnehmer» → Einladungscode anzeigen und kopieren." />
             <InfoRow label="Code teilen" desc="Sende den Code per Nachricht, zeige ihn direkt oder nutze den Teilen-Button." />
-            <InfoRow label="Code eingeben" desc="Auf dem Dashboard den Button «Code eingeben» tippen, 8-stelligen Code eintippen und beitreten." />
+            <InfoRow label="Einladung erhalten?" desc="Auf dem Dashboard den Button «Einladung erhalten?» tippen, 8-stelligen Code eintippen und beitreten." />
             <InfoRow label="Anteile wählen" desc="Beim Beitreten kann die Anzahl Anteile festgelegt werden (relevant für die Kostenaufteilung bei unterschiedlicher Gruppengröße)." />
           </div>
           <Tip>Der Einladungscode ist nur für aktive Reisen gültig. Abgeschlossene Reisen können nicht mehr betreten werden.</Tip>
@@ -186,7 +186,7 @@ export default function HelpPage() {
           </p>
 
           <div className="space-y-3">
-            <Step num={1} title="«+ Ausgabe» tippen" desc="Im Tab «Ausgaben» auf den grünen Button unten rechts tippen." />
+            <Step num={1} title="«Neue Ausgabe» tippen" desc="Im Tab «Ausgaben» auf den grünen Button «Neue Ausgabe» oben tippen." />
             <Step num={2} title="Details eingeben" desc="Bezeichnung, Betrag, Kategorie und Datum ausfüllen." />
             <Step num={3} title="Bezahlt von" desc="Auswählen, wer den Betrag vorstreckt hat." />
             <Step num={4} title="Aufteilung wählen" desc="«Alle» teilt proportional zu den Anteilen auf. «Individuell» ermöglicht manuelle Auswahl der Beteiligten." />

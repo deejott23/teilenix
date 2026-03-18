@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import SignOutButton from '@/components/auth/SignOutButton'
+import ProfileNameEditor from '@/components/profile/ProfileNameEditor'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
 export default async function ProfilePage() {
@@ -46,16 +47,19 @@ export default async function ProfilePage() {
       </div>
 
       {/* Profile info card */}
-      <div className="bg-card card-shadow rounded-2xl p-5 space-y-4">
-        <h2 className="text-[12px] font-bold text-muted-foreground uppercase tracking-widest">Kontodaten</h2>
-        <div className="space-y-3">
-          <div>
-            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide mb-0.5">Name</p>
-            <p className="text-sm font-medium text-foreground">{displayName}</p>
+      <div className="bg-card card-shadow rounded-2xl overflow-hidden">
+        <div className="px-5 py-3 border-b border-border">
+          <h2 className="text-[12px] font-bold text-muted-foreground uppercase tracking-widest">Kontodaten</h2>
+        </div>
+        <div className="divide-y divide-border/60">
+          <div className="px-5 py-4">
+            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">Name</p>
+            <ProfileNameEditor displayName={displayName} />
           </div>
-          <div>
+          <div className="px-5 py-4">
             <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide mb-0.5">E-Mail</p>
             <p className="text-sm font-medium text-foreground">{email}</p>
+            <p className="text-[11px] text-muted-foreground/50 mt-0.5">Wird über Google verwaltet</p>
           </div>
         </div>
       </div>
