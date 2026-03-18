@@ -115,8 +115,10 @@ export default function ExpenseForm({
 
   // Splits: groups + standalone individuals
   const billableParticipants = participants.filter(p => !p.group_id)
-  // Payer options: real people only (no abstract group entries)
-  const payerOptions = participants.filter(p => !p.is_group)
+  // Payer options: individuals + groups that have no individual members assigned yet
+  // (once members are assigned, the individual member pays on behalf of the group)
+  const groupIdsWithMembers = new Set(participants.filter(p => p.group_id).map(p => p.group_id!))
+  const payerOptions = participants.filter(p => !p.is_group || !groupIdsWithMembers.has(p.id))
   const participantLookup = new Map(participants.map(p => [p.id, p]))
 
   const [selectedCategory, setSelectedCategory] = useState<string>(initialData?.category ?? 'other')
