@@ -20,7 +20,7 @@ export default async function TripLayout({
 
   const { data: trip } = await supabase
     .from('trips')
-    .select('id, name, status, cover_emoji, created_by')
+    .select('*')
     .eq('id', tripId)
     .maybeSingle()
 
