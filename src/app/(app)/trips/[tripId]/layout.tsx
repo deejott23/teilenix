@@ -32,6 +32,7 @@ export default async function TripLayout({
   const isActive = trip.status === 'active'
   // Same fallback logic as TripCard to keep emoji consistent
   const coverEmoji = (trip.cover_emoji as string | null) ?? pickEmoji(trip.name as string)
+  const coverImageUrl = (trip.cover_image_url as string | null) ?? null
 
   // Check if user is a participant (to allow emoji changes for all participants)
   const { data: myParticipant } = await supabase
@@ -50,14 +51,25 @@ export default async function TripLayout({
         className="-mx-4 -mt-7 mb-5 px-5 pt-8 pb-5 rounded-b-3xl relative"
         style={{ background: 'linear-gradient(150deg, #1b5c58 0%, #134844 100%)' }}
       >
-        {/* Big background emoji */}
-        <span
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-[80px] leading-none select-none pointer-events-none"
-          style={{ opacity: 0.18, filter: 'blur(1px)' }}
-          aria-hidden
-        >
-          {coverEmoji}
-        </span>
+        {/* Cover image background */}
+        {coverImageUrl && (
+          <div className="absolute inset-0 rounded-b-3xl overflow-hidden pointer-events-none">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={coverImageUrl} alt="" className="w-full h-full object-cover" />
+            <div className="absolute inset-0" style={{ background: 'rgba(13,30,27,0.65)' }} />
+          </div>
+        )}
+
+        {/* Big background emoji (only when no cover image) */}
+        {!coverImageUrl && (
+          <span
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-[80px] leading-none select-none pointer-events-none"
+            style={{ opacity: 0.18, filter: 'blur(1px)' }}
+            aria-hidden
+          >
+            {coverEmoji}
+          </span>
+        )}
 
         <div className="flex items-center gap-3 relative">
           <Link
@@ -72,6 +84,7 @@ export default async function TripLayout({
           <TripEmojiPicker
             tripId={tripId}
             currentEmoji={coverEmoji}
+            currentImageUrl={coverImageUrl}
             canEdit={isParticipant}
           />
 

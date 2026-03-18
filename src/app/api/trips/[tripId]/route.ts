@@ -46,6 +46,7 @@ export async function PATCH(
   if (parsed.data.enabledCategories !== undefined) updates.enabled_categories = parsed.data.enabledCategories
   if (parsed.data.customCategories !== undefined) updates.custom_categories = parsed.data.customCategories
   if (parsed.data.coverEmoji !== undefined) updates.cover_emoji = parsed.data.coverEmoji
+  if (parsed.data.coverImageUrl !== undefined) updates.cover_image_url = parsed.data.coverImageUrl
 
   const admin = createAdminClient()
 

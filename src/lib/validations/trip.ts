@@ -21,6 +21,7 @@ export const updateTripSchema = z.object({
   enabledCategories: z.array(z.string()).optional(),
   customCategories: z.array(z.string()).optional(),
   coverEmoji: z.string().max(8).nullable().optional(),
+  coverImageUrl: z.string().url().nullable().optional(),
 })
 
 export type CreateTripInput = z.infer<typeof createTripSchema>
