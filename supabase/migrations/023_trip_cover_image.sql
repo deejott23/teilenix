@@ -12,16 +12,22 @@ VALUES (
 ) ON CONFLICT (id) DO NOTHING;
 
 -- Allow authenticated users to upload
-CREATE POLICY IF NOT EXISTS "trip_covers_insert"
-  ON storage.objects FOR INSERT TO authenticated
-  WITH CHECK (bucket_id = 'trip-covers');
+DO $$ BEGIN
+  CREATE POLICY "trip_covers_insert"
+    ON storage.objects FOR INSERT TO authenticated
+    WITH CHECK (bucket_id = 'trip-covers');
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- Public read access
-CREATE POLICY IF NOT EXISTS "trip_covers_select"
-  ON storage.objects FOR SELECT
-  USING (bucket_id = 'trip-covers');
+DO $$ BEGIN
+  CREATE POLICY "trip_covers_select"
+    ON storage.objects FOR SELECT
+    USING (bucket_id = 'trip-covers');
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- Allow authenticated users to delete (for replacing images)
-CREATE POLICY IF NOT EXISTS "trip_covers_delete"
-  ON storage.objects FOR DELETE TO authenticated
-  USING (bucket_id = 'trip-covers');
+DO $$ BEGIN
+  CREATE POLICY "trip_covers_delete"
+    ON storage.objects FOR DELETE TO authenticated
+    USING (bucket_id = 'trip-covers');
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;

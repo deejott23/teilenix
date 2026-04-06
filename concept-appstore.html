@@ -1,0 +1,1437 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TeileniX — App Store Strategie</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117;
+    --bg-card: #161b22;
+    --bg-card2: #1c2128;
+    --border: #21262d;
+    --border-light: #30363d;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --muted2: #6e7681;
+    --primary: #1b5c58;
+    --primary-bright: #2d8a84;
+    --primary-glow: rgba(27,92,88,0.15);
+    --primary-border: rgba(27,92,88,0.35);
+    --warn: rgba(220,50,50,0.1);
+    --warn-border: rgba(220,50,50,0.3);
+    --warn-text: #f87171;
+    --success: rgba(27,92,88,0.12);
+    --success-border: rgba(45,138,132,0.35);
+    --success-text: #4ab5ae;
+    --caution: rgba(200,140,30,0.1);
+    --caution-border: rgba(200,140,30,0.3);
+    --caution-text: #d4a017;
+    --sidebar-w: 220px;
+    --content-max: 860px;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Instrument Sans', sans-serif;
+    --display: 'Syne', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.65;
+    min-height: 100vh;
+  }
+
+  /* ── Layout ── */
+  .layout {
+    display: flex;
+    max-width: calc(var(--content-max) + var(--sidebar-w) + 48px);
+    margin: 0 auto;
+    padding: 0 24px;
+    gap: 0;
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: var(--sidebar-w);
+    flex-shrink: 0;
+    position: sticky;
+    top: 32px;
+    align-self: flex-start;
+    padding: 40px 28px 40px 0;
+    height: fit-content;
+  }
+
+  .sidebar-logo {
+    font-family: var(--display);
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+  }
+
+  .sidebar-logo span { color: var(--primary-bright); }
+
+  .sidebar-sub {
+    font-size: 10px;
+    font-family: var(--mono);
+    color: var(--muted2);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-label {
+    font-size: 9px;
+    font-family: var(--mono);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted2);
+    margin-bottom: 10px;
+  }
+
+  .nav-list { list-style: none; }
+
+  .nav-list li { margin-bottom: 2px; }
+
+  .nav-list a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    text-decoration: none;
+    transition: all 0.15s;
+    border: 1px solid transparent;
+  }
+
+  .nav-list a:hover {
+    color: var(--text);
+    background: var(--bg-card);
+    border-color: var(--border);
+  }
+
+  .nav-num {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted2);
+    width: 16px;
+    flex-shrink: 0;
+  }
+
+  /* ── Main content ── */
+  .main {
+    flex: 1;
+    min-width: 0;
+    padding: 40px 0 80px 40px;
+    border-left: 1px solid var(--border);
+  }
+
+  /* ── Header ── */
+  .doc-header {
+    margin-bottom: 52px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid var(--border);
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .header-badges {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+  }
+
+  .badge {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 4px 10px;
+    border-radius: 100px;
+  }
+
+  .badge-primary {
+    background: var(--primary-glow);
+    border: 1px solid var(--primary-border);
+    color: var(--success-text);
+  }
+
+  .badge-muted {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+
+  .doc-title {
+    font-family: var(--display);
+    font-size: clamp(26px, 4vw, 38px);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+    color: var(--text);
+    margin-bottom: 12px;
+  }
+
+  .doc-title em {
+    font-style: normal;
+    color: var(--primary-bright);
+  }
+
+  .doc-subtitle {
+    font-size: 15px;
+    color: var(--muted);
+    max-width: 560px;
+    line-height: 1.6;
+  }
+
+  /* ── Sections ── */
+  .section {
+    margin-bottom: 64px;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .section:nth-child(2) { animation-delay: 0.05s; }
+  .section:nth-child(3) { animation-delay: 0.10s; }
+  .section:nth-child(4) { animation-delay: 0.15s; }
+  .section:nth-child(5) { animation-delay: 0.20s; }
+  .section:nth-child(6) { animation-delay: 0.25s; }
+
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--primary-bright);
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .section-title {
+    font-family: var(--display);
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text);
+  }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px 24px;
+    margin-bottom: 12px;
+  }
+
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .card-title {
+    font-family: var(--display);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card-body {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .recommended-card {
+    border-color: var(--primary-border);
+    background: linear-gradient(135deg, var(--bg-card) 0%, rgba(27,92,88,0.08) 100%);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .recommended-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--primary-bright));
+  }
+
+  .rec-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    font-family: var(--mono);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    background: var(--primary-glow);
+    border: 1px solid var(--primary-border);
+    color: var(--success-text);
+    padding: 2px 8px;
+    border-radius: 100px;
+    margin-left: 6px;
+  }
+
+  /* ── Pro/Con lists ── */
+  .pro-con {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 14px;
+  }
+
+  .pro-list, .con-list { list-style: none; }
+
+  .pro-list li, .con-list li {
+    font-size: 12px;
+    color: var(--muted);
+    padding: 3px 0 3px 18px;
+    position: relative;
+  }
+
+  .pro-list li::before {
+    content: '+';
+    position: absolute; left: 0;
+    color: var(--success-text);
+    font-weight: 700;
+    font-family: var(--mono);
+  }
+
+  .con-list li::before {
+    content: '−';
+    position: absolute; left: 0;
+    color: var(--warn-text);
+    font-weight: 700;
+    font-family: var(--mono);
+  }
+
+  /* ── Alert boxes ── */
+  .alert {
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    display: flex;
+    gap: 12px;
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  .alert-icon { flex-shrink: 0; font-size: 15px; margin-top: 1px; }
+
+  .alert-warn {
+    background: var(--warn);
+    border: 1px solid var(--warn-border);
+    color: var(--warn-text);
+  }
+
+  .alert-warn strong { color: #fca5a5; }
+
+  .alert-success {
+    background: var(--success);
+    border: 1px solid var(--success-border);
+    color: var(--success-text);
+  }
+
+  .alert-caution {
+    background: var(--caution);
+    border: 1px solid var(--caution-border);
+    color: var(--caution-text);
+  }
+
+  /* ── Cost highlight cards ── */
+  .cost-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .cost-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    text-align: center;
+  }
+
+  .cost-amount {
+    font-family: var(--mono);
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.1;
+    margin-bottom: 6px;
+    letter-spacing: -0.02em;
+  }
+
+  .cost-label {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+
+  .cost-note {
+    font-size: 10px;
+    font-family: var(--mono);
+    color: var(--muted2);
+    margin-top: 4px;
+  }
+
+  .cost-card.highlight {
+    border-color: var(--warn-border);
+    background: linear-gradient(135deg, var(--bg-card), var(--warn));
+  }
+
+  .cost-card.highlight .cost-amount { color: #fca5a5; }
+
+  .cost-card.highlight-green {
+    border-color: var(--primary-border);
+    background: linear-gradient(135deg, var(--bg-card), var(--primary-glow));
+  }
+
+  .cost-card.highlight-green .cost-amount { color: var(--success-text); }
+
+  /* ── Table ── */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin: 16px 0;
+  }
+
+  .data-table th {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted2);
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .data-table td {
+    padding: 11px 14px;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+
+  .data-table tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+  .data-table tr:last-child td { border-bottom: none; font-weight: 600; color: var(--text); }
+
+  .mono { font-family: var(--mono); color: var(--text); font-size: 13px; }
+  .mono-sm { font-family: var(--mono); font-size: 12px; }
+
+  /* ── Provision big number ── */
+  .provision-box {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px;
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    margin: 16px 0;
+  }
+
+  .provision-num {
+    font-family: var(--mono);
+    font-size: 64px;
+    font-weight: 700;
+    color: #fca5a5;
+    line-height: 1;
+    flex-shrink: 0;
+    letter-spacing: -0.04em;
+  }
+
+  .provision-details { flex: 1; }
+
+  .provision-title {
+    font-family: var(--display);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  .provision-list { list-style: none; }
+
+  .provision-list li {
+    font-size: 12px;
+    color: var(--muted);
+    padding: 3px 0;
+    padding-left: 16px;
+    position: relative;
+  }
+
+  .provision-list li::before {
+    content: '→';
+    position: absolute; left: 0;
+    color: var(--muted2);
+    font-family: var(--mono);
+  }
+
+  /* ── Risk assessment ── */
+  .risk-grid {
+    display: grid;
+    gap: 8px;
+  }
+
+  .risk-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+  }
+
+  .risk-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+
+  .risk-red { background: var(--warn); border: 1px solid var(--warn-border); }
+  .risk-red .risk-dot { background: #ef4444; }
+  .risk-red .risk-text { color: var(--warn-text); }
+
+  .risk-yellow { background: var(--caution); border: 1px solid var(--caution-border); }
+  .risk-yellow .risk-dot { background: #d4a017; }
+  .risk-yellow .risk-text { color: var(--caution-text); }
+
+  .risk-green { background: var(--success); border: 1px solid var(--success-border); }
+  .risk-green .risk-dot { background: #22c55e; }
+  .risk-green .risk-text { color: var(--success-text); }
+
+  .risk-label { font-weight: 600; display: block; margin-bottom: 2px; }
+
+  /* ── Revenue calculator ── */
+  .revenue-table {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-top: 16px;
+  }
+
+  .revenue-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+  }
+
+  .revenue-row:last-child { border-bottom: none; }
+
+  .revenue-row.header {
+    background: rgba(255,255,255,0.03);
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted2);
+  }
+
+  .revenue-row .users { font-family: var(--mono); font-weight: 600; color: var(--text); }
+  .revenue-row .gross { font-family: var(--mono); color: var(--muted); }
+  .revenue-row .net { font-family: var(--mono); font-weight: 700; color: var(--success-text); }
+
+  /* ── Timeline ── */
+  .timeline { position: relative; padding-left: 32px; }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 9px; top: 8px; bottom: 8px;
+    width: 2px;
+    background: linear-gradient(180deg, var(--primary), var(--primary-bright), transparent);
+    border-radius: 2px;
+  }
+
+  .timeline-item {
+    position: relative;
+    margin-bottom: 28px;
+  }
+
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -27px;
+    top: 6px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--primary-bright);
+    border: 2px solid var(--bg);
+    box-shadow: 0 0 0 3px var(--primary-glow);
+  }
+
+  .timeline-phase {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--primary-bright);
+    margin-bottom: 6px;
+  }
+
+  .timeline-title {
+    font-family: var(--display);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 10px;
+  }
+
+  .timeline-list { list-style: none; }
+
+  .timeline-list li {
+    font-size: 13px;
+    color: var(--muted);
+    padding: 3px 0 3px 16px;
+    position: relative;
+  }
+
+  .timeline-list li::before {
+    content: '·';
+    position: absolute; left: 4px;
+    color: var(--primary-bright);
+    font-weight: 900;
+  }
+
+  /* ── Steps ── */
+  .steps { counter-reset: step; list-style: none; }
+
+  .steps li {
+    counter-increment: step;
+    display: flex;
+    gap: 14px;
+    margin-bottom: 12px;
+    align-items: flex-start;
+  }
+
+  .steps li::before {
+    content: counter(step);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--primary-glow);
+    border: 1px solid var(--primary-border);
+    color: var(--success-text);
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .steps li .step-content {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+
+  .steps li .step-label {
+    font-weight: 600;
+    color: var(--text);
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  code {
+    font-family: var(--mono);
+    font-size: 12px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border);
+    padding: 1px 6px;
+    border-radius: 4px;
+    color: var(--success-text);
+  }
+
+  /* ── Final recommendation ── */
+  .final-box {
+    background: linear-gradient(135deg, rgba(27,92,88,0.15), rgba(27,92,88,0.05));
+    border: 1px solid var(--primary-border);
+    border-radius: 16px;
+    padding: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .final-box::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--primary-bright), var(--success-text));
+  }
+
+  .final-box-title {
+    font-family: var(--display);
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 14px;
+    letter-spacing: -0.02em;
+  }
+
+  .final-box p {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.7;
+    margin-bottom: 20px;
+  }
+
+  .final-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: 20px;
+  }
+
+  .final-stat {
+    text-align: center;
+    padding: 16px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 12px;
+    border: 1px solid var(--primary-border);
+  }
+
+  .final-stat-num {
+    font-family: var(--mono);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--success-text);
+    margin-bottom: 4px;
+  }
+
+  .final-stat-label {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.3;
+  }
+
+  /* ── Footer ── */
+  footer {
+    margin-top: 60px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    font-size: 11px;
+    font-family: var(--mono);
+    color: var(--muted2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: gap;
+    gap: 8px;
+  }
+
+  /* ── Util ── */
+  .mt-8 { margin-top: 8px; }
+  .mt-12 { margin-top: 12px; }
+  .mt-16 { margin-top: 16px; }
+  .mt-20 { margin-top: 20px; }
+
+  .text-muted { color: var(--muted); }
+  .text-sm { font-size: 12px; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── Mobile ── */
+  @media (max-width: 760px) {
+    .layout { flex-direction: column; padding: 0 16px; }
+    .sidebar {
+      width: 100%;
+      position: static;
+      padding: 24px 0 0;
+      border-left: none;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 32px;
+    }
+    .sidebar-sub, .nav-label { display: none; }
+    .nav-list { display: flex; flex-wrap: wrap; gap: 6px; }
+    .nav-list a { font-size: 11px; padding: 5px 10px; }
+    .nav-num { display: none; }
+    .main { padding: 0 0 60px; border-left: none; }
+    .pro-con { grid-template-columns: 1fr; }
+    .provision-box { flex-direction: column; gap: 16px; text-align: center; }
+    .provision-num { font-size: 48px; }
+    .final-stats { grid-template-columns: 1fr; }
+    .revenue-row { grid-template-columns: 1fr 1fr 1fr; }
+    .cost-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">Teileni<span>X</span></div>
+    <div class="sidebar-sub">App Store Strategie</div>
+    <p class="nav-label">Inhalt</p>
+    <ul class="nav-list">
+      <li><a href="#tech"><span class="nav-num">01</span>Technischer Weg</a></li>
+      <li><a href="#voraus"><span class="nav-num">02</span>Voraussetzungen</a></li>
+      <li><a href="#kosten"><span class="nav-num">03</span>Kosten & Gebühren</a></li>
+      <li><a href="#review"><span class="nav-num">04</span>Review-Prozess</a></li>
+      <li><a href="#mono"><span class="nav-num">05</span>Monetarisierung</a></li>
+      <li><a href="#techabo"><span class="nav-num">06</span>Abo umsetzen</a></li>
+      <li><a href="#roadmap"><span class="nav-num">07</span>Roadmap</a></li>
+    </ul>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+
+    <!-- Header -->
+    <header class="doc-header">
+      <div class="header-badges">
+        <span class="badge badge-primary">App Store Strategie</span>
+        <span class="badge badge-muted">März 2026</span>
+        <span class="badge badge-muted">Interne Planung</span>
+      </div>
+      <h1 class="doc-title">TeileniX im<br><em>Apple App Store</em></h1>
+      <p class="doc-subtitle">Konzept zur Veröffentlichung, Monetarisierung &amp; Skalierung — technische Anforderungen, Kosten, Review-Hürden und Strategieempfehlung.</p>
+    </header>
+
+    <!-- 1. Technischer Weg -->
+    <section class="section" id="tech">
+      <div class="section-header">
+        <span class="section-num">01</span>
+        <h2 class="section-title">Technischer Weg in den Store</h2>
+      </div>
+
+      <div class="card-grid">
+
+        <div class="card recommended-card">
+          <div class="card-title">
+            Capacitor + Vercel API
+            <span class="rec-badge">⭐ Empfohlen</span>
+          </div>
+          <div class="card-body">
+            Bestehenden Next.js Code als WebView wrappen. Supabase &amp; Vercel Backend bleibt unverändert. App kommuniziert per HTTPS mit der Vercel API.
+            <div class="pro-con mt-12">
+              <ul class="pro-list">
+                <li>95% Code-Wiederverwendung</li>
+                <li>Schnell umsetzbar</li>
+                <li>Günstig</li>
+                <li>Backend unverändert</li>
+              </ul>
+              <ul class="con-list">
+                <li>Kein 100% nativer Look</li>
+                <li>Apple prüft strenger</li>
+                <li>Braucht native Extras</li>
+              </ul>
+            </div>
+            <div class="mt-12" style="padding-top:12px; border-top: 1px solid var(--border);">
+              <span style="font-family:var(--mono); font-size:11px; color:var(--success-text);">Aufwand: 3–5 Wochen</span>
+              <span style="font-family:var(--mono); font-size:11px; color:var(--muted); margin-left:12px;">Code-Änderung: ~10%</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">React Native (Expo)</div>
+          <div class="card-body">
+            Frontend komplett neu in React Native schreiben. Supabase Backend bleibt identisch. Echter nativer Look &amp; Feel.
+            <div class="pro-con mt-12">
+              <ul class="pro-list">
+                <li>Echter nativer Look</li>
+                <li>Beste Performance</li>
+                <li>Bessere Review-Chancen</li>
+              </ul>
+              <ul class="con-list">
+                <li>12–20 Wochen Aufwand</li>
+                <li>Frontend komplett neu</li>
+                <li>Sehr hohe Kosten</li>
+                <li>Doppelter Code-Stand</li>
+              </ul>
+            </div>
+            <div class="mt-12" style="padding-top:12px; border-top: 1px solid var(--border);">
+              <span style="font-family:var(--mono); font-size:11px; color:var(--caution-text);">Aufwand: 12–20 Wochen</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">PWA (kein Store)</div>
+          <div class="card-body">
+            Progressive Web App — kein App Store, kein Apple-Abo. Nutzer speichern die Website auf dem Homescreen.
+            <div class="pro-con mt-12">
+              <ul class="pro-list">
+                <li>0 Zusatzaufwand</li>
+                <li>Sofort verfügbar</li>
+                <li>Keine Provision</li>
+              </ul>
+              <ul class="con-list">
+                <li>Kein App Store</li>
+                <li>Kein Push auf iOS</li>
+                <li>Eingeschränkte Features</li>
+                <li>Weniger Vertrauen bei Nutzern</li>
+              </ul>
+            </div>
+            <div class="mt-12" style="padding-top:12px; border-top: 1px solid var(--border);">
+              <span style="font-family:var(--mono); font-size:11px; color:var(--muted);">Aufwand: 1–2 Wochen</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="alert alert-caution mt-12">
+        <span class="alert-icon">⚠️</span>
+        <div><strong>Wichtig für Capacitor:</strong> Apple lehnt reine WebView-Wrapper ab (Guideline 4.2). Mindestens 3 native Features müssen integriert werden: Push Notifications, Haptic Feedback und Share Sheet für Einladungslinks.</div>
+      </div>
+    </section>
+
+    <!-- 2. Voraussetzungen -->
+    <section class="section" id="voraus">
+      <div class="section-header">
+        <span class="section-num">02</span>
+        <h2 class="section-title">Voraussetzungen &amp; Hürden</h2>
+      </div>
+
+      <div class="card" style="margin-bottom:12px;">
+        <div class="card-title">🍎 Apple Developer Account</div>
+        <div class="card-body">
+          <ul class="timeline-list" style="margin-top:8px;">
+            <li><span class="mono-sm">99 USD/Jahr</span> — Pflichtgebühr, keine Einmalzahlung möglich</li>
+            <li>Erfordert gültige Zahlungsmethode + Apple ID (Privatperson oder Unternehmen)</li>
+            <li>Aktivierung: 1–3 Werktage nach Anmeldung</li>
+            <li>Berechtigt zur Veröffentlichung im App Store und zur Nutzung von TestFlight</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:12px;">
+        <div class="card-title">💻 Mac-Computer — Pflicht für iOS-Builds</div>
+        <div class="card-body">
+          Xcode läuft ausschließlich auf macOS. Kein Mac = kein iOS-Build.
+          <div class="mt-12" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap:10px; margin-top:14px;">
+            <div style="background:var(--bg-card2); border:1px solid var(--border); border-radius:10px; padding:14px; text-align:center;">
+              <div class="mono" style="font-size:18px; margin-bottom:4px;">~700€</div>
+              <div class="text-sm text-muted">Mac Mini M2</div>
+              <div style="font-size:10px; color:var(--muted2);">Empfehlung für Start</div>
+            </div>
+            <div style="background:var(--bg-card2); border:1px solid var(--border); border-radius:10px; padding:14px; text-align:center;">
+              <div class="mono" style="font-size:18px; margin-bottom:4px;">~1.200€</div>
+              <div class="text-sm text-muted">MacBook Air M2</div>
+              <div style="font-size:10px; color:var(--muted2);">Mobil flexibel</div>
+            </div>
+            <div style="background:var(--bg-card2); border:1px solid var(--border); border-radius:10px; padding:14px; text-align:center;">
+              <div class="mono" style="font-size:18px; margin-bottom:4px;">~30$/Mo</div>
+              <div class="text-sm text-muted">MacStadium Cloud</div>
+              <div style="font-size:10px; color:var(--muted2);">Kein Kauf nötig</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p style="font-family:var(--mono); font-size:10px; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted2); margin: 20px 0 12px;">Häufige Ablehnungsgründe</p>
+
+      <div class="alert alert-warn">
+        <span class="alert-icon">🚫</span>
+        <div><strong>Guideline 4.2 — Minimum Functionality:</strong> Reine WebView-Wrapper ohne native Mehrwerte werden konsequent abgelehnt.<br>
+        <span style="color:var(--muted); font-size:12px;">→ Lösung: Push Notifications, Haptic Feedback und Share Sheet integrieren</span></div>
+      </div>
+      <div class="alert alert-warn">
+        <span class="alert-icon">🚫</span>
+        <div><strong>Fehlende Datenschutzerklärung:</strong> Eine öffentlich erreichbare Privacy Policy URL ist Pflicht.<br>
+        <span style="color:var(--muted); font-size:12px;">→ Lösung: teilenix.app/privacy hosten (einfache statische Seite)</span></div>
+      </div>
+      <div class="alert alert-warn">
+        <span class="alert-icon">🚫</span>
+        <div><strong>In-App-Käufe außerhalb von Apple IAP:</strong> Wenn Monetarisierung geplant, müssen Käufe über Apple laufen.<br>
+        <span style="color:var(--muted); font-size:12px;">→ Lösung: RevenueCat SDK für iOS In-App Purchases nutzen</span></div>
+      </div>
+      <div class="alert alert-caution">
+        <span class="alert-icon">⚠️</span>
+        <div><strong>Screenshots aus dem Simulator:</strong> Apple verlangt echte Screenshots von einem echten iPhone.<br>
+        <span style="color:var(--muted); font-size:12px;">→ Lösung: iPhone 15 Pro (oder neueres) für Store-Screenshots verwenden</span></div>
+      </div>
+    </section>
+
+    <!-- 3. Kosten -->
+    <section class="section" id="kosten">
+      <div class="section-header">
+        <span class="section-num">03</span>
+        <h2 class="section-title">Kosten &amp; Gebühren</h2>
+      </div>
+
+      <p style="font-family:var(--mono); font-size:10px; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted2); margin-bottom:12px;">Einmalige / Anlaufkosten</p>
+      <div class="cost-grid">
+        <div class="cost-card highlight">
+          <div class="cost-amount">99$</div>
+          <div class="cost-label">Apple Developer Account</div>
+          <div class="cost-note">jährlich wiederkehrend!</div>
+        </div>
+        <div class="cost-card">
+          <div class="cost-amount">25$</div>
+          <div class="cost-label">Google Play Console</div>
+          <div class="cost-note">einmalig, optional</div>
+        </div>
+        <div class="cost-card">
+          <div class="cost-amount">700€</div>
+          <div class="cost-label">Mac Hardware</div>
+          <div class="cost-note">falls nicht vorhanden</div>
+        </div>
+        <div class="cost-card">
+          <div class="cost-amount">40–80h</div>
+          <div class="cost-label">Capacitor Setup &amp; native Features</div>
+          <div class="cost-note">Entwicklungsaufwand</div>
+        </div>
+      </div>
+
+      <p style="font-family:var(--mono); font-size:10px; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted2); margin: 24px 0 12px;">Monatliche Betriebskosten</p>
+
+      <table class="data-table" style="background:var(--bg-card); border:1px solid var(--border); border-radius:12px; overflow:hidden;">
+        <thead>
+          <tr>
+            <th>Dienst</th>
+            <th>Free Tier</th>
+            <th>Bezahlt (Pro)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Apple Developer</td>
+            <td class="mono">≈ 8,25 $/Mo</td>
+            <td class="mono">—</td>
+          </tr>
+          <tr>
+            <td>Supabase</td>
+            <td class="mono">0$ (bis 500 MB)</td>
+            <td class="mono">25 $/Mo</td>
+          </tr>
+          <tr>
+            <td>Vercel</td>
+            <td class="mono">0$ (bis 100 GB)</td>
+            <td class="mono">20 $/Mo</td>
+          </tr>
+          <tr>
+            <td>Sentry (Error Tracking)</td>
+            <td class="mono">0$</td>
+            <td class="mono">26 $/Mo</td>
+          </tr>
+          <tr>
+            <td>RevenueCat (wenn Abo)</td>
+            <td class="mono">0$ (bis 2.500$ MRR)</td>
+            <td class="mono">ab 299 $/Mo</td>
+          </tr>
+          <tr>
+            <td><strong>Gesamt Minimum</strong></td>
+            <td class="mono" style="color:var(--success-text);"><strong>~8 $/Mo</strong></td>
+            <td class="mono" style="color:var(--caution-text);"><strong>~80 $/Mo</strong></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="provision-box mt-20">
+        <div class="provision-num">30%</div>
+        <div class="provision-details">
+          <div class="provision-title">Apple's Provision auf alle In-App-Käufe</div>
+          <ul class="provision-list">
+            <li>30% auf alle Abo-Einnahmen im ersten Abo-Jahr</li>
+            <li>15% ab dem zweiten Abo-Jahr (automatisch)</li>
+            <li>15% für alle Entwickler im Small Business Program (bis 1 Mio$ Jahresumsatz) — kostenlos anmelden!</li>
+            <li>Externe Zahlungssysteme (Stripe, PayPal) für In-App-Features verboten</li>
+            <li>Ausnahme: Web-Version kann weiter direkt über Stripe abrechnen</li>
+          </ul>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- 4. Review -->
+    <section class="section" id="review">
+      <div class="section-header">
+        <span class="section-num">04</span>
+        <h2 class="section-title">App Store Review — wie schwer ist die Freigabe?</h2>
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1fr 2fr; gap:16px; margin-bottom:20px;" class="diff-grid">
+        <div class="cost-card highlight-green" style="display:flex; flex-direction:column; justify-content:center; text-align:center; padding:28px;">
+          <div style="font-size:13px; color:var(--muted); margin-bottom:8px; font-family:var(--mono); text-transform:uppercase; letter-spacing:0.08em;">Schwierigkeit</div>
+          <div style="font-family:var(--display); font-size:28px; font-weight:800; color:var(--success-text); margin-bottom:6px;">MITTEL</div>
+          <div style="font-size:11px; color:var(--muted);">Ersteinreichung: 1–7 Tage<br>Updates: 1–2 Tage</div>
+        </div>
+        <div class="card" style="margin-bottom:0;">
+          <div class="card-title" style="margin-bottom:10px;">Einschätzung</div>
+          <div class="card-body">TeileniX ist eine klar definierte Utility-App mit konkretem, nachvollziehbarem Nutzen — das erhöht die Freigabe-Wahrscheinlichkeit erheblich. Es gibt keine rechtlichen Graubereiche, keine Finanztransaktionen und keine nutzergenerierten Inhalte. Die größte reale Hürde ist die WebView-Problematik.</div>
+        </div>
+      </div>
+
+      <div class="risk-grid">
+        <div class="risk-row risk-red">
+          <div class="risk-dot"></div>
+          <div class="risk-text"><span class="risk-label">WebView ohne native Features</span>Apple lehnt Apps ab, die nur eine Website im Vollbild anzeigen. Ohne mindestens 3 spürbare native Features (Push, Haptics, Share) ist Ablehnung sehr wahrscheinlich.</div>
+        </div>
+        <div class="risk-row risk-yellow">
+          <div class="risk-dot"></div>
+          <div class="risk-text"><span class="risk-label">Fehlende IAP-Integration bei Monetarisierung</span>Falls Abo geplant ist und es nicht über Apple IAP läuft, folgt sofortige Ablehnung.</div>
+        </div>
+        <div class="risk-row risk-green">
+          <div class="risk-dot"></div>
+          <div class="risk-text"><span class="risk-label">Klare Funktion — kein Gray-Area Content</span>Reisekostenabrechnung ist eine eindeutig nützliche Kategorie ohne rechtliche Risiken.</div>
+        </div>
+        <div class="risk-row risk-green">
+          <div class="risk-dot"></div>
+          <div class="risk-text"><span class="risk-label">Keine sensiblen Finanzdaten</span>TeileniX führt keine Transaktionen durch, sondern nur Aufzeichnungen — geringere Prüfintensität.</div>
+        </div>
+        <div class="risk-row risk-green">
+          <div class="risk-dot"></div>
+          <div class="risk-text"><span class="risk-label">Kein User Generated Content (UGC)</span>Kein öffentliches Forum, keine Kommentarfunktion — weniger Compliance-Aufwand.</div>
+        </div>
+      </div>
+
+      <div class="alert alert-success mt-16">
+        <span class="alert-icon">✅</span>
+        <div><strong>Strategie für erfolgreiche Ersteinreichung:</strong> 3 native Features einbauen (Push, Haptics, Share Sheet) · Privacy Policy unter eigenem URL hosten · Support-Kontakt in der App verlinken · Echte iPhone-Screenshots erstellen · Klare App-Beschreibung: "Reisekostenabrechnung für Gruppen"</div>
+      </div>
+    </section>
+
+    <!-- 5. Monetarisierung -->
+    <section class="section" id="mono">
+      <div class="section-header">
+        <span class="section-num">05</span>
+        <h2 class="section-title">Monetarisierungsstrategie</h2>
+      </div>
+
+      <div class="card-grid">
+
+        <div class="card recommended-card">
+          <div class="card-title">
+            Freemium + Abo
+            <span class="rec-badge">⭐ Empfohlen</span>
+          </div>
+          <div class="card-body">
+            <p style="margin-bottom:12px;">Kostenlose Basisversion mit Limits, Premium hebt alle Einschränkungen auf.</p>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;">
+              <div style="background:var(--bg-card2); border:1px solid var(--border); border-radius:10px; padding:12px;">
+                <div style="font-size:10px; font-family:var(--mono); color:var(--muted2); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:8px;">Free</div>
+                <ul class="timeline-list">
+                  <li>3 aktive Reisen</li>
+                  <li>5 Teilnehmer/Reise</li>
+                  <li>Basis-Kategorien</li>
+                  <li>Kein Foto-Upload</li>
+                </ul>
+              </div>
+              <div style="background:var(--primary-glow); border:1px solid var(--primary-border); border-radius:10px; padding:12px;">
+                <div style="font-size:10px; font-family:var(--mono); color:var(--success-text); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:8px;">Premium</div>
+                <ul class="timeline-list">
+                  <li>Unbegrenzte Reisen</li>
+                  <li>Unbegrenzte Teilnehmer</li>
+                  <li>Foto-Upload</li>
+                  <li>Erweiterte Statistiken</li>
+                </ul>
+              </div>
+            </div>
+            <div style="text-align:center; padding:14px; background:rgba(0,0,0,0.2); border-radius:10px; border:1px solid var(--border);">
+              <span class="mono" style="font-size:22px;">2,99€</span>
+              <span style="color:var(--muted); font-size:13px;">/Monat</span>
+              <span style="color:var(--muted2); font-size:12px; margin:0 8px;">oder</span>
+              <span class="mono" style="font-size:22px;">19,99€</span>
+              <span style="color:var(--muted); font-size:13px;">/Jahr</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Einmaliger Kauf</div>
+          <div class="card-body">
+            App kostet z.B. <span class="mono-sm">3,99€</span> einmalig. Einfacher zu implementieren — kein Subscription-Management nötig.
+            <div class="pro-con mt-12">
+              <ul class="pro-list">
+                <li>Einfache Umsetzung</li>
+                <li>Kein Abo-Management</li>
+                <li>Klare Transaktion</li>
+              </ul>
+              <ul class="con-list">
+                <li>Kein wiederkehrender Umsatz</li>
+                <li>Nutzer zögern ohne Test</li>
+                <li>Schwer skalierbar</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Werbung (AdMob)</div>
+          <div class="card-body">
+            Kostenlose App mit Google AdMob Banner/Interstitials. Einnahmen ca. <span class="mono-sm">0,50–3$ CPM</span>.
+            <div class="pro-con mt-12">
+              <ul class="pro-list">
+                <li>Keine Kaufhürde</li>
+                <li>Sofort Einnahmen</li>
+              </ul>
+              <ul class="con-list">
+                <li>Wirkt billig in Kategorie</li>
+                <li>Nervt Nutzer aktiv</li>
+                <li>DSGVO Consent-Banner</li>
+                <li>Sehr geringe Einnahmen</li>
+              </ul>
+            </div>
+          </div>
+          <div class="alert alert-warn" style="margin-top:12px; padding:10px 12px;">
+            <span class="alert-icon" style="font-size:12px;">✗</span>
+            <div style="font-size:11px;">Für TeileniX nicht empfohlen</div>
+          </div>
+        </div>
+
+      </div>
+
+      <p style="font-family:var(--mono); font-size:10px; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted2); margin: 24px 0 12px;">Umsatzprognose Freemium-Modell (nach Apple-Provision 15%)</p>
+      <div class="revenue-table">
+        <div class="revenue-row header">
+          <span>Zahlende Nutzer/Mo</span>
+          <span>Brutto-Umsatz</span>
+          <span>Netto nach Provision</span>
+        </div>
+        <div class="revenue-row">
+          <span class="users">100</span>
+          <span class="gross">299 €</span>
+          <span class="net">254 €</span>
+        </div>
+        <div class="revenue-row">
+          <span class="users">250</span>
+          <span class="gross">748 €</span>
+          <span class="net">636 €</span>
+        </div>
+        <div class="revenue-row">
+          <span class="users">500</span>
+          <span class="gross">1.495 €</span>
+          <span class="net">1.271 €</span>
+        </div>
+        <div class="revenue-row">
+          <span class="users">1.000</span>
+          <span class="gross">2.990 €</span>
+          <span class="net">2.542 €</span>
+        </div>
+        <div class="revenue-row">
+          <span class="users">5.000</span>
+          <span class="gross">14.950 €</span>
+          <span class="net">12.708 €</span>
+        </div>
+      </div>
+      <p style="font-size:11px; color:var(--muted2); margin-top:8px; font-family:var(--mono);">* Basis: 2,99€/Monat · Small Business Program (15%) · ohne Betriebskosten</p>
+    </section>
+
+    <!-- 6. Technische Umsetzung Abo -->
+    <section class="section" id="techabo">
+      <div class="section-header">
+        <span class="section-num">06</span>
+        <h2 class="section-title">Technische Umsetzung Abo-Modell</h2>
+      </div>
+
+      <div class="alert alert-warn" style="margin-bottom:20px;">
+        <span class="alert-icon">⚠️</span>
+        <div><strong>Apple-Regel:</strong> Nutzer dürfen für In-App-Features nicht auf externe Zahlungsseiten (PayPal, Stripe direkt) weitergeleitet werden. Alle Käufe für App-Features MÜSSEN über Apple IAP laufen → 15–30% Provision ist unvermeidbar.<br>
+        <span style="font-size:12px; color:var(--muted);">Ausnahme: Die Web-Version kann weiter direkt über Stripe abrechnen — kein Apple-Cut für Web-Abos.</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">RevenueCat Integration — Schritt für Schritt</div>
+        <div class="card-body">
+          <ol class="steps mt-8">
+            <li>
+              <div class="step-content">
+                <span class="step-label">RevenueCat Account anlegen</span>
+                Kostenlos bis 2.500 USD MRR. Verbindet App Store Connect mit der eigenen App und übernimmt das komplette Subscription-Management.
+              </div>
+            </li>
+            <li>
+              <div class="step-content">
+                <span class="step-label">In-App-Purchase in App Store Connect anlegen</span>
+                Zwei Produkte: <code>teilenix_premium_monthly</code> und <code>teilenix_premium_yearly</code>. Preisgestaltung über Apples Preisstufen.
+              </div>
+            </li>
+            <li>
+              <div class="step-content">
+                <span class="step-label">RevenueCat SDK in Capacitor einbinden</span>
+                Das SDK übernimmt Kauf-Flow, Restore, Receipt-Validierung und Webhook-Benachrichtigungen automatisch.
+              </div>
+            </li>
+            <li>
+              <div class="step-content">
+                <span class="step-label">Supabase-Schema erweitern</span>
+                <code>profiles</code> Tabelle: <code>is_premium boolean</code> + <code>premium_expires_at timestamptz</code> hinzufügen. Migration: ~5 Minuten.
+              </div>
+            </li>
+            <li>
+              <div class="step-content">
+                <span class="step-label">RevenueCat Webhook → eigener API-Endpoint</span>
+                Bei erfolgreicher Zahlung: RevenueCat feuert Webhook → <code>POST /api/webhooks/revenuecat</code> → Supabase <code>is_premium</code> auf <code>true</code> setzen.
+              </div>
+            </li>
+            <li>
+              <div class="step-content">
+                <span class="step-label">Feature-Gates im Frontend implementieren</span>
+                Vor dem Erstellen einer 4. Reise: Premium-Check → Paywall-Screen anzeigen. Limit-Logik serverseitig validieren (nicht nur im Client).
+              </div>
+            </li>
+            <li>
+              <div class="step-content">
+                <span class="step-label">"Premium upgraden"-Screen in der App</span>
+                Zeigt Preise aus dem App Store (dynamisch via RevenueCat SDK), Kaufbutton, Restore-Button für bereits zahlende Nutzer.
+              </div>
+            </li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. Roadmap -->
+    <section class="section" id="roadmap">
+      <div class="section-header">
+        <span class="section-num">07</span>
+        <h2 class="section-title">Empfehlung &amp; Roadmap</h2>
+      </div>
+
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-phase">Phase 1 · Monat 1–2</div>
+          <div class="timeline-title">Vorbereitung &amp; Setup</div>
+          <ul class="timeline-list">
+            <li>Apple Developer Account anlegen (99 USD)</li>
+            <li>Mac beschaffen falls nötig (Mac Mini M2 ab ~700€)</li>
+            <li>Privacy Policy + Impressum als statische Seite hosten</li>
+            <li>App Icon 1024×1024px finalisieren (auch für App Store nötig)</li>
+            <li>Capacitor in das Next.js-Projekt integrieren</li>
+            <li>3 native Features: Push Notifications, Haptic Feedback, Share Sheet</li>
+          </ul>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-phase">Phase 2 · Monat 2–3</div>
+          <div class="timeline-title">Build, Test &amp; Beta</div>
+          <ul class="timeline-list">
+            <li>iOS Build via Xcode erstellen</li>
+            <li>TestFlight Beta — bis zu 10.000 Tester kostenlos einladen</li>
+            <li>Bugfixing auf echten Geräten (iPhone 14/15 zum Testen)</li>
+            <li>Screenshots auf echtem iPhone 15 Pro für Store-Listing</li>
+            <li>App Store Connect: Listing, Beschreibung, Keywords, Alterseinstufung</li>
+          </ul>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-phase">Phase 3 · Monat 3</div>
+          <div class="timeline-title">Store-Einreichung &amp; Launch</div>
+          <ul class="timeline-list">
+            <li>Finale Einreichung in App Store Connect</li>
+            <li>Review-Wartezeit: 1–7 Tage (Durchschnitt ~2 Tage)</li>
+            <li>Bei Ablehnung: Anpassung nach Review-Feedback, erneute Einreichung</li>
+            <li>Go-Live: App erscheint im deutschen App Store</li>
+          </ul>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-phase">Phase 4 · Monat 4+</div>
+          <div class="timeline-title">Monetarisierung aktivieren</div>
+          <ul class="timeline-list">
+            <li>RevenueCat SDK integrieren + Webhook-Endpoint bauen</li>
+            <li>Freemium-Limits im Backend implementieren (serverseitig!)</li>
+            <li>Premium-Abo-Produkte in App Store Connect anlegen</li>
+            <li>Paywall-Screen in der App gestalten</li>
+            <li>Update einreichen → Review 1–2 Tage → Monetarisierung live</li>
+            <li>Small Business Program bei Apple beantragen (15% statt 30%)</li>
+          </ul>
+        </div>
+      </div>
+
+      <p style="font-family:var(--mono); font-size:10px; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted2); margin: 28px 0 14px;">Gesamtkosten bis Launch</p>
+      <div class="cost-grid">
+        <div class="cost-card highlight-green">
+          <div class="cost-amount">~1.300€</div>
+          <div class="cost-label">Minimum-Budget</div>
+          <div class="cost-note">mit vorhandenem Mac</div>
+        </div>
+        <div class="cost-card">
+          <div class="cost-amount">~2.500€</div>
+          <div class="cost-label">Mit Mac-Kauf</div>
+          <div class="cost-note">Mac Mini + Setup + Gebühren</div>
+        </div>
+        <div class="cost-card">
+          <div class="cost-amount">~3 Mo</div>
+          <div class="cost-label">Realistischer Zeitplan</div>
+          <div class="cost-note">bis erste Store-Version</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Fazit -->
+    <div class="final-box">
+      <div class="final-box-title">Fazit &amp; Empfehlung</div>
+      <p>TeileniX hat das Potenzial für einen erfolgreichen App Store Launch. Die größte Hürde ist nicht Apples Review-Prozess an sich — sondern die technische Notwendigkeit, mindestens 3 spürbare native Features in die App zu integrieren, um nicht als reiner WebView-Wrapper abgelehnt zu werden.</p>
+      <p style="margin-bottom:0;"><strong style="color:var(--text);">Empfehlung:</strong> Capacitor-Ansatz + Freemium-Abo-Modell. Dieser Weg maximiert die Code-Wiederverwendung, minimiert den Aufwand bis zum Launch und schafft die Basis für nachhaltigen, wiederkehrenden Umsatz. Die Web-Version bleibt weiterhin vollständig funktional und kann parallel ohne Apple-Provision über Stripe monetarisiert werden.</p>
+      <div class="final-stats">
+        <div class="final-stat">
+          <div class="final-stat-num">~3 Mo</div>
+          <div class="final-stat-label">bis erste Store-Version</div>
+        </div>
+        <div class="final-stat">
+          <div class="final-stat-num">~8$/Mo</div>
+          <div class="final-stat-label">Mindestbetriebskosten</div>
+        </div>
+        <div class="final-stat">
+          <div class="final-stat-num">15%</div>
+          <div class="final-stat-label">Apple-Provision<br>(Small Business)</div>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <span>TeileniX · App Store Strategie · März 2026</span>
+      <span>Konzept für interne Planung</span>
+    </footer>
+
+  </main>
+</div>
+
+<style>
+  @media (max-width: 760px) {
+    .diff-grid { grid-template-columns: 1fr !important; }
+  }
+</style>
+
+</body>
+</html>

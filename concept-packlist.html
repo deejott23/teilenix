@@ -1,0 +1,1444 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TeileniX — Mitbringliste: Konzeptvorschläge</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #f2efe8;
+    --card:     #faf8f4;
+    --primary:  #1b5c58;
+    --primary-light: #e8f3f2;
+    --muted:    #ede8e0;
+    --muted-fg: #9a9080;
+    --fg:       #1a1612;
+    --border:   #ede8e0;
+    --amber:    #c47a1e;
+    --amber-bg: #fef3e0;
+    --green:    #2d7a4f;
+    --green-bg: #e6f4ec;
+    --radius:   16px;
+    --radius-sm: 10px;
+  }
+
+  /* ── Presentation canvas ── */
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
+    background: #1a1814;
+    color: #e8e4dc;
+    min-height: 100vh;
+    padding: 48px 24px 80px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 56px;
+  }
+  .logo-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .logo-dot {
+    width: 28px; height: 28px;
+    background: #1b5c58;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+  }
+  .logo-name { font-size: 18px; font-weight: 700; color: #faf8f4; letter-spacing: -0.3px; }
+  header h1 {
+    font-size: clamp(28px, 5vw, 44px);
+    font-weight: 700;
+    color: #faf8f4;
+    letter-spacing: -1px;
+    line-height: 1.1;
+    margin-bottom: 12px;
+  }
+  header h1 span { color: #4ab5ae; }
+  header p {
+    font-size: 15px;
+    color: #a09890;
+    max-width: 520px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  /* ── Two phone frames ── */
+  .concepts {
+    display: flex;
+    gap: 40px;
+    justify-content: center;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .concept-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    flex: 0 0 auto;
+  }
+
+  .concept-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    text-align: center;
+  }
+  .concept-label .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #2a2620;
+    border: 1px solid #3a3630;
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #a09890;
+  }
+  .concept-label .badge.a { border-color: #1b5c58; color: #4ab5ae; }
+  .concept-label .badge.b { border-color: #c47a1e; color: #e8a84e; }
+  .concept-label h2 { font-size: 20px; font-weight: 700; color: #faf8f4; letter-spacing: -0.4px; }
+  .concept-label p { font-size: 13px; color: #7a7068; max-width: 320px; line-height: 1.5; }
+
+  /* Phone frame */
+  .phone-frame {
+    width: 375px;
+    height: 780px;
+    background: #000;
+    border-radius: 44px;
+    padding: 12px;
+    box-shadow:
+      0 0 0 1px #2a2620,
+      0 32px 80px rgba(0,0,0,0.6),
+      0 8px 24px rgba(0,0,0,0.4);
+    position: relative;
+    flex-shrink: 0;
+  }
+  .phone-screen {
+    width: 100%;
+    height: 100%;
+    border-radius: 34px;
+    background: var(--bg);
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Shared phone UI parts ── */
+  .status-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--fg);
+    flex-shrink: 0;
+  }
+  .status-icons { display: flex; gap: 5px; align-items: center; }
+  .status-icons svg { width: 14px; height: 14px; }
+
+  .screen-header {
+    padding: 4px 16px 12px;
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--border);
+    background: var(--card);
+  }
+  .back-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+    color: var(--primary);
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .trip-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--fg);
+    letter-spacing: -0.4px;
+  }
+
+  .tab-bar {
+    display: flex;
+    gap: 0;
+    padding: 0 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--card);
+    flex-shrink: 0;
+  }
+  .tab-item {
+    padding: 10px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted-fg);
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+  .tab-item.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+  }
+
+  .screen-scroll {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: none;
+    padding-bottom: 80px;
+  }
+  .screen-scroll::-webkit-scrollbar { display: none; }
+
+  /* Bottom nav */
+  .bottom-nav {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 72px;
+    background: var(--card);
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0 8px 8px;
+    backdrop-filter: blur(10px);
+  }
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    flex: 1;
+    padding: 6px 0;
+  }
+  .nav-icon {
+    width: 32px; height: 32px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .nav-icon.active { background: var(--primary); }
+  .nav-icon svg { width: 18px; height: 18px; }
+  .nav-icon.active svg { color: white; }
+  .nav-icon:not(.active) svg { color: var(--muted-fg); }
+  .nav-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--muted-fg);
+    text-transform: none;
+  }
+  .nav-item:first-child .nav-label { color: var(--primary); }
+
+  /* ════════════════════════════════════════
+     CONCEPT A STYLES
+  ════════════════════════════════════════ */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px 10px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .section-icon {
+    width: 32px; height: 32px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+  .section-icon.private { background: var(--muted); }
+  .section-icon.bringing { background: var(--primary-light); }
+  .section-icon.needed { background: var(--amber-bg); }
+  .section-label {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+  .section-label.private { color: var(--muted-fg); }
+  .section-label.bringing { color: var(--primary); }
+  .section-label.needed { color: var(--amber); }
+  .section-count {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 20px;
+  }
+  .section-count.private { background: var(--muted); color: var(--muted-fg); }
+  .section-count.bringing { background: var(--primary-light); color: var(--primary); }
+  .section-count.needed { background: var(--amber-bg); color: var(--amber); }
+  .section-chevron {
+    width: 16px; height: 16px;
+    color: var(--muted-fg);
+    transition: transform 0.2s;
+  }
+  .section-chevron.open { transform: rotate(90deg); }
+
+  .items-list {
+    padding: 0 16px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .item-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: transform 0.1s;
+    box-shadow: 0 1px 3px rgba(26,22,18,0.04), 0 2px 8px rgba(26,22,18,0.06);
+  }
+  .item-card:active { transform: scale(0.98); }
+
+  .custom-checkbox {
+    width: 20px; height: 20px;
+    border-radius: 6px;
+    border: 2px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.15s;
+    cursor: pointer;
+  }
+  .custom-checkbox.checked {
+    background: var(--primary);
+    border-color: var(--primary);
+  }
+  .custom-checkbox.checked svg { display: block; }
+  .custom-checkbox svg { display: none; width: 12px; height: 12px; color: white; }
+
+  .item-name {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--fg);
+    line-height: 1.3;
+  }
+  .item-name.done {
+    text-decoration: line-through;
+    color: var(--muted-fg);
+  }
+  .item-sub {
+    font-size: 11px;
+    color: var(--muted-fg);
+    margin-top: 1px;
+  }
+
+  .section-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 4px 16px 0;
+  }
+
+  /* Claim area */
+  .claim-area {
+    margin-top: 8px;
+  }
+  .progress-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .progress-bar-wrap {
+    flex: 1;
+    height: 4px;
+    background: var(--muted);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.3s;
+  }
+  .progress-text {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--muted-fg);
+    white-space: nowrap;
+  }
+  .avatars-row {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .avatar-pill {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--muted);
+    border-radius: 20px;
+    padding: 2px 8px 2px 3px;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--muted-fg);
+  }
+  .avatar-dot {
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: white;
+    font-size: 8px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .claim-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--amber-bg);
+    color: var(--amber);
+    border: 1px solid rgba(196,122,30,0.3);
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .claim-btn:active { transform: scale(0.95); }
+  .claim-btn.claimed {
+    background: var(--green-bg);
+    color: var(--green);
+    border-color: rgba(45,122,79,0.3);
+  }
+
+  /* FAB */
+  .fab {
+    position: absolute;
+    bottom: 84px;
+    right: 16px;
+    width: 52px; height: 52px;
+    background: var(--primary);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 16px rgba(27,92,88,0.4);
+    cursor: pointer;
+    z-index: 10;
+    transition: transform 0.1s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .fab:active { transform: scale(0.93); }
+  .fab svg { width: 22px; height: 22px; color: white; }
+
+  /* Bottom sheet */
+  .bottom-sheet {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: var(--card);
+    border-radius: 24px 24px 0 0;
+    padding: 20px 16px 100px;
+    box-shadow: 0 -8px 40px rgba(0,0,0,0.15);
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 20;
+  }
+  .bottom-sheet.open { transform: translateY(0); }
+  .sheet-handle {
+    width: 36px; height: 4px;
+    background: var(--muted);
+    border-radius: 2px;
+    margin: 0 auto 20px;
+  }
+  .sheet-title {
+    font-size: 16px; font-weight: 700;
+    color: var(--fg);
+    margin-bottom: 16px;
+  }
+  .type-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .type-option {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px;
+    border-radius: var(--radius);
+    border: 2px solid var(--border);
+    cursor: pointer;
+    transition: all 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .type-option:active { transform: scale(0.98); }
+  .type-option.selected { border-color: var(--primary); background: var(--primary-light); }
+  .type-option-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .type-option-text { flex: 1; }
+  .type-option-title { font-size: 14px; font-weight: 700; color: var(--fg); }
+  .type-option-desc { font-size: 11px; color: var(--muted-fg); margin-top: 1px; }
+  .sheet-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(26,22,18,0.4);
+    z-index: 19;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    border-radius: 34px;
+  }
+  .sheet-overlay.open { opacity: 1; pointer-events: auto; }
+
+  /* ════════════════════════════════════════
+     CONCEPT B STYLES
+  ════════════════════════════════════════ */
+  .b-header {
+    padding: 12px 16px;
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .stats-row {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    font-size: 11px;
+    color: var(--muted-fg);
+    font-weight: 600;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+  .stats-row span { color: var(--fg); }
+  .stats-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--border); }
+
+  .filter-chips {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+  .filter-chips::-webkit-scrollbar { display: none; }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    transition: all 0.15s;
+    -webkit-tap-highlight-color: transparent;
+    background: var(--muted);
+    color: var(--muted-fg);
+  }
+  .chip.active {
+    background: var(--primary-light);
+    color: var(--primary);
+    border-color: rgba(27,92,88,0.25);
+  }
+  .chip:active { transform: scale(0.95); }
+
+  .b-list {
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .b-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    display: flex;
+    box-shadow: 0 1px 3px rgba(26,22,18,0.04), 0 2px 8px rgba(26,22,18,0.06);
+    cursor: pointer;
+    transition: transform 0.1s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .b-item:active { transform: scale(0.985); }
+
+  .b-item-stripe {
+    width: 4px;
+    flex-shrink: 0;
+  }
+  .stripe-private { background: #c0b8ac; }
+  .stripe-bringing { background: var(--primary); }
+  .stripe-needed { background: var(--amber); }
+  .stripe-covered { background: var(--green); }
+
+  .b-item-body {
+    flex: 1;
+    padding: 12px 12px 12px 14px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .b-check {
+    width: 20px; height: 20px;
+    border-radius: 6px;
+    border: 2px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+    transition: all 0.15s;
+    cursor: pointer;
+  }
+  .b-check.checked { background: var(--primary); border-color: var(--primary); }
+  .b-check.checked svg { display: block; }
+  .b-check svg { display: none; width: 11px; height: 11px; color: white; }
+
+  .b-item-content { flex: 1; min-width: 0; }
+  .b-item-top {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 3px;
+  }
+  .b-item-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--fg);
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .b-item-name.done { text-decoration: line-through; color: var(--muted-fg); }
+  .b-qty {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted-fg);
+    flex-shrink: 0;
+  }
+  .b-type-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 20px;
+    flex-shrink: 0;
+  }
+  .tag-private { background: var(--muted); color: var(--muted-fg); }
+  .tag-bringing { background: var(--primary-light); color: var(--primary); }
+  .tag-needed { background: var(--amber-bg); color: var(--amber); }
+  .tag-covered { background: var(--green-bg); color: var(--green); }
+
+  .b-item-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .b-bringers {
+    font-size: 11px;
+    color: var(--muted-fg);
+    flex: 1;
+  }
+  .b-bringers strong { color: var(--fg); font-weight: 600; }
+
+  .b-claim-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--amber-bg);
+    color: var(--amber);
+    border: 1px solid rgba(196,122,30,0.25);
+    border-radius: 20px;
+    padding: 4px 10px;
+    font-size: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+    flex-shrink: 0;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .b-claim-btn:active { transform: scale(0.93); }
+  .b-claim-btn.claimed { background: var(--green-bg); color: var(--green); border-color: rgba(45,122,79,0.25); }
+
+  .b-swipe-hint {
+    display: flex;
+    align-items: center;
+    padding: 0 12px 0 4px;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+  .b-swipe-hint svg { width: 16px; height: 16px; }
+
+  .add-item-footer {
+    position: sticky;
+    bottom: 80px;
+    margin: 0 16px 8px;
+    background: var(--primary);
+    color: white;
+    border-radius: var(--radius);
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(27,92,88,0.35);
+    transition: transform 0.1s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .add-item-footer:active { transform: scale(0.98); }
+  .add-item-footer svg { width: 18px; height: 18px; }
+
+  /* ── Comparison table ── */
+  .comparison {
+    max-width: 880px;
+    margin: 72px auto 0;
+  }
+  .comparison h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #faf8f4;
+    letter-spacing: -0.4px;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  .comp-table {
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid #2a2620;
+  }
+  .comp-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    border-bottom: 1px solid #2a2620;
+  }
+  .comp-row:last-child { border-bottom: none; }
+  .comp-cell {
+    padding: 14px 18px;
+    font-size: 13px;
+    line-height: 1.5;
+    border-right: 1px solid #2a2620;
+  }
+  .comp-cell:last-child { border-right: none; }
+  .comp-cell.header {
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #7a7068;
+    background: #1e1c18;
+  }
+  .comp-cell.criterion { color: #a09890; font-weight: 600; font-size: 12px; }
+  .comp-cell.a-val { color: #e8e4dc; background: rgba(27,92,88,0.06); }
+  .comp-cell.b-val { color: #e8e4dc; background: rgba(196,122,30,0.04); }
+  .pro { color: #4ab5ae; }
+  .con { color: #c47a1e; }
+
+  .recommendation {
+    margin-top: 32px;
+    padding: 20px 24px;
+    background: rgba(27,92,88,0.12);
+    border: 1px solid rgba(27,92,88,0.3);
+    border-radius: 16px;
+    font-size: 14px;
+    color: #c8e8e5;
+    line-height: 1.6;
+    text-align: center;
+  }
+  .recommendation strong { color: #4ab5ae; }
+
+  /* SVG inline helpers */
+  svg { vertical-align: middle; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-row">
+    <div class="logo-dot">✈</div>
+    <span class="logo-name">TeileniX</span>
+  </div>
+  <h1>Mitbringliste — <span>Konzeptvorschläge</span></h1>
+  <p>Zwei Designvarianten für das neue Mitbringlisten-Feature. Interaktiv klickbar — bitte ausprobieren.</p>
+</header>
+
+<div class="concepts">
+
+  <!-- ══════════════════════════════════
+       KONZEPT A
+  ══════════════════════════════════ -->
+  <div class="concept-col">
+    <div class="concept-label">
+      <div class="badge a">Konzept A</div>
+      <h2>Drei Bereiche</h2>
+      <p>Klare Trennung durch collapsible Sektionen — jeder Typ hat seinen eigenen Raum.</p>
+    </div>
+
+    <div class="phone-frame">
+      <div class="phone-screen">
+
+        <!-- Status bar -->
+        <div class="status-bar">
+          <span>9:41</span>
+          <div class="status-icons">
+            <svg viewBox="0 0 24 24" fill="currentColor"><rect x="1" y="6" width="3" height="12" rx="1"/><rect x="6" y="4" width="3" height="14" rx="1"/><rect x="11" y="2" width="3" height="16" rx="1"/><rect x="16" y="0" width="3" height="18" rx="1" opacity="0.3"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1" fill="currentColor"/></svg>
+            <svg viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="7" width="18" height="11" rx="2"/><path d="M22 11v4"/></svg>
+          </div>
+        </div>
+
+        <!-- Header -->
+        <div class="screen-header">
+          <div class="back-row">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+            Reisen
+          </div>
+          <div class="trip-title">🏝️ Mallorca 2025</div>
+        </div>
+
+        <!-- Trip tabs -->
+        <div class="tab-bar">
+          <div class="tab-item">Übersicht</div>
+          <div class="tab-item">Ausgaben</div>
+          <div class="tab-item active">Liste</div>
+          <div class="tab-item">Abrechnung</div>
+        </div>
+
+        <!-- Scrollable content -->
+        <div class="screen-scroll" id="a-scroll">
+
+          <!-- Section: Privat -->
+          <div class="section-header" onclick="toggleSection('a-private')">
+            <div class="section-icon private">🔒</div>
+            <span class="section-label private">Nur ich</span>
+            <span class="section-count private">3 Items</span>
+            <svg class="section-chevron open" id="a-private-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+          </div>
+
+          <div id="a-private-items" class="items-list">
+            <div class="item-card" onclick="toggleCheck(this)">
+              <div class="custom-checkbox checked">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+              <div>
+                <div class="item-name done">Reisepass</div>
+                <div class="item-sub">Persönlich</div>
+              </div>
+            </div>
+            <div class="item-card" onclick="toggleCheck(this)">
+              <div class="custom-checkbox">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+              <div>
+                <div class="item-name">Ladekabel</div>
+                <div class="item-sub">Persönlich</div>
+              </div>
+            </div>
+            <div class="item-card" onclick="toggleCheck(this)">
+              <div class="custom-checkbox">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+              <div>
+                <div class="item-name">Sonnencreme SPF 50</div>
+                <div class="item-sub">Persönlich</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-divider"></div>
+
+          <!-- Section: Ich bringe mit -->
+          <div class="section-header" onclick="toggleSection('a-bringing')">
+            <div class="section-icon bringing">🎒</div>
+            <span class="section-label bringing">Ich bringe mit</span>
+            <span class="section-count bringing">2 Items</span>
+            <svg class="section-chevron open" id="a-bringing-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+          </div>
+
+          <div id="a-bringing-items" class="items-list">
+            <div class="item-card" onclick="toggleCheck(this)">
+              <div class="custom-checkbox">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+              <div>
+                <div class="item-name">Bluetooth-Lautsprecher</div>
+                <div class="item-sub">JBL Go · für alle</div>
+              </div>
+            </div>
+            <div class="item-card" onclick="toggleCheck(this)">
+              <div class="custom-checkbox checked">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+              <div>
+                <div class="item-name done">Reisestecker-Set</div>
+                <div class="item-sub">Eingepackt ✓</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-divider"></div>
+
+          <!-- Section: Gruppe sucht -->
+          <div class="section-header" onclick="toggleSection('a-needed')">
+            <div class="section-icon needed">🛍️</div>
+            <span class="section-label needed">Gruppe sucht</span>
+            <span class="section-count needed">3 Items</span>
+            <svg class="section-chevron open" id="a-needed-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+          </div>
+
+          <div id="a-needed-items" class="items-list">
+
+            <!-- Unclaimed -->
+            <div class="item-card" style="flex-direction:column; align-items:stretch; gap:10px;">
+              <div style="display:flex; align-items:center; gap:12px;">
+                <div class="custom-checkbox">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div style="flex:1">
+                  <div class="item-name">Erste-Hilfe-Set</div>
+                  <div class="item-sub">1× benötigt · noch niemand</div>
+                </div>
+              </div>
+              <div class="claim-area">
+                <button class="claim-btn" onclick="claimItem(this, event)">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+                  Ich bringe das mit!
+                </button>
+              </div>
+            </div>
+
+            <!-- Partial -->
+            <div class="item-card" style="flex-direction:column; align-items:stretch; gap:10px;">
+              <div style="display:flex; align-items:center; gap:12px;">
+                <div class="custom-checkbox">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div style="flex:1">
+                  <div class="item-name">Sonnencreme SPF 30</div>
+                  <div class="item-sub">3× benötigt · 2 von 3 gedeckt</div>
+                </div>
+              </div>
+              <div class="claim-area">
+                <div class="progress-row">
+                  <div class="progress-bar-wrap">
+                    <div class="progress-bar-fill" style="width:66.7%; background:var(--amber);"></div>
+                  </div>
+                  <span class="progress-text">2/3</span>
+                </div>
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+                  <div class="avatars-row">
+                    <div class="avatar-pill"><div class="avatar-dot">M</div>Max · 1×</div>
+                    <div class="avatar-pill"><div class="avatar-dot" style="background:#2d8a84">L</div>Lisa · 1×</div>
+                  </div>
+                  <button class="claim-btn" onclick="claimItem(this, event)">+ 1×</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Fully claimed -->
+            <div class="item-card" style="flex-direction:column; align-items:stretch; gap:10px;">
+              <div style="display:flex; align-items:center; gap:12px;">
+                <div class="custom-checkbox">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div style="flex:1">
+                  <div class="item-name">Kartenspiel</div>
+                  <div class="item-sub">1× benötigt · vollständig gedeckt ✓</div>
+                </div>
+              </div>
+              <div class="claim-area">
+                <div class="progress-row">
+                  <div class="progress-bar-wrap">
+                    <div class="progress-bar-fill" style="width:100%; background:var(--green);"></div>
+                  </div>
+                  <span class="progress-text" style="color:var(--green)">✓</span>
+                </div>
+                <div class="avatars-row">
+                  <div class="avatar-pill"><div class="avatar-dot" style="background:#4ab5ae">T</div>Tom · 1×</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <div style="height:100px;"></div>
+        </div><!-- end scroll -->
+
+        <!-- FAB -->
+        <div class="fab" onclick="toggleSheet('a')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        </div>
+
+        <!-- Sheet overlay -->
+        <div class="sheet-overlay" id="a-overlay" onclick="toggleSheet('a')"></div>
+
+        <!-- Bottom sheet: Add item -->
+        <div class="bottom-sheet" id="a-sheet">
+          <div class="sheet-handle"></div>
+          <div class="sheet-title">Was möchtest du hinzufügen?</div>
+          <div class="type-options">
+            <div class="type-option" onclick="selectType(this)">
+              <div class="type-option-icon" style="background:var(--muted);">🔒</div>
+              <div class="type-option-text">
+                <div class="type-option-title">Nur für mich</div>
+                <div class="type-option-desc">Persönliche Packliste, nur du siehst es</div>
+              </div>
+            </div>
+            <div class="type-option" onclick="selectType(this)">
+              <div class="type-option-icon" style="background:var(--primary-light);">🎒</div>
+              <div class="type-option-text">
+                <div class="type-option-title">Ich bringe mit</div>
+                <div class="type-option-desc">Du bringst etwas für die Gruppe</div>
+              </div>
+            </div>
+            <div class="type-option" onclick="selectType(this)">
+              <div class="type-option-icon" style="background:var(--amber-bg);">🛍️</div>
+              <div class="type-option-text">
+                <div class="type-option-title">Gruppe sucht jemanden</div>
+                <div class="type-option-desc">Alle sehen es, wer will kann es claimen</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom nav -->
+        <div class="bottom-nav">
+          <div class="nav-item">
+            <div class="nav-icon active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 11.5a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.62 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6 6l.92-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.5 17l.01-.49z"/></svg></div>
+            <span class="nav-label" style="color:var(--primary)">Reisen</span>
+          </div>
+          <div class="nav-item">
+            <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg></div>
+            <span class="nav-label">Profil</span>
+          </div>
+          <div class="nav-item">
+            <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
+            <span class="nav-label">Hilfe</span>
+          </div>
+        </div>
+
+      </div><!-- phone-screen -->
+    </div><!-- phone-frame -->
+  </div><!-- concept-col A -->
+
+
+  <!-- ══════════════════════════════════
+       KONZEPT B
+  ══════════════════════════════════ -->
+  <div class="concept-col">
+    <div class="concept-label">
+      <div class="badge b">Konzept B</div>
+      <h2>Smart-Feed</h2>
+      <p>Einheitliche Liste mit farbkodiertem Typ-Indikator — schneller Überblick mit Filter-Chips.</p>
+    </div>
+
+    <div class="phone-frame">
+      <div class="phone-screen">
+
+        <div class="status-bar">
+          <span>9:41</span>
+          <div class="status-icons">
+            <svg viewBox="0 0 24 24" fill="currentColor"><rect x="1" y="6" width="3" height="12" rx="1"/><rect x="6" y="4" width="3" height="14" rx="1"/><rect x="11" y="2" width="3" height="16" rx="1"/><rect x="16" y="0" width="3" height="18" rx="1" opacity="0.3"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1" fill="currentColor"/></svg>
+            <svg viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="7" width="18" height="11" rx="2"/><path d="M22 11v4"/></svg>
+          </div>
+        </div>
+
+        <div class="screen-header">
+          <div class="back-row">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+            Reisen
+          </div>
+          <div class="trip-title">🏝️ Mallorca 2025</div>
+        </div>
+
+        <div class="tab-bar">
+          <div class="tab-item">Übersicht</div>
+          <div class="tab-item">Ausgaben</div>
+          <div class="tab-item active">Liste</div>
+          <div class="tab-item">Abrechnung</div>
+        </div>
+
+        <!-- B-specific header with stats + filter chips -->
+        <div class="b-header">
+          <div class="stats-row">
+            <span>3</span> privat
+            <div class="stats-dot"></div>
+            <span>2</span> meins
+            <div class="stats-dot"></div>
+            <span>3</span> gesucht
+            <div class="stats-dot"></div>
+            <span style="color:var(--green)">2</span> gedeckt
+          </div>
+          <div class="filter-chips" id="b-chips">
+            <div class="chip active" onclick="filterItems(this, 'all')">Alle</div>
+            <div class="chip" onclick="filterItems(this, 'private')">🔒 Privat</div>
+            <div class="chip" onclick="filterItems(this, 'bringing')">🎒 Meins</div>
+            <div class="chip" onclick="filterItems(this, 'needed')">🛍️ Gesucht</div>
+          </div>
+        </div>
+
+        <div class="screen-scroll">
+          <div class="b-list" id="b-list">
+
+            <!-- Private: Reisepass (checked) -->
+            <div class="b-item" data-type="private">
+              <div class="b-item-stripe stripe-private"></div>
+              <div class="b-item-body" onclick="toggleBCheck(this.parentElement)">
+                <div class="b-check checked">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div class="b-item-content">
+                  <div class="b-item-top">
+                    <div class="b-item-name done">Reisepass</div>
+                    <span class="b-type-tag tag-private">🔒 Privat</span>
+                  </div>
+                  <div class="b-item-meta">
+                    <span class="b-bringers">Eingepackt ✓</span>
+                  </div>
+                </div>
+              </div>
+              <div class="b-swipe-hint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
+            </div>
+
+            <!-- Bringing: Bluetooth-Lautsprecher -->
+            <div class="b-item" data-type="bringing">
+              <div class="b-item-stripe stripe-bringing"></div>
+              <div class="b-item-body" onclick="toggleBCheck(this.parentElement)">
+                <div class="b-check">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div class="b-item-content">
+                  <div class="b-item-top">
+                    <div class="b-item-name">Bluetooth-Lautsprecher</div>
+                    <span class="b-type-tag tag-bringing">🎒 Meins</span>
+                  </div>
+                  <div class="b-item-meta">
+                    <span class="b-bringers"><strong>Max</strong> bringt das mit</span>
+                  </div>
+                </div>
+              </div>
+              <div class="b-swipe-hint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
+            </div>
+
+            <!-- Needed: Erste-Hilfe-Set (unclaimed) -->
+            <div class="b-item" data-type="needed">
+              <div class="b-item-stripe stripe-needed"></div>
+              <div class="b-item-body">
+                <div class="b-check" onclick="toggleBCheck(this.parentElement.parentElement)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div class="b-item-content">
+                  <div class="b-item-top">
+                    <div class="b-item-name">Erste-Hilfe-Set</div>
+                    <span class="b-qty">×1</span>
+                    <span class="b-type-tag tag-needed">🛍️ Gesucht</span>
+                  </div>
+                  <div class="b-item-meta">
+                    <span class="b-bringers" style="color:var(--amber)">Noch niemand</span>
+                    <button class="b-claim-btn" onclick="bClaim(this, event)">+ Ich bringe das!</button>
+                  </div>
+                </div>
+              </div>
+              <div class="b-swipe-hint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
+            </div>
+
+            <!-- Private: Ladekabel -->
+            <div class="b-item" data-type="private">
+              <div class="b-item-stripe stripe-private"></div>
+              <div class="b-item-body" onclick="toggleBCheck(this.parentElement)">
+                <div class="b-check">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div class="b-item-content">
+                  <div class="b-item-top">
+                    <div class="b-item-name">Ladekabel</div>
+                    <span class="b-type-tag tag-private">🔒 Privat</span>
+                  </div>
+                  <div class="b-item-meta">
+                    <span class="b-bringers">Noch nicht eingepackt</span>
+                  </div>
+                </div>
+              </div>
+              <div class="b-swipe-hint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
+            </div>
+
+            <!-- Needed partial: Sonnencreme SPF 30 -->
+            <div class="b-item" data-type="needed">
+              <div class="b-item-stripe stripe-needed"></div>
+              <div class="b-item-body">
+                <div class="b-check" onclick="toggleBCheck(this.parentElement.parentElement)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div class="b-item-content">
+                  <div class="b-item-top">
+                    <div class="b-item-name">Sonnencreme SPF 30</div>
+                    <span class="b-qty">×3</span>
+                    <span class="b-type-tag tag-needed">🛍️ Teilw.</span>
+                  </div>
+                  <div class="b-item-meta">
+                    <span class="b-bringers"><strong>Max</strong>, <strong>Lisa</strong> · 2/3</span>
+                    <button class="b-claim-btn" onclick="bClaim(this, event)">+ 1×</button>
+                  </div>
+                </div>
+              </div>
+              <div class="b-swipe-hint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
+            </div>
+
+            <!-- Covered: Kartenspiel -->
+            <div class="b-item" data-type="needed">
+              <div class="b-item-stripe stripe-covered"></div>
+              <div class="b-item-body" onclick="toggleBCheck(this.parentElement)">
+                <div class="b-check">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div class="b-item-content">
+                  <div class="b-item-top">
+                    <div class="b-item-name">Kartenspiel</div>
+                    <span class="b-qty">×1</span>
+                    <span class="b-type-tag tag-covered">✓ Gedeckt</span>
+                  </div>
+                  <div class="b-item-meta">
+                    <span class="b-bringers"><strong>Tom</strong> bringt das mit</span>
+                  </div>
+                </div>
+              </div>
+              <div class="b-swipe-hint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
+            </div>
+
+            <!-- Bringing: Reisestecker -->
+            <div class="b-item" data-type="bringing">
+              <div class="b-item-stripe stripe-bringing"></div>
+              <div class="b-item-body" onclick="toggleBCheck(this.parentElement)">
+                <div class="b-check checked">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div class="b-item-content">
+                  <div class="b-item-top">
+                    <div class="b-item-name done">Reisestecker-Set</div>
+                    <span class="b-type-tag tag-bringing">🎒 Meins</span>
+                  </div>
+                  <div class="b-item-meta">
+                    <span class="b-bringers">Eingepackt ✓</span>
+                  </div>
+                </div>
+              </div>
+              <div class="b-swipe-hint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
+            </div>
+
+            <!-- Private: Sonnencreme -->
+            <div class="b-item" data-type="private">
+              <div class="b-item-stripe stripe-private"></div>
+              <div class="b-item-body" onclick="toggleBCheck(this.parentElement)">
+                <div class="b-check">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div class="b-item-content">
+                  <div class="b-item-top">
+                    <div class="b-item-name">Sonnencreme SPF 50</div>
+                    <span class="b-type-tag tag-private">🔒 Privat</span>
+                  </div>
+                  <div class="b-item-meta">
+                    <span class="b-bringers">Noch nicht eingepackt</span>
+                  </div>
+                </div>
+              </div>
+              <div class="b-swipe-hint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
+            </div>
+
+          </div><!-- b-list -->
+
+          <!-- Sticky add button -->
+          <div class="add-item-footer" onclick="this.style.transform='scale(0.96)'; setTimeout(()=>this.style.transform='',150)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+            Item hinzufügen
+          </div>
+
+          <div style="height:80px;"></div>
+        </div><!-- screen-scroll -->
+
+        <!-- Bottom nav -->
+        <div class="bottom-nav">
+          <div class="nav-item">
+            <div class="nav-icon active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 11.5a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.62 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6 6l.92-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.5 17l.01-.49z"/></svg></div>
+            <span class="nav-label" style="color:var(--primary)">Reisen</span>
+          </div>
+          <div class="nav-item">
+            <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg></div>
+            <span class="nav-label">Profil</span>
+          </div>
+          <div class="nav-item">
+            <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
+            <span class="nav-label">Hilfe</span>
+          </div>
+        </div>
+
+      </div><!-- phone-screen -->
+    </div><!-- phone-frame -->
+  </div><!-- concept-col B -->
+
+</div><!-- concepts -->
+
+
+<!-- ══════════════════════════════════
+     COMPARISON TABLE
+══════════════════════════════════ -->
+<div class="comparison">
+  <h2>Konzeptvergleich</h2>
+  <div class="comp-table">
+    <div class="comp-row">
+      <div class="comp-cell header">Kriterium</div>
+      <div class="comp-cell header">🟢 Konzept A — Drei Bereiche</div>
+      <div class="comp-cell header">🟡 Konzept B — Smart-Feed</div>
+    </div>
+    <div class="comp-row">
+      <div class="comp-cell criterion">Mentales Modell</div>
+      <div class="comp-cell a-val"><span class="pro">✓</span> Sehr klar — drei getrennte "Räume"</div>
+      <div class="comp-cell b-val"><span class="con">~</span> Braucht kurze Eingewöhnung für Farbkodierung</div>
+    </div>
+    <div class="comp-row">
+      <div class="comp-cell criterion">Gesamtüberblick</div>
+      <div class="comp-cell a-val"><span class="con">−</span> Gruppe-sucht-Items brauchen Scrollen</div>
+      <div class="comp-cell b-val"><span class="pro">✓</span> Alle Item-Typen auf einen Blick sichtbar</div>
+    </div>
+    <div class="comp-row">
+      <div class="comp-cell criterion">Neue User</div>
+      <div class="comp-cell a-val"><span class="pro">✓</span> Intuitiv ohne Erklärung</div>
+      <div class="comp-cell b-val"><span class="con">−</span> Farbstreifen muss man einmal lernen</div>
+    </div>
+    <div class="comp-row">
+      <div class="comp-cell criterion">Geschwindigkeit</div>
+      <div class="comp-cell a-val"><span class="con">~</span> Section-Toggle nötig für versteckte Typen</div>
+      <div class="comp-cell b-val"><span class="pro">✓</span> Filter-Chips = sofortiger Typ-Wechsel</div>
+    </div>
+    <div class="comp-row">
+      <div class="comp-cell criterion">Claim-Interaktion</div>
+      <div class="comp-cell a-val"><span class="pro">✓</span> Gut sichtbar, klarer Call-to-Action</div>
+      <div class="comp-cell b-val"><span class="pro">✓</span> Kompakt integriert, kein Scrollen nötig</div>
+    </div>
+    <div class="comp-row">
+      <div class="comp-cell criterion">Implementierungsaufwand</div>
+      <div class="comp-cell a-val"><span class="pro">✓</span> Einfacher — klare Struktur, weniger Edge Cases</div>
+      <div class="comp-cell b-val"><span class="con">−</span> Filter-Logik + Farbsystem etwas komplexer</div>
+    </div>
+    <div class="comp-row">
+      <div class="comp-cell criterion">Skalierbarkeit (>20 Items)</div>
+      <div class="comp-cell a-val"><span class="con">−</span> Lange Sections, viel Scrollen</div>
+      <div class="comp-cell b-val"><span class="pro">✓</span> Filter-Chips reduzieren sichtbare Liste</div>
+    </div>
+    <div class="comp-row">
+      <div class="comp-cell criterion">Ästhetik / Konsistenz</div>
+      <div class="comp-cell a-val"><span class="pro">✓</span> Farbige Sections passen gut zum TeileniX-Stil</div>
+      <div class="comp-cell b-val"><span class="pro">✓</span> Moderner, dichter — ähnlich Notion/Todoist</div>
+    </div>
+  </div>
+
+  <div class="recommendation">
+    <strong>Empfehlung:</strong> Konzept A für den Start — schneller umsetzbar, sofort verständlich, passt perfekt zum bestehenden TeileniX-Designprinzip der klaren Trennung (ähnlich wie Ausgaben-Kategorien). Konzept B als Version 2 wenn die Listen länger werden und Nutzer bereits vertraut sind.
+  </div>
+</div>
+
+<script>
+  // ── Concept A ──
+
+  function toggleSection(id) {
+    const items = document.getElementById(id + '-items');
+    const chevron = document.getElementById(id + '-chevron');
+    const visible = items.style.display !== 'none';
+    items.style.display = visible ? 'none' : 'flex';
+    chevron.classList.toggle('open', !visible);
+  }
+
+  function toggleCheck(card) {
+    const cb = card.querySelector('.custom-checkbox');
+    const name = card.querySelector('.item-name');
+    const checked = cb.classList.toggle('checked');
+    if (name) name.classList.toggle('done', checked);
+  }
+
+  function claimItem(btn, e) {
+    e.stopPropagation();
+    const claimed = btn.classList.toggle('claimed');
+    if (claimed) {
+      btn.innerHTML = '✓ Ich bringe das mit';
+    } else {
+      btn.innerHTML = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg> Ich bringe das mit!';
+    }
+  }
+
+  function toggleSheet(id) {
+    const sheet = document.getElementById(id + '-sheet');
+    const overlay = document.getElementById(id + '-overlay');
+    const open = sheet.classList.toggle('open');
+    overlay.classList.toggle('open', open);
+  }
+
+  function selectType(el) {
+    el.closest('.type-options').querySelectorAll('.type-option').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+    setTimeout(() => toggleSheet('a'), 400);
+  }
+
+  // ── Concept B ──
+
+  function filterItems(chip, type) {
+    document.querySelectorAll('#b-chips .chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+
+    document.querySelectorAll('#b-list .b-item').forEach(item => {
+      const itype = item.dataset.type;
+      if (type === 'all') {
+        item.style.display = 'flex';
+      } else if (type === 'private') {
+        item.style.display = itype === 'private' ? 'flex' : 'none';
+      } else if (type === 'bringing') {
+        item.style.display = itype === 'bringing' ? 'flex' : 'none';
+      } else if (type === 'needed') {
+        item.style.display = itype === 'needed' ? 'flex' : 'none';
+      }
+    });
+  }
+
+  function toggleBCheck(item) {
+    const cb = item.querySelector('.b-check');
+    const name = item.querySelector('.b-item-name');
+    const checked = cb.classList.toggle('checked');
+    if (name) name.classList.toggle('done', checked);
+  }
+
+  function bClaim(btn, e) {
+    e.stopPropagation();
+    const claimed = btn.classList.toggle('claimed');
+    btn.textContent = claimed ? '✓ Zugesagt' : (btn.textContent.includes('×') ? '+ 1×' : '+ Ich bringe das!');
+  }
+</script>
+</body>
+</html>

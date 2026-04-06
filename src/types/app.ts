@@ -112,6 +112,32 @@ export type ExpenseSplitInput = {
   included: boolean
 }
 
+// ── Packlist ──
+export type PacklistItemType = 'bringing' | 'group_need' | 'group_private'
+
+export type PacklistClaim = {
+  id: string
+  item_id: string
+  participant_id: string
+  quantity_claimed: number
+  participant_name: string
+}
+
+export type PacklistItem = {
+  id: string
+  trip_id: string
+  created_by_participant_id: string
+  item_type: PacklistItemType
+  title: string
+  quantity_needed: number
+  group_id: string | null
+  created_at: string
+  // resolved client-side
+  checked: boolean
+  claims: PacklistClaim[]
+  creator_name: string
+}
+
 export type ExpenseFormData = {
   title: string
   description?: string

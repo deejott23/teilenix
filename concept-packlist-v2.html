@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TeileniX — Mitbringliste v2: Finales Konzept</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:         #f2efe8;
+  --card:       #faf8f4;
+  --primary:    #1b5c58;
+  --primary-10: rgba(27,92,88,0.10);
+  --primary-20: rgba(27,92,88,0.20);
+  --muted:      #ede8e0;
+  --muted-fg:   #9a9080;
+  --fg:         #1a1612;
+  --border:     #ede8e0;
+  --amber:      #c47a1e;
+  --amber-bg:   #fef3e0;
+  --green:      #2d7a4f;
+  --green-bg:   #e6f4ec;
+  --grape:      #6b4fa0;   /* group accent — distinguishable from primary */
+  --grape-bg:   #f0ebf8;
+  --radius:     16px;
+  --shadow:     0 1px 3px rgba(26,22,18,.04), 0 3px 10px rgba(26,22,18,.07);
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
+  background: #18150f;
+  color: #e8e4dc;
+  min-height: 100vh;
+  padding: 40px 20px 80px;
+}
+
+/* ── Page header ── */
+.page-header {
+  text-align: center;
+  margin-bottom: 12px;
+}
+.version-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #252018;
+  border: 1px solid #3a3020;
+  border-radius: 20px;
+  padding: 5px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: #a09080;
+  margin-bottom: 14px;
+}
+.page-header h1 {
+  font-size: clamp(26px, 4vw, 40px);
+  font-weight: 750;
+  color: #faf8f4;
+  letter-spacing: -0.8px;
+  line-height: 1.1;
+  margin-bottom: 10px;
+}
+.page-header h1 em { color: #4ab5ae; font-style: normal; }
+.page-header p {
+  font-size: 14px;
+  color: #7a7060;
+  max-width: 560px;
+  margin: 0 auto;
+  line-height: 1.65;
+}
+
+/* ── Layout: two phones + annotations ── */
+.stage {
+  display: flex;
+  gap: 32px;
+  justify-content: center;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  margin-top: 44px;
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+.col-label {
+  text-align: center;
+}
+.col-label h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #d0c8bc;
+  letter-spacing: -0.2px;
+}
+.col-label p {
+  font-size: 12px;
+  color: #6a6050;
+  margin-top: 3px;
+}
+
+/* ── Phone frame ── */
+.phone-frame {
+  width: 375px;
+  background: #000;
+  border-radius: 44px;
+  padding: 12px;
+  box-shadow:
+    0 0 0 1px #282018,
+    0 28px 72px rgba(0,0,0,.55),
+    0 6px 20px rgba(0,0,0,.35);
+  flex-shrink: 0;
+}
+.phone-frame.narrow { width: 340px; }
+.phone-screen {
+  width: 100%;
+  border-radius: 34px;
+  background: var(--bg);
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Status bar ── */
+.status-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 11px 20px 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg);
+  flex-shrink: 0;
+  background: var(--card);
+}
+.si { display: flex; gap: 5px; align-items: center; }
+.si svg { width: 14px; height: 14px; }
+
+/* ── Shared nav elements ── */
+.screen-header {
+  padding: 4px 16px 10px;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.back-row {
+  display: flex; align-items: center; gap: 5px;
+  color: var(--primary); font-size: 13px; font-weight: 600; margin-bottom: 4px;
+}
+.trip-title { font-size: 20px; font-weight: 700; color: var(--fg); letter-spacing: -.4px; }
+
+.tab-bar {
+  display: flex;
+  padding: 0 16px;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tab-bar::-webkit-scrollbar { display: none; }
+.tab { padding: 10px 11px; font-size: 12px; font-weight: 600; color: var(--muted-fg); border-bottom: 2px solid transparent; white-space: nowrap; }
+.tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+/* ── Filter chips ── */
+.chips-bar {
+  padding: 10px 16px 8px;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.chips { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+.chips::-webkit-scrollbar { display: none; }
+.chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 5px 11px;
+  border-radius: 20px;
+  font-size: 11.5px; font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  transition: all .12s;
+  -webkit-tap-highlight-color: transparent;
+  background: var(--muted);
+  color: var(--muted-fg);
+  flex-shrink: 0;
+}
+.chip.active-all   { background: var(--primary-10); color: var(--primary); border-color: var(--primary-20); }
+.chip.active-grp   { background: var(--grape-bg);   color: var(--grape);   border-color: rgba(107,79,160,.2); }
+.chip.active-bring { background: var(--primary-10); color: var(--primary); border-color: var(--primary-20); }
+.chip.active-need  { background: var(--amber-bg);   color: var(--amber);   border-color: rgba(196,122,30,.2); }
+.chip:active { transform: scale(.94); }
+
+/* ── Scroll area ── */
+.scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+  padding-bottom: 84px;
+}
+.scroll::-webkit-scrollbar { display: none; }
+
+/* ── Section headers ── */
+.sec-hd {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 16px 8px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.sec-icon {
+  width: 30px; height: 30px; border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; flex-shrink: 0;
+}
+.si-grp   { background: var(--grape-bg); }
+.si-bring { background: var(--primary-10); }
+.si-need  { background: var(--amber-bg); }
+.sec-title { flex: 1; font-size: 12px; font-weight: 800; letter-spacing: .5px; text-transform: uppercase; }
+.tc-grp   { color: var(--grape); }
+.tc-bring { color: var(--primary); }
+.tc-need  { color: var(--amber); }
+.sec-badge {
+  font-size: 10.5px; font-weight: 700; padding: 2px 8px; border-radius: 20px;
+}
+.sb-grp   { background: var(--grape-bg);   color: var(--grape); }
+.sb-bring { background: var(--primary-10); color: var(--primary); }
+.sb-need  { background: var(--amber-bg);   color: var(--amber); }
+.sb-all   { background: var(--muted);      color: var(--muted-fg); }
+.chevron { width: 15px; height: 15px; color: var(--muted-fg); transition: transform .18s; flex-shrink: 0; }
+.chevron.open { transform: rotate(90deg); }
+
+/* ── Item list & cards ── */
+.item-list { padding: 0 16px 6px; display: flex; flex-direction: column; gap: 7px; }
+
+.item-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 13px;
+  display: flex; align-items: flex-start; gap: 11px;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  -webkit-tap-highlight-color: transparent;
+  transition: transform .1s;
+  position: relative;
+  overflow: hidden;
+}
+.item-card::before {
+  content: '';
+  position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+}
+.item-card.grp-card::before   { background: var(--grape); }
+.item-card.bring-card::before { background: var(--primary); }
+.item-card.need-card::before  { background: var(--amber); }
+.item-card.covered::before    { background: var(--green); }
+.item-card:active { transform: scale(.98); }
+
+/* Checkbox */
+.cb {
+  width: 20px; height: 20px; border-radius: 6px;
+  border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-top: 1px;
+  transition: all .12s; cursor: pointer;
+}
+.cb.done { background: var(--primary); border-color: var(--primary); }
+.cb.done svg { display: block; }
+.cb svg { display: none; width: 11px; height: 11px; color: #fff; }
+
+/* Item text */
+.item-body { flex: 1; min-width: 0; }
+.item-name { font-size: 13.5px; font-weight: 600; color: var(--fg); line-height: 1.3; }
+.item-name.struck { text-decoration: line-through; color: var(--muted-fg); font-weight: 500; }
+.item-meta { font-size: 11px; color: var(--muted-fg); margin-top: 2px; line-height: 1.4; }
+.item-meta strong { color: var(--fg); font-weight: 600; }
+.item-meta .who { color: var(--grape); font-weight: 600; }   /* group member names */
+
+/* Right-side quantity badge */
+.qty-badge {
+  font-size: 11px; font-weight: 700;
+  color: var(--muted-fg);
+  flex-shrink: 0; margin-top: 2px;
+}
+
+/* ── Group progress ── */
+.progress-wrap {
+  margin-top: 9px;
+  padding-top: 9px;
+  border-top: 1px dashed var(--border);
+}
+.prog-row {
+  display: flex; align-items: center; gap: 7px; margin-bottom: 7px;
+}
+.prog-bar {
+  flex: 1; height: 5px; background: var(--muted); border-radius: 3px; overflow: hidden;
+}
+.prog-fill {
+  height: 100%; border-radius: 3px;
+  transition: width .3s;
+}
+.prog-label { font-size: 10px; font-weight: 700; white-space: nowrap; }
+
+/* Claimer pills */
+.claimers { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
+.claimer-pill {
+  display: flex; align-items: center; gap: 4px;
+  background: var(--muted); border-radius: 20px;
+  padding: 3px 8px 3px 3px;
+  font-size: 10px; font-weight: 600; color: var(--muted-fg);
+}
+.av {
+  width: 16px; height: 16px; border-radius: 50%;
+  font-size: 8px; font-weight: 700; color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ── Qty stepper (for "Gruppe sucht") ── */
+.qty-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  margin-top: 9px; padding-top: 9px; border-top: 1px dashed var(--border);
+}
+.stepper {
+  display: flex; align-items: center; gap: 0;
+  background: var(--muted); border-radius: 8px; overflow: hidden;
+}
+.step-btn {
+  width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 700; color: var(--primary);
+  cursor: pointer; border: none; background: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: background .1s;
+}
+.step-btn:active { background: var(--border); }
+.step-val {
+  min-width: 28px; text-align: center;
+  font-size: 13px; font-weight: 700; color: var(--fg);
+}
+.claim-action {
+  display: flex; gap: 6px; align-items: center;
+}
+.claim-pill {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 5px 12px; border-radius: 20px;
+  font-size: 11px; font-weight: 700; cursor: pointer;
+  border: 1.5px solid transparent;
+  transition: all .12s; -webkit-tap-highlight-color: transparent;
+}
+.claim-pill:active { transform: scale(.93); }
+.claim-unclaimed  { background: var(--amber-bg); color: var(--amber); border-color: rgba(196,122,30,.25); }
+.claim-claimed    { background: var(--green-bg);  color: var(--green);  border-color: rgba(45,122,79,.25); }
+.need-footer-note { font-size: 10px; color: var(--muted-fg); font-style: italic; }
+
+/* ── FAB ── */
+.fab {
+  position: absolute; bottom: 80px; right: 14px;
+  width: 50px; height: 50px; border-radius: 50%;
+  background: var(--primary);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 16px rgba(27,92,88,.4);
+  cursor: pointer; z-index: 10;
+  transition: transform .1s; -webkit-tap-highlight-color: transparent;
+}
+.fab:active { transform: scale(.91); }
+.fab svg { width: 22px; height: 22px; color: #fff; }
+
+/* ── Bottom sheet ── */
+.overlay {
+  position: absolute; inset: 0;
+  background: rgba(26,22,18,.45); z-index: 18;
+  opacity: 0; pointer-events: none; transition: opacity .25s;
+  border-radius: 34px;
+}
+.overlay.open { opacity: 1; pointer-events: auto; }
+.sheet {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: var(--card); border-radius: 22px 22px 0 0;
+  padding: 18px 16px 96px;
+  box-shadow: 0 -8px 40px rgba(0,0,0,.15);
+  transform: translateY(100%); transition: transform .28s cubic-bezier(.34,1.56,.64,1);
+  z-index: 20;
+}
+.sheet.open { transform: translateY(0); }
+.sheet-handle { width: 36px; height: 4px; background: var(--muted); border-radius: 2px; margin: 0 auto 16px; }
+.sheet-title { font-size: 15px; font-weight: 700; color: var(--fg); margin-bottom: 14px; }
+.type-opts { display: flex; flex-direction: column; gap: 8px; }
+.type-opt {
+  display: flex; align-items: center; gap: 12px;
+  padding: 13px 14px; border-radius: 14px;
+  border: 2px solid var(--border); cursor: pointer;
+  transition: all .13s; -webkit-tap-highlight-color: transparent;
+}
+.type-opt:active { transform: scale(.98); }
+.type-opt.sel { border-color: var(--primary); background: var(--primary-10); }
+.type-opt-icon { width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
+.type-opt-title { font-size: 13px; font-weight: 700; color: var(--fg); }
+.type-opt-desc  { font-size: 11px; color: var(--muted-fg); margin-top: 2px; }
+
+/* ── Bottom nav ── */
+.bottom-nav {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 70px;
+  background: var(--card); border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-around;
+  padding: 0 8px 8px;
+}
+.nav-it { display: flex; flex-direction: column; align-items: center; gap: 3px; flex: 1; padding: 5px 0; }
+.nav-ic { width: 30px; height: 30px; border-radius: 9px; display: flex; align-items: center; justify-content: center; }
+.nav-ic.on { background: var(--primary); }
+.nav-ic.on svg { color: #fff; }
+.nav-ic:not(.on) svg { color: var(--muted-fg); }
+.nav-ic svg { width: 17px; height: 17px; }
+.nav-lbl { font-size: 9px; font-weight: 700; color: var(--muted-fg); }
+.nav-it:first-child .nav-lbl { color: var(--primary); }
+
+/* ── Divider between sections ── */
+.sec-divider { height: 1px; background: var(--border); margin: 2px 16px 0; }
+
+/* ── Annotation callouts ── */
+.annotations {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 230px;
+  padding-top: 60px;
+}
+.callout {
+  background: #201c14;
+  border: 1px solid #302818;
+  border-radius: 12px;
+  padding: 12px 14px;
+  position: relative;
+}
+.callout::before {
+  content: '';
+  position: absolute;
+  left: -8px; top: 16px;
+  width: 0; height: 0;
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  border-right: 8px solid #302818;
+}
+.callout-num {
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--primary); color: #fff;
+  font-size: 10px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 7px;
+}
+.callout h4 { font-size: 12px; font-weight: 700; color: #e0d8cc; margin-bottom: 4px; }
+.callout p  { font-size: 11px; color: #7a7060; line-height: 1.5; }
+.callout .hi { color: #4ab5ae; font-weight: 600; }
+.callout .higrp { color: #9b7fd4; font-weight: 600; }
+.callout .hiamb { color: #e8a84e; font-weight: 600; }
+
+/* ── Interaction detail ── */
+.detail-caption {
+  font-size: 11px; color: #5a5040; text-align: center; margin-top: 8px;
+  font-style: italic;
+}
+
+/* ── State toggle ── */
+.state-toggle {
+  display: flex; gap: 0; border-radius: 10px; overflow: hidden;
+  border: 1px solid #302818; margin-bottom: 10px;
+}
+.st-btn {
+  flex: 1; padding: 7px 10px;
+  font-size: 11px; font-weight: 700; text-align: center;
+  cursor: pointer; color: #6a6050;
+  transition: all .12s;
+  -webkit-tap-highlight-color: transparent;
+}
+.st-btn.active { background: var(--primary); color: #fff; }
+
+/* ── Spec sheet ── */
+.spec-section {
+  max-width: 860px;
+  margin: 60px auto 0;
+}
+.spec-section h2 {
+  font-size: 20px; font-weight: 700; color: #faf8f4;
+  letter-spacing: -.3px; margin-bottom: 20px; text-align: center;
+}
+.spec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 640px) { .spec-grid { grid-template-columns: 1fr; } }
+.spec-card {
+  background: #201c14; border: 1px solid #302818; border-radius: 14px;
+  padding: 18px;
+}
+.spec-card h3 {
+  font-size: 13px; font-weight: 800; letter-spacing: .4px; text-transform: uppercase;
+  margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #302818;
+}
+.spec-card.a h3 { color: #9b7fd4; }
+.spec-card.b h3 { color: #4ab5ae; }
+.spec-card.c h3 { color: #e8a84e; }
+.spec-card.d h3 { color: #88c0a8; }
+.spec-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.spec-list li {
+  display: flex; gap: 9px; align-items: flex-start;
+  font-size: 12.5px; color: #a09080; line-height: 1.5;
+}
+.spec-list li::before {
+  content: '→'; color: #4a4030; font-weight: 700; flex-shrink: 0; margin-top: 1px;
+}
+.spec-list li strong { color: #d0c8bc; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<!-- ══════════════ PAGE HEADER ══════════════ -->
+<div class="page-header">
+  <div class="version-chip">✦ Mitbringliste v2 — Finales Konzept</div>
+  <h1>Konzept A + Filter-Chips<br><em>+ Gruppen-Privatsphäre</em></h1>
+  <p>Drei-Bereiche-Layout mit Schnellfiltern. "Meine Gruppe" ersetzt "Nur ich" für Gruppenmitglieder. Mengensteuerung in Gruppe-sucht-Items durch alle.</p>
+</div>
+
+<!-- ══════════════ STAGE ══════════════ -->
+<div class="stage">
+
+  <!-- Left: Annotations -->
+  <div class="annotations" style="align-self:flex-start; padding-top:180px;">
+
+    <div class="callout">
+      <div class="callout-num">1</div>
+      <h4>Filter-Chips (aus Konzept B)</h4>
+      <p>Alle / <span class="higrp">Meine Gruppe</span> / <span class="hi">Ich bringe mit</span> / <span class="hiamb">Gruppe sucht</span> — filtert die Sections live.</p>
+    </div>
+
+    <div class="callout">
+      <div class="callout-num">2</div>
+      <h4>Gruppen-Privatbereich</h4>
+      <p>Kein "Nur ich" mehr — stattdessen <span class="higrp">Meine Gruppe</span>. Items sind für alle Mitglieder der eigenen Reise-Untergruppe sichtbar. Wer nicht in einer Gruppe ist, sieht "Nur ich".</p>
+    </div>
+
+    <div class="callout">
+      <div class="callout-num">3</div>
+      <h4>Mengensteuerung</h4>
+      <p>Jeder kann bei <span class="hiamb">Gruppe sucht</span> die Anzahl mit +/– anpassen — auch nachträglich. Wer was bringt wird live angezeigt.</p>
+    </div>
+
+  </div>
+
+  <!-- Center: Main phone -->
+  <div class="col">
+    <div class="col-label">
+      <h3>Hauptansicht</h3>
+      <p>Kombiniertes Konzept — interaktiv</p>
+    </div>
+
+    <div style="display:flex; gap:8px; margin-bottom:2px;">
+      <div class="st-btn active" id="btn-grp" onclick="setGroupMode(true)">👨‍👩‍👧 Mit Gruppe</div>
+      <div class="st-btn" id="btn-solo" onclick="setGroupMode(false)">🧍 Ohne Gruppe</div>
+    </div>
+
+    <div class="phone-frame">
+      <div class="phone-screen">
+
+        <!-- Status -->
+        <div class="status-bar" style="background:var(--card);">
+          <span>9:41</span>
+          <div class="si">
+            <svg viewBox="0 0 24 24" fill="currentColor"><rect x="1" y="6" width="3" height="12" rx="1"/><rect x="6" y="4" width="3" height="14" rx="1"/><rect x="11" y="2" width="3" height="16" rx="1"/><rect x="16" y="0" width="3" height="18" rx="1" opacity=".3"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1" fill="currentColor"/></svg>
+            <svg viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="7" width="18" height="11" rx="2"/><path d="M22 11v4"/></svg>
+          </div>
+        </div>
+
+        <!-- Header -->
+        <div class="screen-header">
+          <div class="back-row">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+            Reisen
+          </div>
+          <div class="trip-title">🏝️ Mallorca 2025</div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tab-bar">
+          <div class="tab">Übersicht</div>
+          <div class="tab">Ausgaben</div>
+          <div class="tab active">Liste</div>
+          <div class="tab">Abrechnung</div>
+        </div>
+
+        <!-- Filter chips -->
+        <div class="chips-bar">
+          <div class="chips" id="main-chips">
+            <div class="chip active-all" onclick="filterMain(this,'all')">Alle</div>
+            <div class="chip" id="chip-grp" onclick="filterMain(this,'grp')">👨‍👩‍👧 Meine Gruppe</div>
+            <div class="chip" onclick="filterMain(this,'bring')">🎒 Ich bringe</div>
+            <div class="chip" onclick="filterMain(this,'need')">🛍️ Gruppe sucht</div>
+          </div>
+        </div>
+
+        <!-- Scrollable list -->
+        <div class="scroll" id="main-scroll">
+
+          <!-- ── SECTION 1: Meine Gruppe (or Nur ich) ── -->
+          <div data-section="grp">
+            <div class="sec-hd" onclick="toggleSec('sec-grp')">
+              <div class="sec-icon si-grp" id="sec1-icon">👨‍👩‍👧</div>
+              <span class="sec-title tc-grp" id="sec1-title">Familie Schmidt</span>
+              <span class="sec-badge sb-grp" id="sec1-badge">3 Items</span>
+              <svg class="chevron open" id="sec-grp-ch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+            </div>
+            <div id="sec-grp" class="item-list">
+
+              <!-- Item: Reisepass (checked) -->
+              <div class="item-card grp-card" onclick="toggleItemCheck(this)">
+                <div class="cb done">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div class="item-body">
+                  <div class="item-name struck">Reisepass</div>
+                  <div class="item-meta">Eingepackt · <span class="who">Nur du siehst deinen Status</span></div>
+                </div>
+              </div>
+
+              <!-- Item: Ladekabel -->
+              <div class="item-card grp-card" onclick="toggleItemCheck(this)">
+                <div class="cb">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div class="item-body">
+                  <div class="item-name">Ladekabel</div>
+                  <div class="item-meta" id="grp-meta-ladekabel">Sichtbar für <span class="who">Familie Schmidt</span> · Lisa: noch offen</div>
+                </div>
+              </div>
+
+              <!-- Item: Sonnencreme SPF 50 -->
+              <div class="item-card grp-card" onclick="toggleItemCheck(this)">
+                <div class="cb">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div class="item-body">
+                  <div class="item-name">Sonnencreme SPF 50</div>
+                  <div class="item-meta">Sichtbar für <span class="who">Familie Schmidt</span></div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="sec-divider" data-section="grp"></div>
+
+          <!-- ── SECTION 2: Ich bringe mit ── -->
+          <div data-section="bring">
+            <div class="sec-hd" onclick="toggleSec('sec-bring')">
+              <div class="sec-icon si-bring">🎒</div>
+              <span class="sec-title tc-bring">Ich bringe mit</span>
+              <span class="sec-badge sb-bring">2 Items</span>
+              <svg class="chevron open" id="sec-bring-ch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+            </div>
+            <div id="sec-bring" class="item-list">
+
+              <div class="item-card bring-card" onclick="toggleItemCheck(this)">
+                <div class="cb">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div class="item-body">
+                  <div class="item-name">Bluetooth-Lautsprecher</div>
+                  <div class="item-meta">JBL Go · für alle sichtbar</div>
+                </div>
+              </div>
+
+              <div class="item-card bring-card" onclick="toggleItemCheck(this)">
+                <div class="cb done">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div class="item-body">
+                  <div class="item-name struck">Reisestecker-Set</div>
+                  <div class="item-meta">Eingepackt ✓</div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="sec-divider" data-section="bring"></div>
+
+          <!-- ── SECTION 3: Gruppe sucht ── -->
+          <div data-section="need">
+            <div class="sec-hd" onclick="toggleSec('sec-need')">
+              <div class="sec-icon si-need">🛍️</div>
+              <span class="sec-title tc-need">Gruppe sucht</span>
+              <span class="sec-badge sb-need">3 Items</span>
+              <svg class="chevron open" id="sec-need-ch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+            </div>
+            <div id="sec-need" class="item-list">
+
+              <!-- Unclaimed with stepper -->
+              <div class="item-card need-card" style="flex-direction:column; align-items:stretch; gap:0; cursor:default;">
+                <div style="display:flex; align-items:center; gap:11px;" onclick="toggleItemCheck(this.closest('.item-card'))">
+                  <div class="cb">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                  </div>
+                  <div class="item-body">
+                    <div class="item-name">Erste-Hilfe-Set</div>
+                    <div class="item-meta" style="color:var(--amber);">Noch niemand · jeder kann hinzufügen</div>
+                  </div>
+                  <div class="qty-badge">×<span class="qty-val">1</span></div>
+                </div>
+                <div class="qty-row">
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:10.5px; color:var(--muted-fg); font-weight:600;">Anzahl:</span>
+                    <div class="stepper">
+                      <button class="step-btn" onclick="changeQty(this,-1)">−</button>
+                      <span class="step-val">1</span>
+                      <button class="step-btn" onclick="changeQty(this,+1)">+</button>
+                    </div>
+                  </div>
+                  <button class="claim-pill claim-unclaimed" onclick="claimIt(this)">+ Ich bringe das!</button>
+                </div>
+              </div>
+
+              <!-- Partial -->
+              <div class="item-card need-card" style="flex-direction:column; align-items:stretch; gap:0; cursor:default;">
+                <div style="display:flex; align-items:center; gap:11px;" onclick="toggleItemCheck(this.closest('.item-card'))">
+                  <div class="cb">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                  </div>
+                  <div class="item-body">
+                    <div class="item-name">Sonnencreme SPF 30</div>
+                    <div class="item-meta">Max · 1×, Lisa · 1× — <span style="color:var(--amber);">noch 1 offen</span></div>
+                  </div>
+                  <div class="qty-badge">×<span class="qty-val">3</span></div>
+                </div>
+                <div class="progress-wrap">
+                  <div class="prog-row">
+                    <div class="prog-bar"><div class="prog-fill" style="width:66.7%;background:var(--amber);"></div></div>
+                    <span class="prog-label" style="color:var(--amber);">2/3</span>
+                  </div>
+                  <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+                    <div class="claimers">
+                      <div class="claimer-pill"><div class="av" style="background:#1b5c58;">M</div>Max · 1×</div>
+                      <div class="claimer-pill"><div class="av" style="background:#2d8a84;">L</div>Lisa · 1×</div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:6px;">
+                      <div class="stepper">
+                        <button class="step-btn" onclick="changeQty(this,-1)">−</button>
+                        <span class="step-val">3</span>
+                        <button class="step-btn" onclick="changeQty(this,+1)">+</button>
+                      </div>
+                      <button class="claim-pill claim-unclaimed" onclick="claimIt(this)" style="padding:4px 9px; font-size:10px;">+ Ich auch</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Fully covered -->
+              <div class="item-card covered" style="flex-direction:column; align-items:stretch; gap:0; cursor:default;">
+                <div style="display:flex; align-items:center; gap:11px;" onclick="toggleItemCheck(this.closest('.item-card'))">
+                  <div class="cb">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                  </div>
+                  <div class="item-body">
+                    <div class="item-name">Kartenspiel</div>
+                    <div class="item-meta" style="color:var(--green);">✓ Vollständig gedeckt</div>
+                  </div>
+                  <div class="qty-badge">×1</div>
+                </div>
+                <div class="progress-wrap">
+                  <div class="prog-row">
+                    <div class="prog-bar"><div class="prog-fill" style="width:100%;background:var(--green);"></div></div>
+                    <span class="prog-label" style="color:var(--green);">✓</span>
+                  </div>
+                  <div class="claimers">
+                    <div class="claimer-pill"><div class="av" style="background:#4ab5ae;">T</div>Tom · 1×</div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <div style="height:110px;"></div>
+        </div><!-- scroll -->
+
+        <!-- FAB -->
+        <div class="fab" onclick="openSheet()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        </div>
+
+        <!-- Overlay -->
+        <div class="overlay" id="main-overlay" onclick="closeSheet()"></div>
+
+        <!-- Bottom sheet -->
+        <div class="sheet" id="main-sheet">
+          <div class="sheet-handle"></div>
+          <div class="sheet-title">Was hinzufügen?</div>
+          <div class="type-opts">
+            <div class="type-opt" onclick="pickType(this)">
+              <div class="type-opt-icon" style="background:var(--grape-bg);">👨‍👩‍👧</div>
+              <div>
+                <div class="type-opt-title" id="sheet-grp-title">Für meine Gruppe</div>
+                <div class="type-opt-desc" id="sheet-grp-desc">Sichtbar für alle in Familie Schmidt</div>
+              </div>
+            </div>
+            <div class="type-opt" onclick="pickType(this)">
+              <div class="type-opt-icon" style="background:var(--primary-10);">🎒</div>
+              <div>
+                <div class="type-opt-title">Ich bringe mit</div>
+                <div class="type-opt-desc">Du bringst etwas für die ganze Gruppe</div>
+              </div>
+            </div>
+            <div class="type-opt" onclick="pickType(this)">
+              <div class="type-opt-icon" style="background:var(--amber-bg);">🛍️</div>
+              <div>
+                <div class="type-opt-title">Gruppe sucht jemanden</div>
+                <div class="type-opt-desc">Alle sehen es, jeder kann Menge anpassen & claimen</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom nav -->
+        <div class="bottom-nav">
+          <div class="nav-it">
+            <div class="nav-ic on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+            <span class="nav-lbl" style="color:var(--primary)">Reisen</span>
+          </div>
+          <div class="nav-it">
+            <div class="nav-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg></div>
+            <span class="nav-lbl">Profil</span>
+          </div>
+          <div class="nav-it">
+            <div class="nav-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
+            <span class="nav-lbl">Hilfe</span>
+          </div>
+        </div>
+
+      </div><!-- phone-screen -->
+    </div><!-- phone-frame -->
+    <div class="detail-caption">Tipp: Toggle oben wechselt Gruppen- vs. Solo-Modus</div>
+  </div><!-- col main -->
+
+
+  <!-- Right: second phone showing "Gruppe sucht" detail interaction -->
+  <div class="col" style="padding-top: 0;">
+    <div class="col-label">
+      <h3>Interaktion: Menge anpassen</h3>
+      <p>Jeder kann Anzahl bearbeiten</p>
+    </div>
+
+    <div class="phone-frame narrow">
+      <div class="phone-screen">
+
+        <div class="status-bar">
+          <span>9:41</span>
+          <div class="si">
+            <svg viewBox="0 0 24 24" fill="currentColor"><rect x="1" y="6" width="3" height="12" rx="1"/><rect x="6" y="4" width="3" height="14" rx="1"/><rect x="11" y="2" width="3" height="16" rx="1"/></svg>
+          </div>
+        </div>
+
+        <!-- Inline edit state for a "Gruppe sucht" item -->
+        <div style="background:var(--card); border-bottom:1px solid var(--border); padding:12px 16px 10px; flex-shrink:0;">
+          <div class="back-row">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+            Zurück zur Liste
+          </div>
+          <div style="font-size:17px; font-weight:700; color:var(--fg); letter-spacing:-.3px;">Sonnencreme SPF 30</div>
+          <div style="font-size:11px; color:var(--amber); font-weight:600; margin-top:2px;">🛍️ Gruppe sucht · 2 von 3 gedeckt</div>
+        </div>
+
+        <div style="flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:14px; padding-bottom:90px;">
+
+          <!-- Gesamtbedarf -->
+          <div style="background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:16px; box-shadow:var(--shadow);">
+            <div style="font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.5px; color:var(--muted-fg); margin-bottom:12px;">Gesamtbedarf der Gruppe</div>
+            <div style="display:flex; align-items:center; gap:12px;">
+              <div style="flex:1;">
+                <div class="prog-bar" style="height:8px; margin-bottom:6px;">
+                  <div class="prog-fill" style="width:66.7%; background:var(--amber);"></div>
+                </div>
+                <div style="font-size:11px; color:var(--muted-fg);">2 von <strong id="detail-total" style="color:var(--fg);">3</strong> zugesagt</div>
+              </div>
+              <div class="stepper" style="flex-shrink:0;">
+                <button class="step-btn" onclick="changeDetailQty(-1)">−</button>
+                <span class="step-val" id="detail-qty">3</span>
+                <button class="step-btn" onclick="changeDetailQty(+1)">+</button>
+              </div>
+            </div>
+            <div style="font-size:10.5px; color:var(--muted-fg); margin-top:8px; font-style:italic;">Jeder kann den Bedarf anpassen</div>
+          </div>
+
+          <!-- Wer bringt was -->
+          <div style="background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:16px; box-shadow:var(--shadow);">
+            <div style="font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.5px; color:var(--muted-fg); margin-bottom:12px;">Wer bringt wie viele?</div>
+
+            <div style="display:flex; flex-direction:column; gap:10px;">
+
+              <!-- Max -->
+              <div style="display:flex; align-items:center; gap:10px;">
+                <div class="av" style="background:#1b5c58; width:28px; height:28px; font-size:12px; border-radius:50%;">M</div>
+                <div style="flex:1; font-size:13px; font-weight:600; color:var(--fg);">Max <span style="font-size:11px; font-weight:400; color:var(--primary);">(du)</span></div>
+                <div class="stepper">
+                  <button class="step-btn" onclick="changePersonQty(this,-1)">−</button>
+                  <span class="step-val" id="max-qty">1</span>
+                  <button class="step-btn" onclick="changePersonQty(this,+1)">+</button>
+                </div>
+              </div>
+
+              <!-- Lisa -->
+              <div style="display:flex; align-items:center; gap:10px;">
+                <div class="av" style="background:#2d8a84; width:28px; height:28px; font-size:12px; border-radius:50%;">L</div>
+                <div style="flex:1; font-size:13px; font-weight:600; color:var(--fg);">Lisa</div>
+                <div style="font-size:13px; font-weight:700; color:var(--muted-fg); padding: 0 10px;">1×</div>
+              </div>
+
+              <!-- Tom - unclaimed -->
+              <div style="display:flex; align-items:center; gap:10px; opacity:.5;">
+                <div class="av" style="background:#aaa; width:28px; height:28px; font-size:12px; border-radius:50%;">T</div>
+                <div style="flex:1; font-size:13px; font-weight:600; color:var(--muted-fg);">Tom</div>
+                <div style="font-size:11px; color:var(--muted-fg);">—</div>
+              </div>
+
+              <!-- Anna - unclaimed -->
+              <div style="display:flex; align-items:center; gap:10px; opacity:.5;">
+                <div class="av" style="background:#aaa; width:28px; height:28px; font-size:12px; border-radius:50%;">A</div>
+                <div style="flex:1; font-size:13px; font-weight:600; color:var(--muted-fg);">Anna</div>
+                <div style="font-size:11px; color:var(--muted-fg);">—</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Noch offen -->
+          <div style="background:var(--amber-bg); border:1px solid rgba(196,122,30,.2); border-radius:var(--radius); padding:14px; display:flex; align-items:center; gap:12px;">
+            <div style="font-size:22px;">📦</div>
+            <div>
+              <div style="font-size:12px; font-weight:700; color:var(--amber);">Noch <span id="remaining">1</span>× offen</div>
+              <div style="font-size:11px; color:var(--amber); opacity:.7; margin-top:2px;">Tom oder Anna könnten das übernehmen</div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Action button -->
+        <div style="position:absolute; bottom:10px; left:12px; right:12px; background:var(--primary); color:#fff; border-radius:14px; padding:13px; display:flex; align-items:center; justify-content:center; gap:8px; font-size:14px; font-weight:700; cursor:pointer; box-shadow:0 4px 18px rgba(27,92,88,.4);" onclick="this.style.transform='scale(.97)'; setTimeout(()=>this.style.transform='',150)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          Meine Anzahl anpassen
+        </div>
+
+      </div>
+    </div>
+    <div class="detail-caption">Detail-Ansicht: Menge pro Person editierbar</div>
+  </div>
+
+</div><!-- stage -->
+
+
+<!-- ══════════════ SPEC SHEET ══════════════ -->
+<div class="spec-section">
+  <h2>Feature-Spezifikation</h2>
+  <div class="spec-grid">
+
+    <div class="spec-card a">
+      <h3>👨‍👩‍👧 Meine Gruppe (Sektion 1)</h3>
+      <ul class="spec-list">
+        <li><strong>Ohne Gruppe:</strong> Sektion heißt "🔒 Nur ich" — Items komplett privat, nur du siehst sie</li>
+        <li><strong>Mit Gruppe:</strong> Sektion heißt nach Gruppenname (z.B. "Familie Schmidt") — Items für alle Gruppenmitglieder sichtbar</li>
+        <li>Jedes Mitglied sieht <strong>seinen eigenen Abhak-Status</strong> unabhängig vom anderen</li>
+        <li>Gruppenmitglieder sehen eine Übersicht wer noch offen hat (z.B. "Lisa: noch offen")</li>
+        <li>Items können nur vom Ersteller gelöscht werden</li>
+      </ul>
+    </div>
+
+    <div class="spec-card b">
+      <h3>🎒 Ich bringe mit (Sektion 2)</h3>
+      <ul class="spec-list">
+        <li>Jeder Teilnehmer kann Items eintragen, die er für die <strong>gesamte Reisegruppe</strong> mitbringt</li>
+        <li>Alle Teilnehmer sehen alle "Ich bringe mit"-Items aller anderen</li>
+        <li>Abhaken = eingepackt (nur für dich sichtbar)</li>
+        <li>Vermeidet Doppelungen: wenn jemand schon einen Lautsprecher mitbringt, muss niemand anderes auch einen nehmen</li>
+        <li>Ersteller kann sein Item löschen oder bearbeiten</li>
+      </ul>
+    </div>
+
+    <div class="spec-card c">
+      <h3>🛍️ Gruppe sucht (Sektion 3)</h3>
+      <ul class="spec-list">
+        <li><strong>Jeder</strong> kann Items hinzufügen und die Gesamtmenge mit +/− anpassen</li>
+        <li>Jeder kann eine <strong>Teilmenge claimen</strong> ("Ich bringe 1×") — auch mehrere Personen für dasselbe Item</li>
+        <li>Fortschrittsbalken zeigt "2/3 gedeckt" mit Avatar-Liste wer was bringt</li>
+        <li>Vollständig gedeckte Items erscheinen mit grünem Streifen und "✓ Gedeckt"-Label</li>
+        <li>Claim kann rückgängig gemacht werden</li>
+        <li>Detail-Ansicht zum Bearbeiten der eigenen zugesagten Menge</li>
+      </ul>
+    </div>
+
+    <div class="spec-card d">
+      <h3>⚡ Filter-Chips + UX</h3>
+      <ul class="spec-list">
+        <li>Chips filtern live: zeigen/verstecken ganze Sektionen + deren Divider</li>
+        <li>Chip "Meine Gruppe" heißt bei Solo-Usern "🔒 Nur ich"</li>
+        <li>FAB öffnet Bottom Sheet mit Typ-Auswahl (3 Optionen)</li>
+        <li>Sektionen sind collapsible (Tap auf Header)</li>
+        <li>Neuer Tab "Liste" in der Trip-Tab-Bar neben Ausgaben</li>
+        <li>Items bleiben nach Reise-Ende lesbar (read-only Archiv)</li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── Group mode toggle ──
+function setGroupMode(isGroup) {
+  document.getElementById('btn-grp').classList.toggle('active', isGroup);
+  document.getElementById('btn-solo').classList.toggle('active', !isGroup);
+
+  const sec1Icon = document.getElementById('sec1-icon');
+  const sec1Title = document.getElementById('sec1-title');
+  const sec1Badge = document.getElementById('sec1-badge');
+  const chipGrp = document.getElementById('chip-grp');
+  const sheetGrpTitle = document.getElementById('sheet-grp-title');
+  const sheetGrpDesc = document.getElementById('sheet-grp-desc');
+  const meta = document.getElementById('grp-meta-ladekabel');
+
+  if (isGroup) {
+    sec1Icon.textContent = '👨‍👩‍👧';
+    sec1Title.textContent = 'Familie Schmidt';
+    chipGrp.textContent = '👨‍👩‍👧 Meine Gruppe';
+    sheetGrpTitle.textContent = 'Für meine Gruppe';
+    sheetGrpDesc.textContent = 'Sichtbar für alle in Familie Schmidt';
+    if (meta) meta.innerHTML = 'Sichtbar für <span class="who">Familie Schmidt</span> · Lisa: noch offen';
+  } else {
+    sec1Icon.textContent = '🔒';
+    sec1Title.textContent = 'Nur ich';
+    chipGrp.textContent = '🔒 Nur ich';
+    sheetGrpTitle.textContent = 'Nur für mich';
+    sheetGrpDesc.textContent = 'Komplett privat — nur du siehst diese Items';
+    if (meta) meta.innerHTML = 'Persönliches Item — nur für dich sichtbar';
+  }
+  // Reset section styling
+  document.querySelector('.sec-icon.si-grp, [class*="si-grp"]');
+}
+
+// ── Section toggle ──
+function toggleSec(id) {
+  const el = document.getElementById(id);
+  const ch = document.getElementById(id + '-ch');
+  const open = el.style.display !== 'none';
+  el.style.display = open ? 'none' : 'flex';
+  if (ch) ch.classList.toggle('open', !open);
+}
+
+// ── Item check toggle ──
+function toggleItemCheck(card) {
+  const cb = card.querySelector('.cb');
+  const name = card.querySelector('.item-name');
+  if (!cb) return;
+  const done = cb.classList.toggle('done');
+  if (name) name.classList.toggle('struck', done);
+}
+
+// ── Filter chips (main) ──
+const chipActiveMap = { all:'active-all', grp:'active-grp', bring:'active-bring', need:'active-need' };
+function filterMain(chip, type) {
+  document.querySelectorAll('#main-chips .chip').forEach(c => {
+    c.className = 'chip';
+  });
+  chip.classList.add(chipActiveMap[type] || 'active-all');
+
+  const sections = document.querySelectorAll('[data-section]');
+  sections.forEach(el => {
+    const st = el.dataset.section;
+    if (type === 'all') {
+      el.style.display = '';
+    } else {
+      el.style.display = (st === type) ? '' : 'none';
+    }
+  });
+}
+
+// ── Qty stepper (list) ──
+function changeQty(btn, delta) {
+  const stepper = btn.closest('.stepper');
+  const valEl = stepper.querySelector('.step-val');
+  const qtyBadge = btn.closest('.item-card').querySelector('.qty-val');
+  let v = parseInt(valEl.textContent) + delta;
+  if (v < 1) v = 1;
+  if (v > 9) v = 9;
+  valEl.textContent = v;
+  if (qtyBadge) qtyBadge.textContent = v;
+}
+
+// ── Claim it ──
+function claimIt(btn) {
+  const claimed = btn.classList.toggle('claim-claimed');
+  btn.classList.toggle('claim-unclaimed', !claimed);
+  if (claimed) {
+    btn.textContent = '✓ Zugesagt';
+  } else {
+    btn.textContent = btn.textContent.includes('auch') ? '+ Ich auch' : '+ Ich bringe das!';
+  }
+}
+
+// ── FAB / Sheet ──
+function openSheet() {
+  document.getElementById('main-sheet').classList.add('open');
+  document.getElementById('main-overlay').classList.add('open');
+}
+function closeSheet() {
+  document.getElementById('main-sheet').classList.remove('open');
+  document.getElementById('main-overlay').classList.remove('open');
+}
+function pickType(opt) {
+  opt.closest('.type-opts').querySelectorAll('.type-opt').forEach(o => o.classList.remove('sel'));
+  opt.classList.add('sel');
+  setTimeout(closeSheet, 380);
+}
+
+// ── Detail view qty ──
+function changeDetailQty(delta) {
+  const el = document.getElementById('detail-qty');
+  const tot = document.getElementById('detail-total');
+  const rem = document.getElementById('remaining');
+  let v = parseInt(el.textContent) + delta;
+  if (v < 2) v = 2; if (v > 9) v = 9;
+  el.textContent = v;
+  if (tot) tot.textContent = v;
+  const r = Math.max(0, v - 2);
+  if (rem) rem.textContent = r;
+}
+function changePersonQty(btn, delta) {
+  const el = btn.closest('.stepper').querySelector('.step-val');
+  let v = parseInt(el.textContent) + delta;
+  if (v < 0) v = 0; if (v > 9) v = 9;
+  el.textContent = v;
+  const rem = document.getElementById('remaining');
+  const myQty = parseInt(document.getElementById('max-qty').textContent);
+  const total = parseInt(document.getElementById('detail-qty').textContent);
+  if (rem) rem.textContent = Math.max(0, total - 1 - myQty);
+}
+</script>
+</body>
+</html>

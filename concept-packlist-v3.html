@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TeileniX — Mitbringliste v3</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:         #f2efe8;
+  --card:       #faf8f4;
+  --primary:    #1b5c58;
+  --primary-10: rgba(27,92,88,0.10);
+  --primary-20: rgba(27,92,88,0.20);
+  --muted:      #ede8e0;
+  --muted-fg:   #9a9080;
+  --fg:         #1a1612;
+  --border:     #ede8e0;
+  --amber:      #c47a1e;
+  --amber-bg:   #fef3e0;
+  --green:      #2d7a4f;
+  --green-bg:   #e6f4ec;
+  --grape:      #6b4fa0;
+  --grape-bg:   #f0ebf8;
+  --radius:     16px;
+  --shadow:     0 1px 3px rgba(26,22,18,.04), 0 3px 10px rgba(26,22,18,.07);
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
+  background: #16130d;
+  color: #e8e4dc;
+  min-height: 100vh;
+  padding: 40px 20px 80px;
+}
+
+.page-header { text-align: center; margin-bottom: 44px; }
+.version-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: #201d14; border: 1px solid #38301e; border-radius: 20px;
+  padding: 5px 14px; font-size: 11px; font-weight: 700;
+  letter-spacing: 1.2px; text-transform: uppercase; color: #8a7d60; margin-bottom: 14px;
+}
+.page-header h1 {
+  font-size: clamp(24px, 4vw, 38px); font-weight: 750; color: #faf8f4;
+  letter-spacing: -.8px; line-height: 1.1; margin-bottom: 10px;
+}
+.page-header h1 em { color: #4ab5ae; font-style: normal; }
+.page-header p { font-size: 13.5px; color: #6a6050; max-width: 540px; margin: 0 auto; line-height: 1.65; }
+
+/* ── Stage ── */
+.stage {
+  display: flex; gap: 28px; justify-content: center;
+  align-items: flex-start; flex-wrap: wrap;
+}
+.col { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.col-label { text-align: center; }
+.col-label h3 { font-size: 14px; font-weight: 700; color: #c8c0b0; }
+.col-label p  { font-size: 11px; color: #5a5040; margin-top: 3px; }
+
+/* ── Phone ── */
+.phone-frame {
+  width: 375px; background: #000; border-radius: 44px; padding: 12px;
+  box-shadow: 0 0 0 1px #28200e, 0 28px 72px rgba(0,0,0,.55), 0 6px 20px rgba(0,0,0,.35);
+  flex-shrink: 0;
+}
+.phone-screen {
+  width: 100%; border-radius: 34px; background: var(--bg);
+  overflow: hidden; position: relative; display: flex; flex-direction: column;
+}
+
+/* ── Common UI ── */
+.status-bar {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 11px 20px 4px; font-size: 12px; font-weight: 600; color: var(--fg);
+  flex-shrink: 0; background: var(--card);
+}
+.si { display: flex; gap: 5px; align-items: center; }
+.si svg { width: 14px; height: 14px; }
+
+.screen-header {
+  padding: 4px 16px 10px; background: var(--card);
+  border-bottom: 1px solid var(--border); flex-shrink: 0;
+}
+.back-row { display:flex; align-items:center; gap:5px; color:var(--primary); font-size:13px; font-weight:600; margin-bottom:4px; }
+.trip-title { font-size: 20px; font-weight: 700; color: var(--fg); letter-spacing: -.4px; }
+
+.tab-bar {
+  display: flex; padding: 0 16px; background: var(--card);
+  border-bottom: 1px solid var(--border); flex-shrink: 0;
+  overflow-x: auto; scrollbar-width: none;
+}
+.tab-bar::-webkit-scrollbar { display: none; }
+.tab { padding: 10px 11px; font-size: 12px; font-weight: 600; color: var(--muted-fg); border-bottom: 2px solid transparent; white-space: nowrap; }
+.tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+/* ── Filter chips ── */
+.chips-bar {
+  padding: 10px 16px 8px; background: var(--card);
+  border-bottom: 1px solid var(--border); flex-shrink: 0;
+}
+.chips { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+.chips::-webkit-scrollbar { display: none; }
+.chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 5px 11px; border-radius: 20px; font-size: 11px; font-weight: 700;
+  white-space: nowrap; cursor: pointer; border: 1.5px solid transparent;
+  transition: all .12s; -webkit-tap-highlight-color: transparent;
+  background: var(--muted); color: var(--muted-fg); flex-shrink: 0;
+}
+.chip.a-bring { background: var(--primary-10); color: var(--primary); border-color: var(--primary-20); }
+.chip.a-need  { background: var(--amber-bg);   color: var(--amber);   border-color: rgba(196,122,30,.2); }
+.chip.a-group-bring { background: var(--green-bg); color: var(--green); border-color: rgba(45,122,79,.2); }
+.chip.a-priv  { background: var(--grape-bg);   color: var(--grape);   border-color: rgba(107,79,160,.2); }
+.chip:active { transform: scale(.93); }
+
+/* ── Scroll ── */
+.scroll { flex: 1; overflow-y: auto; overflow-x: hidden; scrollbar-width: none; padding-bottom: 84px; }
+.scroll::-webkit-scrollbar { display: none; }
+
+/* ── Section header ── */
+.sec-hd {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 16px 8px; cursor: pointer; user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.sec-icon {
+  width: 30px; height: 30px; border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; flex-shrink: 0;
+}
+.si-bring     { background: var(--primary-10); }
+.si-need      { background: var(--amber-bg); }
+.si-gbring    { background: var(--green-bg); }
+.si-priv      { background: var(--grape-bg); }
+
+.sec-title { flex: 1; font-size: 12px; font-weight: 800; letter-spacing: .5px; text-transform: uppercase; }
+.tc-bring  { color: var(--primary); }
+.tc-need   { color: var(--amber); }
+.tc-gbring { color: var(--green); }
+.tc-priv   { color: var(--grape); }
+
+.sec-badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+.sb-bring  { background: var(--primary-10); color: var(--primary); }
+.sb-need   { background: var(--amber-bg);   color: var(--amber); }
+.sb-gbring { background: var(--green-bg);   color: var(--green); }
+.sb-priv   { background: var(--grape-bg);   color: var(--grape); }
+
+/* lock icon inline */
+.lock-icon { width: 13px; height: 13px; color: var(--grape); opacity: .7; flex-shrink: 0; }
+
+.chevron { width: 15px; height: 15px; color: var(--muted-fg); transition: transform .18s; flex-shrink: 0; }
+.chevron.open { transform: rotate(90deg); }
+
+/* ── Item cards ── */
+.item-list { padding: 0 16px 6px; display: flex; flex-direction: column; gap: 7px; }
+
+.item-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 12px 13px;
+  display: flex; align-items: flex-start; gap: 11px;
+  box-shadow: var(--shadow); position: relative; overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform .1s; cursor: pointer;
+}
+.item-card::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+}
+.ic-bring::before  { background: var(--primary); }
+.ic-need::before   { background: var(--amber); }
+.ic-covered::before{ background: var(--green); }
+.ic-gbring::before { background: var(--green); }
+.ic-priv::before   { background: var(--grape); }
+.item-card:active  { transform: scale(.98); }
+
+/* Checkbox */
+.cb {
+  width: 20px; height: 20px; border-radius: 6px; border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-top: 1px; transition: all .12s; cursor: pointer;
+}
+.cb.done { background: var(--primary); border-color: var(--primary); }
+.cb.done svg { display: block; }
+.cb svg { display: none; width: 11px; height: 11px; color: #fff; }
+
+.item-body { flex: 1; min-width: 0; }
+.item-name { font-size: 13.5px; font-weight: 600; color: var(--fg); line-height: 1.3; }
+.item-name.struck { text-decoration: line-through; color: var(--muted-fg); font-weight: 500; }
+.item-meta { font-size: 11px; color: var(--muted-fg); margin-top: 2px; line-height: 1.4; }
+.item-meta strong { color: var(--fg); font-weight: 600; }
+
+/* Who badge — right side of card */
+.who-badge {
+  flex-shrink: 0; display: flex; align-items: center; gap: 4px;
+  background: var(--muted); border-radius: 20px; padding: 3px 8px 3px 4px;
+  font-size: 10px; font-weight: 600; color: var(--muted-fg);
+}
+.av {
+  width: 16px; height: 16px; border-radius: 50%; font-size: 8px; font-weight: 700;
+  color: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+
+/* ── Gruppe sucht: need area ── */
+.need-area {
+  margin-top: 9px; padding-top: 9px; border-top: 1px dashed var(--border);
+}
+.need-count-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  margin-bottom: 8px;
+}
+.need-count-label {
+  font-size: 11px; font-weight: 600; color: var(--muted-fg);
+}
+.need-count-label span { color: var(--amber); font-weight: 800; font-size: 13px; }
+
+/* Stepper */
+.stepper {
+  display: flex; align-items: center; background: var(--muted); border-radius: 8px; overflow: hidden;
+}
+.step-btn {
+  width: 26px; height: 26px; display: flex; align-items: center; justify-content: center;
+  font-size: 15px; font-weight: 700; color: var(--primary);
+  cursor: pointer; border: none; background: none;
+  -webkit-tap-highlight-color: transparent; transition: background .1s;
+}
+.step-btn:active { background: var(--border); }
+.step-val { min-width: 26px; text-align: center; font-size: 13px; font-weight: 700; color: var(--fg); }
+
+/* Progress */
+.prog-row { display: flex; align-items: center; gap: 7px; margin-bottom: 7px; }
+.prog-bar { flex: 1; height: 5px; background: var(--muted); border-radius: 3px; overflow: hidden; }
+.prog-fill { height: 100%; border-radius: 3px; transition: width .3s; }
+.prog-label { font-size: 10px; font-weight: 700; white-space: nowrap; }
+
+/* Claimers */
+.claimers { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
+.claimer-pill {
+  display: flex; align-items: center; gap: 4px;
+  background: var(--muted); border-radius: 20px; padding: 3px 8px 3px 3px;
+  font-size: 10px; font-weight: 600; color: var(--muted-fg);
+}
+
+/* Claim bottom row */
+.claim-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.claim-pill {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 700;
+  cursor: pointer; border: 1.5px solid transparent;
+  transition: all .12s; -webkit-tap-highlight-color: transparent;
+}
+.claim-pill:active { transform: scale(.93); }
+.cp-unclaimed { background: var(--amber-bg); color: var(--amber); border-color: rgba(196,122,30,.25); }
+.cp-claimed   { background: var(--green-bg);  color: var(--green);  border-color: rgba(45,122,79,.25); }
+
+/* Section divider */
+.sec-div { height: 1px; background: var(--border); margin: 2px 16px 0; }
+
+/* ── FAB ── */
+.fab {
+  position: absolute; bottom: 80px; right: 14px;
+  width: 50px; height: 50px; border-radius: 50%; background: var(--primary);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 16px rgba(27,92,88,.4); cursor: pointer; z-index: 10;
+  transition: transform .1s; -webkit-tap-highlight-color: transparent;
+}
+.fab:active { transform: scale(.91); }
+.fab svg { width: 22px; height: 22px; color: #fff; }
+
+/* ── Sheet ── */
+.overlay {
+  position: absolute; inset: 0; background: rgba(26,22,18,.45); z-index: 18;
+  opacity: 0; pointer-events: none; transition: opacity .25s; border-radius: 34px;
+}
+.overlay.open { opacity: 1; pointer-events: auto; }
+.sheet {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: var(--card); border-radius: 22px 22px 0 0;
+  padding: 18px 16px 96px;
+  box-shadow: 0 -8px 40px rgba(0,0,0,.15);
+  transform: translateY(100%); transition: transform .28s cubic-bezier(.34,1.56,.64,1); z-index: 20;
+}
+.sheet.open { transform: translateY(0); }
+.sheet-handle { width: 36px; height: 4px; background: var(--muted); border-radius: 2px; margin: 0 auto 16px; }
+.sheet-title { font-size: 15px; font-weight: 700; color: var(--fg); margin-bottom: 14px; }
+.type-opts { display: flex; flex-direction: column; gap: 8px; }
+.type-opt {
+  display: flex; align-items: center; gap: 12px;
+  padding: 13px 14px; border-radius: 14px; border: 2px solid var(--border);
+  cursor: pointer; transition: all .13s; -webkit-tap-highlight-color: transparent;
+}
+.type-opt:active { transform: scale(.98); }
+.type-opt.sel { border-color: var(--primary); background: var(--primary-10); }
+.type-opt-icon { width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
+.type-opt-title { font-size: 13px; font-weight: 700; color: var(--fg); }
+.type-opt-desc  { font-size: 11px; color: var(--muted-fg); margin-top: 2px; }
+
+/* ── Bottom nav ── */
+.bottom-nav {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 70px;
+  background: var(--card); border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-around; padding: 0 8px 8px;
+}
+.nav-it { display: flex; flex-direction: column; align-items: center; gap: 3px; flex: 1; padding: 5px 0; }
+.nav-ic { width: 30px; height: 30px; border-radius: 9px; display: flex; align-items: center; justify-content: center; }
+.nav-ic.on { background: var(--primary); }
+.nav-ic.on svg { color: #fff; }
+.nav-ic:not(.on) svg { color: var(--muted-fg); }
+.nav-ic svg { width: 17px; height: 17px; }
+.nav-lbl { font-size: 9px; font-weight: 700; color: var(--muted-fg); }
+
+/* ── State toggle ── */
+.state-toggle {
+  display: flex; border-radius: 10px; overflow: hidden;
+  border: 1px solid #302818; margin-bottom: 8px;
+}
+.st-btn {
+  flex: 1; padding: 7px 10px; font-size: 11px; font-weight: 700; text-align: center;
+  cursor: pointer; color: #6a6050; transition: all .12s; -webkit-tap-highlight-color: transparent;
+}
+.st-btn.active { background: var(--primary); color: #fff; }
+
+/* ── Spec ── */
+.spec-section { max-width: 900px; margin: 60px auto 0; }
+.spec-section h2 { font-size: 20px; font-weight: 700; color: #faf8f4; letter-spacing: -.3px; margin-bottom: 20px; text-align: center; }
+.spec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 640px) { .spec-grid { grid-template-columns: 1fr; } }
+.spec-card { background: #1e1a10; border: 1px solid #302818; border-radius: 14px; padding: 16px; }
+.spec-card h3 { font-size: 12px; font-weight: 800; letter-spacing: .5px; text-transform: uppercase; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid #302818; }
+.spec-card.s1 h3 { color: #4ab5ae; }
+.spec-card.s2 h3 { color: #e8a84e; }
+.spec-card.s3 h3 { color: #88c0a8; }
+.spec-card.s4 h3 { color: #b09ad4; }
+.spec-list { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+.spec-list li { display: flex; gap: 8px; align-items: flex-start; font-size: 12px; color: #907860; line-height: 1.5; }
+.spec-list li::before { content: '→'; color: #4a3820; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+.spec-list li strong { color: #c8b898; font-weight: 600; }
+
+.change-note {
+  background: #1e1a10; border: 1px solid #302818; border-left: 3px solid #4ab5ae;
+  border-radius: 12px; padding: 14px 16px; margin-bottom: 20px;
+  font-size: 12.5px; color: #7a6a50; line-height: 1.65;
+}
+.change-note strong { color: #c8b898; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="version-chip">✦ Mitbringliste v3 — Angepasstes Konzept</div>
+  <h1>Vier Sektionen, <em>klare Reihenfolge</em></h1>
+  <p>Gruppenname statt "Meine Gruppe" · "Wir brauchen es X mal" · "Wir bringen das" für Gruppenmitglieder · Neue Sektion: was die Gruppe bereits bringt · Privat-Gruppe ganz nach hinten.</p>
+</div>
+
+<div class="stage">
+
+  <!-- ── MAIN PHONE ── -->
+  <div class="col">
+    <div class="col-label">
+      <h3>Alle vier Sektionen</h3>
+      <p>Interaktiv — Checkboxen, Stepper, Claim</p>
+    </div>
+
+    <div class="state-toggle">
+      <div class="st-btn active" id="btn-grp" onclick="setGroup(true)">👨‍👩‍👧 Gruppenmitglied</div>
+      <div class="st-btn"        id="btn-solo" onclick="setGroup(false)">🧍 Kein Gruppe</div>
+    </div>
+
+    <div class="phone-frame">
+      <div class="phone-screen">
+
+        <div class="status-bar">
+          <span>9:41</span>
+          <div class="si">
+            <svg viewBox="0 0 24 24" fill="currentColor"><rect x="1" y="6" width="3" height="12" rx="1"/><rect x="6" y="4" width="3" height="14" rx="1"/><rect x="11" y="2" width="3" height="16" rx="1"/><rect x="16" y="0" width="3" height="18" rx="1" opacity=".3"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1" fill="currentColor"/></svg>
+            <svg viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="7" width="18" height="11" rx="2"/><path d="M22 11v4"/></svg>
+          </div>
+        </div>
+
+        <div class="screen-header">
+          <div class="back-row">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+            Reisen
+          </div>
+          <div class="trip-title">🏝️ Mallorca 2025</div>
+        </div>
+
+        <div class="tab-bar">
+          <div class="tab">Übersicht</div>
+          <div class="tab">Ausgaben</div>
+          <div class="tab active">Liste</div>
+          <div class="tab">Abrechnung</div>
+        </div>
+
+        <!-- Filter chips — 4 Sektionen -->
+        <div class="chips-bar">
+          <div class="chips" id="chips">
+            <div class="chip a-bring" onclick="filterSec(this,'bring')">🎒 Ich bringe</div>
+            <div class="chip" onclick="filterSec(this,'need')">🛍️ Gruppe sucht</div>
+            <div class="chip" onclick="filterSec(this,'gbring')">📦 Gruppe bringt</div>
+            <div class="chip" id="chip-priv" onclick="filterSec(this,'priv')">🔒 Familie Schmidt</div>
+            <div class="chip" onclick="filterSec(this,'all')">Alle</div>
+          </div>
+        </div>
+
+        <div class="scroll">
+
+          <!-- ══ 1. ICH BRINGE MIT ══ -->
+          <div data-sec="bring">
+            <div class="sec-hd" onclick="toggleSec('s-bring')">
+              <div class="sec-icon si-bring">🎒</div>
+              <span class="sec-title tc-bring" id="bring-title">Ich bringe mit</span>
+              <span class="sec-badge sb-bring">2</span>
+              <svg class="chevron open" id="s-bring-ch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+            </div>
+            <div id="s-bring" class="item-list">
+
+              <div class="item-card ic-bring" onclick="toggleCheck(this)">
+                <div class="cb">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div class="item-body">
+                  <div class="item-name">Bluetooth-Lautsprecher</div>
+                  <div class="item-meta">JBL Go · alle sehen das</div>
+                </div>
+              </div>
+
+              <div class="item-card ic-bring" onclick="toggleCheck(this)">
+                <div class="cb done">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div class="item-body">
+                  <div class="item-name struck">Reisestecker-Set</div>
+                  <div class="item-meta">Eingepackt ✓</div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+          <div class="sec-div" data-sec="bring"></div>
+
+          <!-- ══ 2. GRUPPE SUCHT ══ -->
+          <div data-sec="need">
+            <div class="sec-hd" onclick="toggleSec('s-need')">
+              <div class="sec-icon si-need">🛍️</div>
+              <span class="sec-title tc-need">Gruppe sucht</span>
+              <span class="sec-badge sb-need">3</span>
+              <svg class="chevron open" id="s-need-ch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+            </div>
+            <div id="s-need" class="item-list">
+
+              <!-- Unclaimed -->
+              <div class="item-card ic-need" style="flex-direction:column; align-items:stretch; gap:0; cursor:default;">
+                <div style="display:flex; align-items:center; gap:11px;" onclick="toggleCheck(this.closest('.item-card'))">
+                  <div class="cb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+                  <div class="item-body">
+                    <div class="item-name">Erste-Hilfe-Set</div>
+                    <div class="item-meta" style="color:var(--amber)">Noch niemand · bitte jemand claimen</div>
+                  </div>
+                </div>
+                <div class="need-area">
+                  <div class="need-count-row">
+                    <div class="need-count-label">Wir brauchen es <span class="need-num">1</span>×</div>
+                    <div class="stepper">
+                      <button class="step-btn" onclick="stepNeed(this,-1)">−</button>
+                      <span class="step-val">1</span>
+                      <button class="step-btn" onclick="stepNeed(this,+1)">+</button>
+                    </div>
+                  </div>
+                  <button class="claim-pill cp-unclaimed" id="claim-erste" onclick="doClaim(this,'claim-erste')">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+                    <span id="claim-erste-lbl">Ich bringe das!</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Partial -->
+              <div class="item-card ic-need" style="flex-direction:column; align-items:stretch; gap:0; cursor:default;">
+                <div style="display:flex; align-items:center; gap:11px;" onclick="toggleCheck(this.closest('.item-card'))">
+                  <div class="cb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+                  <div class="item-body">
+                    <div class="item-name">Sonnencreme SPF 30</div>
+                    <div class="item-meta">Max · 1×, Lisa · 1× — <span style="color:var(--amber)">noch 1 offen</span></div>
+                  </div>
+                </div>
+                <div class="need-area">
+                  <div class="need-count-row">
+                    <div class="need-count-label">Wir brauchen es <span class="need-num">3</span>×</div>
+                    <div class="stepper">
+                      <button class="step-btn" onclick="stepNeed(this,-1)">−</button>
+                      <span class="step-val">3</span>
+                      <button class="step-btn" onclick="stepNeed(this,+1)">+</button>
+                    </div>
+                  </div>
+                  <div class="prog-row">
+                    <div class="prog-bar"><div class="prog-fill" style="width:66.7%;background:var(--amber);"></div></div>
+                    <span class="prog-label" style="color:var(--amber);">2/3</span>
+                  </div>
+                  <div class="claim-row">
+                    <div class="claimers">
+                      <div class="claimer-pill"><div class="av" style="background:#1b5c58;">M</div>Max · 1×</div>
+                      <div class="claimer-pill"><div class="av" style="background:#2d8a84;">L</div>Lisa · 1×</div>
+                    </div>
+                    <button class="claim-pill cp-unclaimed" style="font-size:10px;padding:4px 9px;" id="claim-sonne" onclick="doClaim(this,'claim-sonne')">
+                      <span id="claim-sonne-lbl">+ Ich auch</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Covered -->
+              <div class="item-card ic-covered" style="flex-direction:column; align-items:stretch; gap:0; cursor:default;">
+                <div style="display:flex; align-items:center; gap:11px;" onclick="toggleCheck(this.closest('.item-card'))">
+                  <div class="cb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+                  <div class="item-body">
+                    <div class="item-name">Kartenspiel</div>
+                    <div class="item-meta" style="color:var(--green)">✓ Vollständig gedeckt</div>
+                  </div>
+                </div>
+                <div class="need-area">
+                  <div class="need-count-row">
+                    <div class="need-count-label">Wir brauchen es <span class="need-num">1</span>×</div>
+                    <div class="stepper">
+                      <button class="step-btn" onclick="stepNeed(this,-1)">−</button>
+                      <span class="step-val">1</span>
+                      <button class="step-btn" onclick="stepNeed(this,+1)">+</button>
+                    </div>
+                  </div>
+                  <div class="prog-row">
+                    <div class="prog-bar"><div class="prog-fill" style="width:100%;background:var(--green);"></div></div>
+                    <span class="prog-label" style="color:var(--green);">✓</span>
+                  </div>
+                  <div class="claimers">
+                    <div class="claimer-pill"><div class="av" style="background:#4ab5ae;">T</div>Tom · 1×</div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+          <div class="sec-div" data-sec="need"></div>
+
+          <!-- ══ 3. GRUPPE BRINGT MIT (neu) ══ -->
+          <div data-sec="gbring">
+            <div class="sec-hd" onclick="toggleSec('s-gbring')">
+              <div class="sec-icon si-gbring">📦</div>
+              <span class="sec-title tc-gbring">Gruppe bringt mit</span>
+              <span class="sec-badge sb-gbring">4</span>
+              <svg class="chevron open" id="s-gbring-ch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+            </div>
+            <div id="s-gbring" class="item-list">
+
+              <!-- Item von Max -->
+              <div class="item-card ic-gbring" style="cursor:default;">
+                <div style="width:20px; height:20px; flex-shrink:0;">
+                  <div class="av" style="background:#1b5c58; width:20px; height:20px; font-size:9px; border-radius:50%;">M</div>
+                </div>
+                <div class="item-body">
+                  <div class="item-name">Bluetooth-Lautsprecher</div>
+                  <div class="item-meta"><strong>Max</strong> bringt das mit</div>
+                </div>
+                <div style="font-size:10px;color:var(--green);font-weight:700;flex-shrink:0;">✓</div>
+              </div>
+
+              <!-- Item von Tom (aus Gruppe sucht, geclaimt) -->
+              <div class="item-card ic-gbring" style="cursor:default;">
+                <div style="width:20px; height:20px; flex-shrink:0;">
+                  <div class="av" style="background:#4ab5ae; width:20px; height:20px; font-size:9px; border-radius:50%;">T</div>
+                </div>
+                <div class="item-body">
+                  <div class="item-name">Kartenspiel</div>
+                  <div class="item-meta"><strong>Tom</strong> bringt das mit · aus "Gruppe sucht"</div>
+                </div>
+                <div style="font-size:10px;color:var(--green);font-weight:700;flex-shrink:0;">✓</div>
+              </div>
+
+              <!-- Item von Lisa -->
+              <div class="item-card ic-gbring" style="cursor:default;">
+                <div style="width:20px; height:20px; flex-shrink:0;">
+                  <div class="av" style="background:#2d8a84; width:20px; height:20px; font-size:9px; border-radius:50%;">L</div>
+                </div>
+                <div class="item-body">
+                  <div class="item-name">Sonnencreme SPF 30</div>
+                  <div class="item-meta"><strong>Lisa</strong> bringt 1× mit</div>
+                </div>
+                <div style="font-size:10px;color:var(--green);font-weight:700;flex-shrink:0;">✓</div>
+              </div>
+
+              <!-- Item von Max (Stecker) -->
+              <div class="item-card ic-gbring" style="cursor:default;">
+                <div style="width:20px; height:20px; flex-shrink:0;">
+                  <div class="av" style="background:#1b5c58; width:20px; height:20px; font-size:9px; border-radius:50%;">M</div>
+                </div>
+                <div class="item-body">
+                  <div class="item-name">Reisestecker-Set</div>
+                  <div class="item-meta"><strong>Max</strong> bringt das mit · eingepackt ✓</div>
+                </div>
+                <div style="font-size:10px;color:var(--green);font-weight:700;flex-shrink:0;">✓</div>
+              </div>
+
+            </div>
+          </div>
+          <div class="sec-div" data-sec="gbring"></div>
+
+          <!-- ══ 4. GRUPPE-PRIVAT (Familienname + Schloss) ══ -->
+          <div data-sec="priv">
+            <div class="sec-hd" onclick="toggleSec('s-priv')">
+              <div class="sec-icon si-priv" id="priv-icon">👨‍👩‍👧</div>
+              <span class="sec-title tc-priv" id="priv-title">Familie Schmidt</span>
+              <!-- Lock icon inline -->
+              <svg class="lock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+              <span class="sec-badge sb-priv" style="margin-left:2px;" id="priv-badge">3</span>
+              <svg class="chevron open" id="s-priv-ch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+            </div>
+            <div id="s-priv" class="item-list">
+
+              <div class="item-card ic-priv" onclick="toggleCheck(this)">
+                <div class="cb done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+                <div class="item-body">
+                  <div class="item-name struck">Reisepass</div>
+                  <div class="item-meta" id="priv-meta-1">Eingepackt · Lisa: auch ✓</div>
+                </div>
+              </div>
+
+              <div class="item-card ic-priv" onclick="toggleCheck(this)">
+                <div class="cb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+                <div class="item-body">
+                  <div class="item-name">Ladekabel</div>
+                  <div class="item-meta" id="priv-meta-2">Lisa: noch offen</div>
+                </div>
+              </div>
+
+              <div class="item-card ic-priv" onclick="toggleCheck(this)">
+                <div class="cb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+                <div class="item-body">
+                  <div class="item-name">Sonnencreme SPF 50</div>
+                  <div class="item-meta" id="priv-meta-3">Noch nicht eingepackt</div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <div style="height:110px;"></div>
+        </div><!-- scroll -->
+
+        <!-- FAB -->
+        <div class="fab" onclick="openSheet()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        </div>
+
+        <!-- Overlay + Sheet -->
+        <div class="overlay" id="overlay" onclick="closeSheet()"></div>
+        <div class="sheet" id="sheet">
+          <div class="sheet-handle"></div>
+          <div class="sheet-title">Was hinzufügen?</div>
+          <div class="type-opts">
+            <div class="type-opt" onclick="pickType(this)">
+              <div class="type-opt-icon" style="background:var(--primary-10);">🎒</div>
+              <div>
+                <div class="type-opt-title" id="opt-bring-title">Ich bringe mit</div>
+                <div class="type-opt-desc">Du bringst etwas für die ganze Reisegruppe</div>
+              </div>
+            </div>
+            <div class="type-opt" onclick="pickType(this)">
+              <div class="type-opt-icon" style="background:var(--amber-bg);">🛍️</div>
+              <div>
+                <div class="type-opt-title">Gruppe sucht jemanden</div>
+                <div class="type-opt-desc">Alle sehen es, jeder kann Menge anpassen & claimen</div>
+              </div>
+            </div>
+            <div class="type-opt" onclick="pickType(this)">
+              <div class="type-opt-icon" style="background:var(--grape-bg);" id="opt-priv-icon">👨‍👩‍👧</div>
+              <div>
+                <div class="type-opt-title" id="opt-priv-title">Für Familie Schmidt</div>
+                <div class="type-opt-desc" id="opt-priv-desc">Nur für Gruppenmitglieder sichtbar 🔒</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom nav -->
+        <div class="bottom-nav">
+          <div class="nav-it">
+            <div class="nav-ic on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+            <span class="nav-lbl" style="color:var(--primary)">Reisen</span>
+          </div>
+          <div class="nav-it">
+            <div class="nav-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg></div>
+            <span class="nav-lbl">Profil</span>
+          </div>
+          <div class="nav-it">
+            <div class="nav-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
+            <span class="nav-lbl">Hilfe</span>
+          </div>
+        </div>
+
+      </div><!-- phone-screen -->
+    </div><!-- phone-frame -->
+
+    <div style="font-size:11px; color:#4a4030; text-align:center; font-style:italic; margin-top:4px;">
+      Toggle oben: Gruppenmitglied vs. ohne Gruppe
+    </div>
+  </div><!-- col main -->
+
+  <!-- ── Change notes column ── -->
+  <div style="display:flex; flex-direction:column; gap:12px; max-width:220px; padding-top:90px; align-self:flex-start;">
+
+    <div style="background:#1e1a10; border:1px solid #302818; border-left:3px solid #4ab5ae; border-radius:12px; padding:12px 14px;">
+      <div style="font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:#4ab5ae; margin-bottom:6px;">① Reihenfolge</div>
+      <div style="font-size:11.5px; color:#7a6a50; line-height:1.55;">
+        Ich bringe → Gruppe sucht → <strong style="color:#c8b898;">Gruppe bringt (neu)</strong> → Familie Schmidt 🔒
+      </div>
+    </div>
+
+    <div style="background:#1e1a10; border:1px solid #302818; border-left:3px solid #e8a84e; border-radius:12px; padding:12px 14px;">
+      <div style="font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:#e8a84e; margin-bottom:6px;">② Gruppenname direkt</div>
+      <div style="font-size:11.5px; color:#7a6a50; line-height:1.55;">
+        Kein "Meine Gruppe" — Sektion zeigt direkt <strong style="color:#c8b898;">"Familie Schmidt"</strong> + Schloss-Icon
+      </div>
+    </div>
+
+    <div style="background:#1e1a10; border:1px solid #302818; border-left:3px solid #b09ad4; border-radius:12px; padding:12px 14px;">
+      <div style="font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:#b09ad4; margin-bottom:6px;">③ Sprache angepasst</div>
+      <div style="font-size:11.5px; color:#7a6a50; line-height:1.55;">
+        "Wir brauchen es X×" statt "Anzahl" · <strong style="color:#c8b898;">"Wir bringen das"</strong> für Gruppenmitglieder
+      </div>
+    </div>
+
+    <div style="background:#1e1a10; border:1px solid #302818; border-left:3px solid #88c0a8; border-radius:12px; padding:12px 14px;">
+      <div style="font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:#88c0a8; margin-bottom:6px;">④ Neue Sektion</div>
+      <div style="font-size:11.5px; color:#7a6a50; line-height:1.55;">
+        <strong style="color:#c8b898;">"Gruppe bringt mit"</strong> — read-only Aggregation: wer bringt was (inkl. Gruppe-sucht-Claims)
+      </div>
+    </div>
+
+  </div>
+
+</div><!-- stage -->
+
+<!-- ══ SPEC ══ -->
+<div class="spec-section">
+  <h2>Sektionen im Überblick</h2>
+  <div class="spec-grid">
+
+    <div class="spec-card s1">
+      <h3>🎒 Ich bringe mit — Sektion 1</h3>
+      <ul class="spec-list">
+        <li>Items die <strong>du</strong> für die gesamte Reisegruppe mitbringst</li>
+        <li>Bei Gruppenmitglied: Sektion-Chip und Bottom Sheet-Option heißt <strong>"Wir bringen"</strong></li>
+        <li>Alle Reiseteilnehmer sehen diese Items — verhindert Doppelungen</li>
+        <li>Checkbox = eingepackt (nur dein Status, für andere nicht sichtbar)</li>
+      </ul>
+    </div>
+
+    <div class="spec-card s2">
+      <h3>🛍️ Gruppe sucht — Sektion 2</h3>
+      <ul class="spec-list">
+        <li>Jeder kann Items hinzufügen + <strong>"Wir brauchen es X×"</strong> anpassen</li>
+        <li>Claim-Button: <strong>"Wir bringen das"</strong> (Gruppe) oder "Ich bringe das" (solo)</li>
+        <li>Fortschrittsbalken + Avatar-Pills zeigen wer wie viel zugesagt hat</li>
+        <li>Vollständig gedeckte Items: grüner Streifen, kein Claim-Button mehr</li>
+      </ul>
+    </div>
+
+    <div class="spec-card s3">
+      <h3>📦 Gruppe bringt mit — Sektion 3 (neu)</h3>
+      <ul class="spec-list">
+        <li>Read-only Aggregation aller zugesagten Items über alle Teilnehmer</li>
+        <li>Zusammenführt: "Ich bringe mit"-Items <strong>aller</strong> Teilnehmer + geclaimate "Gruppe sucht"-Items</li>
+        <li>Jede Zeile: Avatar + Name + Itemname + ✓</li>
+        <li>Kein Bearbeiten hier — nur Überblick wer was abdeckt</li>
+      </ul>
+    </div>
+
+    <div class="spec-card s4">
+      <h3>🔒 [Gruppenname] — Sektion 4</h3>
+      <ul class="spec-list">
+        <li>Sektion heißt direkt <strong>"Familie Schmidt"</strong> (kein "Meine Gruppe")</li>
+        <li>Schloss-Icon 🔒 hinter dem Gruppennamen signalisiert Privatheit</li>
+        <li>Nur Mitglieder dieser Untergruppe sehen diese Items</li>
+        <li>Jedes Mitglied hat eigenen Abhak-Status + Statusanzeige der anderen</li>
+        <li>Ohne Gruppe: Sektion heißt <strong>"🔒 Nur ich"</strong> (ganz privat)</li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+<script>
+let isGroup = true;
+
+function setGroup(val) {
+  isGroup = val;
+  document.getElementById('btn-grp').classList.toggle('active', val);
+  document.getElementById('btn-solo').classList.toggle('active', !val);
+
+  // Section 4
+  const privIcon  = document.getElementById('priv-icon');
+  const privTitle = document.getElementById('priv-title');
+  const privBadge = document.getElementById('priv-badge');
+  const chipPriv  = document.getElementById('chip-priv');
+  const bringTitle= document.getElementById('bring-title');
+  const optBring  = document.getElementById('opt-bring-title');
+  const optPrivIcon  = document.getElementById('opt-priv-icon');
+  const optPrivTitle = document.getElementById('opt-priv-title');
+  const optPrivDesc  = document.getElementById('opt-priv-desc');
+  const m1 = document.getElementById('priv-meta-1');
+  const m2 = document.getElementById('priv-meta-2');
+  const m3 = document.getElementById('priv-meta-3');
+
+  if (val) {
+    privIcon.textContent = '👨‍👩‍👧';
+    privTitle.textContent = 'Familie Schmidt';
+    privBadge.textContent = '3';
+    chipPriv.textContent = '🔒 Familie Schmidt';
+    bringTitle.textContent = 'Ich bringe mit';
+    optBring.textContent = 'Ich bringe mit';
+    optPrivIcon.textContent = '👨‍👩‍👧';
+    optPrivTitle.textContent = 'Für Familie Schmidt';
+    optPrivDesc.textContent = 'Nur für Gruppenmitglieder sichtbar 🔒';
+    if (m1) m1.textContent = 'Eingepackt · Lisa: auch ✓';
+    if (m2) m2.textContent = 'Lisa: noch offen';
+    if (m3) m3.textContent = 'Noch nicht eingepackt';
+
+    // Claim buttons: "Wir bringen das" for group
+    document.getElementById('claim-erste-lbl').textContent = 'Wir bringen das!';
+    document.getElementById('claim-sonne-lbl').textContent = '+ Wir auch';
+  } else {
+    privIcon.textContent = '🔒';
+    privTitle.textContent = 'Nur ich';
+    privBadge.textContent = '3';
+    chipPriv.textContent = '🔒 Nur ich';
+    bringTitle.textContent = 'Ich bringe mit';
+    optBring.textContent = 'Ich bringe mit';
+    optPrivIcon.textContent = '🔒';
+    optPrivTitle.textContent = 'Nur für mich';
+    optPrivDesc.textContent = 'Komplett privat — nur du siehst diese Items';
+    if (m1) m1.textContent = 'Eingepackt ✓';
+    if (m2) m2.textContent = 'Noch nicht eingepackt';
+    if (m3) m3.textContent = 'Noch nicht eingepackt';
+
+    document.getElementById('claim-erste-lbl').textContent = 'Ich bringe das!';
+    document.getElementById('claim-sonne-lbl').textContent = '+ Ich auch';
+  }
+}
+
+function toggleSec(id) {
+  const el = document.getElementById(id);
+  const ch = document.getElementById(id + '-ch');
+  const open = el.style.display !== 'none';
+  el.style.display = open ? 'none' : 'flex';
+  if (ch) ch.classList.toggle('open', !open);
+}
+
+function toggleCheck(card) {
+  const cb = card.querySelector('.cb');
+  const name = card.querySelector('.item-name');
+  if (!cb) return;
+  const done = cb.classList.toggle('done');
+  if (name) name.classList.toggle('struck', done);
+}
+
+// Filter chips
+const chipMap = { bring:'a-bring', need:'a-need', gbring:'a-group-bring', priv:'a-priv' };
+function filterSec(chip, type) {
+  document.querySelectorAll('#chips .chip').forEach(c => {
+    c.className = 'chip';
+    // restore label-specific class if needed
+  });
+  if (type !== 'all') {
+    chip.classList.add(chipMap[type] || '');
+  }
+  document.querySelectorAll('[data-sec]').forEach(el => {
+    const s = el.dataset.sec;
+    el.style.display = (type === 'all' || s === type) ? '' : 'none';
+  });
+}
+
+// Qty stepper in "Gruppe sucht"
+function stepNeed(btn, delta) {
+  const sp = btn.closest('.stepper');
+  const sv = sp.querySelector('.step-val');
+  const lbl = btn.closest('.need-area').querySelector('.need-num');
+  let v = parseInt(sv.textContent) + delta;
+  if (v < 1) v = 1; if (v > 9) v = 9;
+  sv.textContent = v;
+  if (lbl) lbl.textContent = v;
+}
+
+// Claim
+function doClaim(btn, id) {
+  const lblEl = btn.querySelector('span') || btn;
+  const claimed = btn.classList.toggle('cp-claimed');
+  btn.classList.toggle('cp-unclaimed', !claimed);
+  if (claimed) {
+    lblEl.textContent = '✓ Zugesagt';
+  } else {
+    const defaults = { 'claim-erste': isGroup ? 'Wir bringen das!' : 'Ich bringe das!', 'claim-sonne': isGroup ? '+ Wir auch' : '+ Ich auch' };
+    lblEl.textContent = defaults[id] || 'Claimen';
+  }
+}
+
+// Sheet
+function openSheet()  { document.getElementById('sheet').classList.add('open'); document.getElementById('overlay').classList.add('open'); }
+function closeSheet() { document.getElementById('sheet').classList.remove('open'); document.getElementById('overlay').classList.remove('open'); }
+function pickType(opt) {
+  opt.closest('.type-opts').querySelectorAll('.type-opt').forEach(o => o.classList.remove('sel'));
+  opt.classList.add('sel');
+  setTimeout(closeSheet, 360);
+}
+</script>
+</body>
+</html>
