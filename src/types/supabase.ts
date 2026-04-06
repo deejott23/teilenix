@@ -446,7 +446,7 @@ export type Database = {
     }
     Functions: {
       auto_setup_user: {
-        Args: { p_avatar_url: string; p_display_name: string; p_email: string }
+        Args: { p_email: string; p_full_name: string; p_user_id: string }
         Returns: undefined
       }
       create_expense_with_splits: {
@@ -456,7 +456,7 @@ export type Database = {
           p_currency: string
           p_description: string
           p_expense_date: string
-          p_paid_by_participant_id: string | null
+          p_paid_by_participant_id: string
           p_split_mode: string
           p_splits: Json
           p_title: string
@@ -465,7 +465,7 @@ export type Database = {
         Returns: string
       }
       create_trip_with_participant: {
-        Args: { p_end_date?: string | null; p_name: string; p_start_date?: string | null }
+        Args: { p_end_date?: string; p_name: string; p_start_date?: string }
         Returns: string
       }
       get_trip_by_invite_code: {
@@ -491,7 +491,7 @@ export type Database = {
           p_description: string
           p_expense_date: string
           p_expense_id: string
-          p_paid_by_participant_id?: string | null
+          p_paid_by_participant_id?: string
           p_split_mode: string
           p_splits: Json
           p_title: string
