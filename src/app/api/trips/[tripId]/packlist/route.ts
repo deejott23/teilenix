@@ -3,10 +3,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 
 const createSchema = z.object({
-  title:          z.string().min(1).max(100),
-  item_type:      z.enum(['bringing', 'group_need', 'group_private']),
+  title:           z.string().min(1).max(100),
+  item_type:       z.enum(['bringing', 'group_need', 'group_private']),
   quantity_needed: z.number().int().min(1).max(99).optional().default(1),
-  group_id:       z.string().uuid().nullable().optional(),
+  group_id:        z.string().uuid().nullable().optional(),
 })
 
 export async function GET(
@@ -18,44 +18,30 @@ export async function GET(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const [{ data: items }, { data: checks }, { data: claims }, { data: participants }] =
-    await Promise.all([
-      supabase
-        .from('packlist_items')
-        .select('*')
-        .eq('trip_id', tripId)
-        .order('created_at', { ascending: true }),
-      supabase
-        .from('packlist_checks')
-        .select('item_id')
-        .in('participant_id',
-          supabase
-            .from('trip_participants')
-            .select('id')
-            .eq('trip_id', tripId)
-            .eq('user_id', user.id) as unknown as string[]
-        ),
-      supabase
-        .from('packlist_claims')
-        .select('*')
-        .in('item_id',
-          supabase
-            .from('packlist_items')
-            .select('id')
-            .eq('trip_id', tripId) as unknown as string[]
-        ),
-      supabase
-        .from('trip_participants')
-        .select('id, name, user_id')
-        .eq('trip_id', tripId),
-    ])
+  const [{ data: items }, { data: participants }] = await Promise.all([
+    supabase.from('packlist_items').select('*').eq('trip_id', tripId).order('created_at', { ascending: true }),
+    supabase.from('trip_participants').select('id, name, user_id').eq('trip_id', tripId),
+  ])
 
-  const participantMap = new Map((participants ?? []).map(p => [p.id, p.name as string]))
-  const checkedItemIds = new Set((checks ?? []).map((c: { item_id: string }) => c.item_id))
+  const itemIds = (items ?? []).map((i: { id: string }) => i.id)
+  const [{ data: checks }, { data: claims }] = itemIds.length > 0
+    ? await Promise.all([
+        supabase.from('packlist_checks').select('item_id, participant_id').in('item_id', itemIds),
+        supabase.from('packlist_claims').select('*').in('item_id', itemIds),
+      ])
+    : [{ data: [] }, { data: [] }]
+
+  const participantMap = new Map((participants ?? []).map(p => [p.id as string, p.name as string]))
+  const myParticipantIds = (participants ?? []).filter((p: { user_id: string | null }) => p.user_id === user.id).map((p: { id: string }) => p.id)
+  const checkedSet = new Set(
+    (checks ?? [])
+      .filter((c: { participant_id: string }) => myParticipantIds.includes(c.participant_id))
+      .map((c: { item_id: string }) => c.item_id)
+  )
 
   const enriched = (items ?? []).map((item: Record<string, unknown>) => ({
     ...item,
-    checked: checkedItemIds.has(item.id as string),
+    checked:      checkedSet.has(item.id as string),
     creator_name: participantMap.get(item.created_by_participant_id as string) ?? 'Unbekannt',
     claims: (claims ?? [])
       .filter((c: Record<string, unknown>) => c.item_id === item.id)
@@ -81,7 +67,6 @@ export async function POST(
   const parsed = createSchema.safeParse(body)
   if (!parsed.success) return NextResponse.json({ error: 'Ungültige Eingabe' }, { status: 400 })
 
-  // Resolve current user's participant
   const { data: me } = await supabase
     .from('trip_participants')
     .select('id, group_id')
@@ -92,11 +77,9 @@ export async function POST(
   if (!me) return NextResponse.json({ error: 'Kein Teilnehmer' }, { status: 403 })
 
   const { title, item_type, quantity_needed, group_id } = parsed.data
-
-  // For group_private: auto-attach the user's group_id if not explicitly provided
   const resolvedGroupId =
     item_type === 'group_private'
-      ? (group_id ?? me.group_id ?? null)
+      ? (group_id ?? (me.group_id as string | null) ?? null)
       : null
 
   const { data, error } = await supabase

@@ -13,38 +13,38 @@ export default async function PacklistPage({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const [{ data: trip }, { data: participantsRaw }, { data: itemsRaw }, { data: checksRaw }, { data: claimsRaw }] =
-    await Promise.all([
-      supabase.from('trips').select('status').eq('id', tripId).single(),
-      supabase.from('trip_participants').select('*').eq('trip_id', tripId),
-      supabase.from('packlist_items').select('*').eq('trip_id', tripId).order('created_at', { ascending: true }),
-      supabase.from('packlist_checks').select('item_id, participant_id').eq(
-        'participant_id',
-        // subquery: get my participant IDs for this trip
-        supabase.from('trip_participants').select('id').eq('trip_id', tripId).eq('user_id', user.id) as unknown as string
-      ),
-      supabase.from('packlist_claims').select('*').in(
-        'item_id',
-        supabase.from('packlist_items').select('id').eq('trip_id', tripId) as unknown as string[]
-      ),
-    ])
+  const [{ data: trip }, { data: participantsRaw }, { data: itemsRaw }] = await Promise.all([
+    supabase.from('trips').select('status').eq('id', tripId).single(),
+    supabase.from('trip_participants').select('*').eq('trip_id', tripId),
+    supabase.from('packlist_items').select('*').eq('trip_id', tripId).order('created_at', { ascending: true }),
+  ])
 
   const participants = (participantsRaw ?? []) as TripParticipant[]
   const participantMap = new Map(participants.map(p => [p.id, p.name]))
 
-  // My participant (non-group)
+  const itemIds = (itemsRaw ?? []).map((i: { id: string }) => i.id)
+
+  // Fetch checks + claims only if there are items
+  const [checksRaw, claimsRaw] = itemIds.length > 0
+    ? await Promise.all([
+        supabase.from('packlist_checks').select('item_id, participant_id').in('item_id', itemIds),
+        supabase.from('packlist_claims').select('*').in('item_id', itemIds),
+      ])
+    : [{ data: [] }, { data: [] }]
+
+  // My participant IDs for this trip (could be multiple if user has group assignments)
+  const myParticipantIds = participants.filter(p => p.user_id === user.id).map(p => p.id)
+  const checkedItemIds = new Set(
+    (checksRaw.data ?? [])
+      .filter((c: { participant_id: string }) => myParticipantIds.includes(c.participant_id))
+      .map((c: { item_id: string }) => c.item_id)
+  )
+
+  // My main participant (non-group)
   const me = participants.find(p => p.user_id === user.id && !p.is_group)
   const myParticipantId = me?.id ?? ''
   const myGroupId = me?.group_id ?? null
   const myGroupName = myGroupId ? (participantMap.get(myGroupId) ?? null) : null
-
-  // Build checked set (items I've checked)
-  const myParticipantIds = participants.filter(p => p.user_id === user.id).map(p => p.id)
-  const checkedItemIds = new Set(
-    (checksRaw ?? [])
-      .filter((c: { participant_id: string }) => myParticipantIds.includes(c.participant_id))
-      .map((c: { item_id: string }) => c.item_id)
-  )
 
   const items: PacklistItem[] = (itemsRaw ?? []).map((raw: Record<string, unknown>) => ({
     id:                        raw.id as string,
@@ -57,7 +57,7 @@ export default async function PacklistPage({
     created_at:                raw.created_at as string,
     checked:                   checkedItemIds.has(raw.id as string),
     creator_name:              participantMap.get(raw.created_by_participant_id as string) ?? 'Unbekannt',
-    claims: (claimsRaw ?? [])
+    claims: (claimsRaw.data ?? [])
       .filter((c: Record<string, unknown>) => c.item_id === raw.id)
       .map((c: Record<string, unknown>) => ({
         id:               c.id as string,
