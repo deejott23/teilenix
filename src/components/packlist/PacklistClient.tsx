@@ -643,10 +643,11 @@ export default function PacklistClient({
         <button
           type="button"
           onClick={() => setShowSheet(true)}
-          className="fixed bottom-20 right-4 w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center shadow-lg active:scale-[0.92] transition-transform duration-100 z-30"
-          style={{ boxShadow: '0 4px 16px rgba(27,92,88,0.4)' }}
+          className="fixed bottom-[84px] right-4 md:bottom-6 md:right-6 z-40 flex items-center gap-2 bg-primary text-white pl-4 pr-5 py-3.5 rounded-2xl shadow-lg active:scale-95 transition-all font-semibold text-[14px]"
+          style={{ boxShadow: '0 4px 16px rgba(27,92,88,0.35)' }}
         >
           <Plus className="w-5 h-5" strokeWidth={2.5} />
+          BringDings
         </button>
       )}
 

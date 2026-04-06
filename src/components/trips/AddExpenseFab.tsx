@@ -8,7 +8,7 @@ interface AddExpenseFabProps {
   tripId: string
 }
 
-const HIDDEN_ON = ['/expenses/new', '/expenses', '/stats', '/settlement']
+const HIDDEN_ON = ['/expenses/new', '/expenses', '/stats', '/settlement', '/packlist']
 
 export default function AddExpenseFab({ tripId }: AddExpenseFabProps) {
   const pathname = usePathname()
