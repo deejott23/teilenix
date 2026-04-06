@@ -8,13 +8,13 @@ const updateParticipantSchema = z.object({
   group_id: z.string().uuid().nullable().optional(),
 })
 
-async function verifyCreator(supabase: Awaited<ReturnType<typeof createClient>>, tripId: string, userId: string) {
+async function verifyMember(supabase: Awaited<ReturnType<typeof createClient>>, tripId: string) {
   const { data: trip } = await supabase
     .from('trips')
-    .select('created_by, status')
+    .select('status')
     .eq('id', tripId)
     .maybeSingle()
-  return trip ? { isCreator: trip.created_by === userId, status: trip.status } : null
+  return trip ?? null
 }
 
 export async function PATCH(
@@ -26,9 +26,8 @@ export async function PATCH(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Nicht angemeldet' }, { status: 401 })
 
-  const tripInfo = await verifyCreator(supabase, tripId, user.id)
+  const tripInfo = await verifyMember(supabase, tripId)
   if (!tripInfo) return NextResponse.json({ error: 'Reise nicht gefunden' }, { status: 404 })
-  if (!tripInfo.isCreator) return NextResponse.json({ error: 'Keine Berechtigung' }, { status: 403 })
 
   const body = await request.json()
   const parsed = updateParticipantSchema.safeParse(body)
@@ -65,9 +64,8 @@ export async function DELETE(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Nicht angemeldet' }, { status: 401 })
 
-  const tripInfo = await verifyCreator(supabase, tripId, user.id)
+  const tripInfo = await verifyMember(supabase, tripId)
   if (!tripInfo) return NextResponse.json({ error: 'Reise nicht gefunden' }, { status: 404 })
-  if (!tripInfo.isCreator) return NextResponse.json({ error: 'Keine Berechtigung' }, { status: 403 })
 
   const admin = createAdminClient()
   const { error } = await admin

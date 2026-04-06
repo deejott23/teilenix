@@ -37,15 +37,14 @@ export async function POST(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Nicht angemeldet' }, { status: 401 })
 
-  // Only the trip creator may add guests or groups
+  // Any trip member may add guests or groups
   const { data: trip } = await supabase
     .from('trips')
-    .select('id, created_by, status')
+    .select('id, status')
     .eq('id', tripId)
     .maybeSingle()
 
   if (!trip) return NextResponse.json({ error: 'Reise nicht gefunden' }, { status: 404 })
-  if (trip.created_by !== user.id) return NextResponse.json({ error: 'Nur der Reise-Ersteller kann Teilnehmer hinzufügen' }, { status: 403 })
   if (trip.status === 'ended') return NextResponse.json({ error: 'Reise ist bereits beendet' }, { status: 400 })
 
   const body = await request.json()
