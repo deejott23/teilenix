@@ -1,4 +1,4 @@
-import { HelpCircle, Plane, Users, Receipt, BarChart2, CreditCard, Tag, LogOut, QrCode, UserCircle, ChevronRight, ImageIcon } from 'lucide-react'
+import { HelpCircle, Plane, Users, Receipt, BarChart2, CreditCard, Tag, LogOut, QrCode, UserCircle, ChevronRight, ImageIcon, ListChecks } from 'lucide-react'
 
 interface SectionProps {
   id: string
@@ -60,6 +60,7 @@ export default function HelpPage() {
     { id: 'invite',      label: 'Einladen & Beitreten' },
     { id: 'teilnehmer',  label: 'Teilnehmer & Gruppen' },
     { id: 'ausgaben',    label: 'Ausgaben'              },
+    { id: 'packlist',    label: 'Mitbringliste'         },
     { id: 'kategorien',  label: 'Kategorien'            },
     { id: 'abrechnung',  label: 'Abrechnung'            },
     { id: 'profil',      label: 'Profil'                },
@@ -210,7 +211,39 @@ export default function HelpPage() {
           <Tip>Ausgaben können nachträglich bearbeitet oder gelöscht werden — solange die Reise aktiv ist.</Tip>
         </Section>
 
-        {/* 6. Kategorien */}
+        {/* 6. Mitbringliste */}
+        <Section id="packlist" icon={<ListChecks className="w-4 h-4" strokeWidth={2} />} title="Mitbringliste">
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Im Tab «Liste» hat jede Reise eine gemeinsame Mitbringliste — für persönliches Gepäck, Gruppenartikel und alles, was noch jemand mitbringen muss.
+          </p>
+
+          <div className="space-y-2">
+            <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Die vier Bereiche</p>
+            <InfoRow label="🎒 Ich bringe mit" desc="Dinge, die du persönlich für die Gruppe mitbringst — für alle sichtbar (z.B. Bluetooth-Lautsprecher, Karten­spiel)." />
+            <InfoRow label="🛍️ Gruppe sucht" desc="Artikel, die die Gruppe noch braucht — jeder kann ein Item hinzufügen und die benötigte Menge festlegen. Andere können sich bereit erklären, es mitzubringen." />
+            <InfoRow label="Gruppe bringt mit" desc="Zeigt, welche «Gruppe sucht»-Items bereits (teil-)gedeckt sind — wer bringt wie viele Einheiten mit." />
+            <InfoRow label="[Gruppenname] 🔒" desc="Nur für Mitglieder einer Gruppe sichtbar. Hier landen private Items der Gruppe — ideal für gruppeninterne Absprachen." />
+          </div>
+
+          <div className="space-y-2 mt-2">
+            <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Schnellfilter</p>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Mit den Filter-Chips oben («Alle» / «🎒 Ich bringe» / «🛍️ Gruppe sucht» / «🔒 Gruppe») lässt sich die Liste auf einen bestimmten Typ einschränken.
+            </p>
+          </div>
+
+          <div className="space-y-3 mt-2">
+            <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">So geht&apos;s</p>
+            <Step num={1} title="Item hinzufügen" desc="Das + unten rechts antippen → Typ auswählen (Ich bringe mit / Gruppe sucht / Privat für Gruppe) → Bezeichnung eingeben." />
+            <Step num={2} title="Abhaken" desc="Ein Item antippen, um es als erledigt/eingepackt zu markieren. Das Häkchen wird nur für dich gespeichert." />
+            <Step num={3} title="«Gruppe sucht»-Item decken" desc="Bei einem offenen Item im Bereich «Gruppe sucht» auf «Ich bringe das mit» (bzw. «Wir bringen das» als Gruppe) tippen und ggf. die Menge anpassen." />
+            <Step num={4} title="Menge anpassen" desc="Bei «Gruppe sucht»-Items: «Wir brauchen es X×» — mit + / − die benötigte Anzahl einstellen. Mehrere Personen können anteilig mitbringen." />
+          </div>
+
+          <Tip>Gruppenmitglieder sehen den privaten Gruppenbereich nur, wenn sie derselben Gruppe zugeordnet sind. Perfekt für Familienabsprachen ohne dass alle Mitreisenden es sehen!</Tip>
+        </Section>
+
+        {/* 7. Kategorien */}
         <Section id="kategorien" icon={<Tag className="w-4 h-4" strokeWidth={2} />} title="Kategorien anpassen">
           <p className="text-sm text-muted-foreground leading-relaxed">
             Im Tab «Einstellungen» kannst du die Ausgabenkategorien für jede Reise individuell anpassen — aktivieren, umbenennen oder eigene anlegen.
