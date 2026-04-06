@@ -17,9 +17,9 @@ export default function TripCard({ trip }: TripCardProps) {
   const emoji = (trip.cover_emoji as string | null) ?? pickFallbackEmoji(trip.name)
 
   return (
-    <Link href={`/trips/${trip.id}`} className="block group">
+    <Link href={`/trips/${trip.id}`} className="block group transition-transform duration-100 active:scale-[0.98]">
       <div className={cn(
-        'rounded-2xl card-shadow p-4 flex items-center gap-4 transition-all',
+        'rounded-2xl card-shadow p-4 flex items-center gap-4 transition-[colors,box-shadow]',
         active ? 'bg-card group-hover:card-shadow-hover' : 'bg-card/60 opacity-80 group-hover:opacity-100'
       )}>
         <div className={cn(

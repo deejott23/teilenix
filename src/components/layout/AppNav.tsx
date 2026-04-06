@@ -30,7 +30,7 @@ export default function AppNav({ needsOnboarding }: AppNavProps) {
               <Link
                 key={href}
                 href={href}
-                className="relative flex flex-col items-center gap-1 px-3 py-1.5 rounded-2xl transition-colors"
+                className="relative flex flex-col items-center gap-1 px-3 py-1.5 rounded-2xl transition-colors active:scale-90 transition-transform duration-100"
               >
                 <div className={cn(
                   'w-8 h-8 flex items-center justify-center rounded-xl transition-colors',

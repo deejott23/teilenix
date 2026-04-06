@@ -359,14 +359,14 @@ export default function ExpenseForm({
           <div className="flex flex-wrap gap-2">
             {standardVisible.map(cat => (
               <button key={cat} type="button" onClick={() => pickCategory(cat)} title={getStandardLabel(cat)}
-                className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0 transition-all ${
+                className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0 transition-[colors,transform] duration-100 active:scale-90 ${
                   selectedCategory === cat ? 'bg-primary text-primary-foreground shadow-sm scale-105' : 'bg-muted text-foreground hover:bg-muted/80'
                 }`}
               >{getStandardEmoji(cat)}</button>
             ))}
             {enabledCustom.map(cat => (
               <button key={cat.key} type="button" onClick={() => pickCategory(cat.key)} title={cat.label}
-                className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0 transition-all ${
+                className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0 transition-[colors,transform] duration-100 active:scale-90 ${
                   selectedCategory === cat.key ? 'bg-primary text-primary-foreground shadow-sm scale-105' : 'bg-muted text-foreground hover:bg-muted/80'
                 }`}
               >{cat.emoji}</button>
@@ -391,7 +391,7 @@ export default function ExpenseForm({
                   key={p.id}
                   type="button"
                   onClick={() => togglePayer(p.id)}
-                  className={`px-3 py-1.5 rounded-xl border text-sm font-semibold transition-all flex flex-col items-start leading-tight ${
+                  className={`px-3 py-1.5 rounded-xl border text-sm font-semibold transition-[colors,transform] duration-100 active:scale-95 flex flex-col items-start leading-tight ${
                     isSelected
                       ? 'border-primary bg-primary/10 text-primary'
                       : 'border-border text-muted-foreground hover:border-primary/40'
@@ -501,7 +501,7 @@ export default function ExpenseForm({
                   key={mode}
                   type="button"
                   onClick={() => setSplitMode(mode)}
-                  className={`px-3 py-1 rounded-md text-xs font-semibold transition-all ${
+                  className={`px-3 py-1 rounded-md text-xs font-semibold transition-[colors,transform] duration-100 active:scale-90 ${
                     splitMode === mode ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'
                   }`}
                 >

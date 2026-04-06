@@ -130,9 +130,20 @@
 }
 
 @layer base {
-  * { @apply border-border outline-ring/50; }
-  html { @apply font-sans; }
-  body { @apply bg-background text-foreground; }
+  * {
+    @apply border-border outline-ring/50;
+    -webkit-tap-highlight-color: transparent;
+  }
+  html {
+    @apply font-sans;
+    touch-action: manipulation;          /* eliminates 300ms tap delay globally */
+    text-size-adjust: 100%;             /* prevents iOS font inflation */
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-background text-foreground;
+    overscroll-behavior-y: contain;     /* prevents bounce-through to browser chrome */
+  }
 }
 
 @layer utilities {
