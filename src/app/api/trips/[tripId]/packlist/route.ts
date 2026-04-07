@@ -4,7 +4,7 @@ import { z } from 'zod'
 
 const createSchema = z.object({
   title:           z.string().min(1).max(100),
-  item_type:       z.enum(['bringing', 'group_need', 'group_private']),
+  item_type:       z.enum(['bringing', 'group_need']),
   quantity_needed: z.number().int().min(1).max(99).optional().default(1),
   group_id:        z.string().uuid().nullable().optional(),
 })
@@ -76,11 +76,7 @@ export async function POST(
 
   if (!me) return NextResponse.json({ error: 'Kein Teilnehmer' }, { status: 403 })
 
-  const { title, item_type, quantity_needed, group_id } = parsed.data
-  const resolvedGroupId =
-    item_type === 'group_private'
-      ? (group_id ?? (me.group_id as string | null) ?? null)
-      : null
+  const { title, item_type, quantity_needed } = parsed.data
 
   const { data, error } = await supabase
     .from('packlist_items')
@@ -90,7 +86,7 @@ export async function POST(
       item_type,
       title,
       quantity_needed: item_type === 'group_need' ? quantity_needed : 1,
-      group_id: resolvedGroupId,
+      group_id: null,
     })
     .select()
     .single()

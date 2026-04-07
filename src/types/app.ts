@@ -113,7 +113,7 @@ export type ExpenseSplitInput = {
 }
 
 // ── Packlist ──
-export type PacklistItemType = 'bringing' | 'group_need' | 'group_private'
+export type PacklistItemType = 'bringing' | 'group_need'
 
 export type PacklistClaim = {
   id: string

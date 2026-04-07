@@ -50,7 +50,7 @@ export default async function PacklistPage({
     id:                        raw.id as string,
     trip_id:                   raw.trip_id as string,
     created_by_participant_id: raw.created_by_participant_id as string,
-    item_type:                 raw.item_type as 'bringing' | 'group_need' | 'group_private',
+    item_type:                 raw.item_type as 'bringing' | 'group_need',
     title:                     raw.title as string,
     quantity_needed:           (raw.quantity_needed as number) ?? 1,
     group_id:                  raw.group_id as string | null,

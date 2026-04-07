@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { Plus, ChevronRight, Lock, Trash2, Pencil, Check, X } from 'lucide-react'
+import { Plus, ChevronRight, Trash2, Pencil, Check, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
@@ -19,14 +19,14 @@ interface PacklistClientProps {
   isActive: boolean
 }
 
-type FilterKey = 'all' | 'bringing' | 'group_need' | 'group_private'
+type FilterKey = 'all' | 'bringing' | 'group_need'
 
 function initials(name: string) {
   return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
 }
 const AV_COLORS = ['#1b5c58', '#2d8a84', '#4ab5ae', '#c47a1e', '#6b4fa0', '#2d7a4f']
-function avColor(participantId: string) {
-  let h = 0; for (const c of participantId) h = (h * 31 + c.charCodeAt(0)) & 0xffff
+function avColor(id: string) {
+  let h = 0; for (const c of id) h = (h * 31 + c.charCodeAt(0)) & 0xffff
   return AV_COLORS[h % AV_COLORS.length]
 }
 
@@ -52,10 +52,8 @@ function Checkbox({ checked, onToggle }: { checked: boolean; onToggle: () => voi
 function AvatarPill({ name, participantId, suffix }: { name: string; participantId: string; suffix?: string }) {
   return (
     <div className="flex items-center gap-1 bg-muted rounded-full pr-2 pl-0.5 py-0.5">
-      <div
-        className="w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-bold text-white flex-shrink-0"
-        style={{ background: avColor(participantId) }}
-      >
+      <div className="w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-bold text-white flex-shrink-0"
+        style={{ background: avColor(participantId) }}>
         {initials(name)}
       </div>
       <span className="text-[10px] font-semibold text-muted-foreground">{name}{suffix ? ` · ${suffix}` : ''}</span>
@@ -66,28 +64,23 @@ function AvatarPill({ name, participantId, suffix }: { name: string; participant
 function Section({
   icon, title, titleClass, badgeClass, count, accentColor, children, defaultOpen = true,
 }: {
-  icon: string; title: React.ReactNode; titleClass: string; badgeClass: string; count: number
+  icon: string; title: string; titleClass: string; badgeClass: string; count: number
   accentColor: string; children: React.ReactNode; defaultOpen?: boolean
 }) {
   const [open, setOpen] = useState(defaultOpen)
   return (
     <div>
-      <button
-        type="button"
-        onClick={() => setOpen(o => !o)}
-        className="w-full flex items-center gap-2.5 px-4 py-2.5 -webkit-tap-highlight-color-transparent"
-      >
-        <div className="w-7 h-7 rounded-[8px] flex items-center justify-center text-[13px] flex-shrink-0" style={{ background: accentColor + '22' }}>
+      <button type="button" onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center gap-2.5 px-4 py-2.5">
+        <div className="w-7 h-7 rounded-[8px] flex items-center justify-center text-[13px] flex-shrink-0"
+          style={{ background: accentColor + '22' }}>
           {icon}
         </div>
         <span className={cn('flex-1 text-left text-[11px] font-black uppercase tracking-[0.5px]', titleClass)}>
           {title}
         </span>
         <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded-full', badgeClass)}>{count}</span>
-        <ChevronRight
-          className={cn('w-4 h-4 text-muted-foreground/50 transition-transform duration-150 flex-shrink-0', open && 'rotate-90')}
-          strokeWidth={2.5}
-        />
+        <ChevronRight className={cn('w-4 h-4 text-muted-foreground/50 transition-transform duration-150 flex-shrink-0', open && 'rotate-90')} strokeWidth={2.5} />
       </button>
       {open && <div className="px-4 pb-2 flex flex-col gap-1.5">{children}</div>}
     </div>
@@ -102,18 +95,16 @@ function ClaimArea({
 }) {
   const totalClaimed = item.claims.reduce((s, c) => s + c.quantity_claimed, 0)
   const myClaim = item.claims.find(c => c.participant_id === myParticipantId)
-  const remaining = Math.max(0, item.quantity_needed - totalClaimed)
   const pct = item.quantity_needed > 0 ? Math.min(100, (totalClaimed / item.quantity_needed) * 100) : 0
-  const isCovered = remaining === 0
+  const isCovered = totalClaimed >= item.quantity_needed
   const claimLabel = myGroupId ? 'Wir bringen das' : 'Ich bringe das'
 
   const handleClaim = async () => {
-    const newQty = myClaim ? null : 1
     try {
       const res = await fetch(`/api/trips/${tripId}/packlist/${item.id}/claim`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ quantity_claimed: newQty }),
+        body: JSON.stringify({ quantity_claimed: myClaim ? null : 1 }),
       })
       if (!res.ok) throw new Error()
       onRefresh()
@@ -123,9 +114,8 @@ function ClaimArea({
   }
 
   const handleQtyChange = async (delta: number) => {
-    const current = myClaim?.quantity_claimed ?? 1
-    const next = Math.max(1, Math.min(99, current + delta))
-    if (next === current) return
+    const next = Math.max(1, Math.min(99, (myClaim?.quantity_claimed ?? 1) + delta))
+    if (next === myClaim?.quantity_claimed) return
     try {
       const res = await fetch(`/api/trips/${tripId}/packlist/${item.id}/claim`, {
         method: 'POST',
@@ -157,21 +147,19 @@ function ClaimArea({
 
   return (
     <div className="mt-2 pt-2 border-t border-dashed border-border">
-      {/* "Wir brauchen es X×" row */}
       <div className="flex items-center justify-between mb-1.5">
         <span className="text-[11px] font-semibold text-muted-foreground">
           Benötigt: <span className={cn('font-black', isCovered ? 'text-green-700' : 'text-amber-600')}>{item.quantity_needed}×</span>
         </span>
         <div className="flex items-center bg-muted rounded-lg overflow-hidden">
           <button type="button" onClick={() => handleNeedQtyChange(-1)}
-            className="w-6 h-6 flex items-center justify-center text-primary font-bold text-sm active:bg-border transition-colors">−</button>
+            className="w-6 h-6 flex items-center justify-center text-primary font-bold text-sm active:bg-border">−</button>
           <span className="w-5 text-center text-xs font-bold text-foreground">{item.quantity_needed}</span>
           <button type="button" onClick={() => handleNeedQtyChange(+1)}
-            className="w-6 h-6 flex items-center justify-center text-primary font-bold text-sm active:bg-border transition-colors">+</button>
+            className="w-6 h-6 flex items-center justify-center text-primary font-bold text-sm active:bg-border">+</button>
         </div>
       </div>
 
-      {/* Progress bar */}
       {(item.quantity_needed > 1 || totalClaimed > 0) && (
         <div className="flex items-center gap-2 mb-1.5">
           <div className="flex-1 h-1 bg-muted rounded-full overflow-hidden">
@@ -184,7 +172,6 @@ function ClaimArea({
         </div>
       )}
 
-      {/* Claimers */}
       {item.claims.length > 0 && (
         <div className="flex flex-wrap gap-1 mb-1.5">
           {item.claims.map(c => (
@@ -193,7 +180,6 @@ function ClaimArea({
         </div>
       )}
 
-      {/* My claim row */}
       <div className="flex items-center justify-between gap-2">
         {myClaim ? (
           <div className="flex items-center gap-2">
@@ -204,24 +190,16 @@ function ClaimArea({
             </div>
             <span className="text-[11px] text-muted-foreground">meins</span>
           </div>
-        ) : (
-          <div />
-        )}
-        <button
-          type="button"
-          onClick={handleClaim}
+        ) : <div />}
+        <button type="button" onClick={handleClaim}
           className={cn(
             'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all duration-100 active:scale-95',
-            myClaim
-              ? 'bg-green-50 text-green-700 border-green-200'
-              : 'bg-amber-50 text-amber-700 border-amber-200'
+            myClaim ? 'bg-green-50 text-green-700 border-green-200' : 'bg-amber-50 text-amber-700 border-amber-200'
           )}
         >
-          {myClaim ? (
-            <>✓ {myGroupName ? `${myGroupName} dabei` : 'Zugesagt'}</>
-          ) : (
-            <>{claimLabel}{myGroupName ? ` (${myGroupName})` : ''}</>
-          )}
+          {myClaim
+            ? <>✓ {myGroupName ? `${myGroupName} dabei` : 'Zugesagt'}</>
+            : <>{claimLabel}{myGroupName ? ` (${myGroupName})` : ''}</>}
         </button>
       </div>
     </div>
@@ -241,17 +219,13 @@ function ItemCard({
   const inputRef = useRef<HTMLInputElement>(null)
   const isMyItem = item.created_by_participant_id === myParticipantId
 
-  useEffect(() => {
-    if (editing) inputRef.current?.focus()
-  }, [editing])
+  useEffect(() => { if (editing) inputRef.current?.focus() }, [editing])
 
   const handleCheck = async () => {
     try {
       await fetch(`/api/trips/${tripId}/packlist/${item.id}/check`, { method: 'POST' })
       onRefresh()
-    } catch {
-      toast.error('Fehler')
-    }
+    } catch { toast.error('Fehler') }
   }
 
   const handleDelete = async (e: React.MouseEvent) => {
@@ -284,33 +258,23 @@ function ItemCard({
       onRefresh()
     } catch {
       toast.error('Fehler beim Speichern')
-    } finally {
-      setSaving(false)
-    }
+    } finally { setSaving(false) }
   }
 
-  const handleEditCancel = () => {
-    setEditing(false)
-    setEditTitle(item.title)
-  }
+  const handleEditCancel = () => { setEditing(false); setEditTitle(item.title) }
 
   return (
     <div className="bg-card rounded-xl border border-border overflow-hidden"
-      style={{ boxShadow: '0 1px 3px rgba(26,22,18,.04)' }}
-    >
+      style={{ boxShadow: '0 1px 3px rgba(26,22,18,.04)' }}>
       <div className="flex items-center gap-2.5 p-2.5">
         <Checkbox checked={item.checked} onToggle={handleCheck} />
         <div className="flex-1 min-w-0">
           {editing ? (
             <div className="flex items-center gap-1.5">
-              <input
-                ref={inputRef}
-                value={editTitle}
-                onChange={e => setEditTitle(e.target.value)}
+              <input ref={inputRef} value={editTitle} onChange={e => setEditTitle(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter') handleEditSave(); if (e.key === 'Escape') handleEditCancel() }}
                 maxLength={100}
-                className="flex-1 min-w-0 text-sm font-semibold bg-muted rounded-lg px-2 py-1 outline-none border border-primary/40 focus:border-primary"
-              />
+                className="flex-1 min-w-0 text-sm font-semibold bg-muted rounded-lg px-2 py-1 outline-none border border-primary/40 focus:border-primary" />
               <button type="button" onClick={handleEditSave} disabled={saving}
                 className="w-6 h-6 flex items-center justify-center bg-primary text-white rounded-md flex-shrink-0 disabled:opacity-50">
                 <Check className="w-3 h-3" strokeWidth={3} />
@@ -325,7 +289,7 @@ function ItemCard({
               {item.title}
             </p>
           )}
-          {!editing && (item.item_type === 'bringing' || item.item_type === 'group_private') && (
+          {!editing && (
             <p className="text-[10px] text-muted-foreground/70 leading-none mt-0.5">
               {item.creator_name}{item.item_type === 'bringing' ? ' · für alle' : ''}
             </p>
@@ -346,30 +310,25 @@ function ItemCard({
       </div>
       {item.item_type === 'group_need' && (
         <div className="px-2.5 pb-2.5 -mt-0.5">
-          <ClaimArea
-            item={item} myParticipantId={myParticipantId} myGroupId={myGroupId}
-            myGroupName={myGroupName} tripId={tripId} onRefresh={onRefresh}
-          />
+          <ClaimArea item={item} myParticipantId={myParticipantId} myGroupId={myGroupId}
+            myGroupName={myGroupName} tripId={tripId} onRefresh={onRefresh} />
         </div>
       )}
     </div>
   )
 }
 
-function GroupBringsRow({
-  name, participantId, title, subtitle,
-}: { name: string; participantId: string; title: string; subtitle: string }) {
+function GroupBringsRow({ name, participantId, title, subtitle }: { name: string; participantId: string; title: string; subtitle: string }) {
   return (
     <div className="bg-card rounded-xl border border-border p-2.5 flex items-center gap-2.5"
-      style={{ boxShadow: '0 1px 3px rgba(26,22,18,.04)' }}
-    >
+      style={{ boxShadow: '0 1px 3px rgba(26,22,18,.04)' }}>
       <div className="w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold text-white flex-shrink-0"
         style={{ background: avColor(participantId) }}>
         {initials(name)}
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold text-foreground leading-snug truncate">{title}</p>
-        <p className="text-[10px] text-muted-foreground/70 mt-0">{subtitle}</p>
+        <p className="text-[10px] text-muted-foreground/70">{subtitle}</p>
       </div>
       <span className="text-[11px] font-bold text-green-700 flex-shrink-0">✓</span>
     </div>
@@ -398,19 +357,13 @@ function AddItemSheet({
       type: 'bringing',
       icon: '🎒',
       label: isGroup ? 'Wir bringen mit' : 'Ich bringe mit',
-      desc: 'Alle Reiseteilnehmer sehen das',
+      desc: 'Alle sehen, dass du das mitbringst',
     },
     {
       type: 'group_need',
       icon: '🛍️',
       label: 'Gruppe sucht jemanden',
-      desc: 'Alle können Menge anpassen und zusagen',
-    },
-    {
-      type: 'group_private',
-      icon: myGroupName ? '👨‍👩‍👧' : '🔒',
-      label: myGroupName ? `Für ${myGroupName}` : 'Nur für mich',
-      desc: myGroupName ? `Nur für ${myGroupName} sichtbar` : 'Komplett privat – nur du siehst das',
+      desc: 'Alle können sich bereit erklären, es mitzubringen',
     },
   ]
 
@@ -423,15 +376,11 @@ function AddItemSheet({
 
         <div className="flex flex-col gap-2 mb-5">
           {types.map(t => (
-            <button
-              key={t.type}
-              type="button"
-              onClick={() => setSelected(t.type)}
+            <button key={t.type} type="button" onClick={() => setSelected(t.type)}
               className={cn(
                 'flex items-center gap-3 p-3.5 rounded-2xl border-2 transition-all duration-100 active:scale-[0.98] text-left',
                 selected === t.type ? 'border-primary bg-primary/8' : 'border-border'
-              )}
-            >
+              )}>
               <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
                 style={{ background: selected === t.type ? 'rgba(27,92,88,0.12)' : 'var(--muted)' }}>
                 {t.icon}
@@ -446,22 +395,15 @@ function AddItemSheet({
 
         {selected && (
           <div className="mb-4">
-            <Input
-              autoFocus
+            <Input autoFocus
               placeholder={selected === 'group_need' ? 'z.B. Erste-Hilfe-Set' : 'z.B. Sonnencreme SPF 50'}
-              value={title}
-              onChange={e => setTitle(e.target.value)}
+              value={title} onChange={e => setTitle(e.target.value)}
               className="h-11 text-base"
-              onKeyDown={e => e.key === 'Enter' && handleSubmit()}
-            />
+              onKeyDown={e => e.key === 'Enter' && handleSubmit()} />
           </div>
         )}
 
-        <Button
-          className="w-full h-11 font-semibold"
-          disabled={!selected || !title.trim() || saving}
-          onClick={handleSubmit}
-        >
+        <Button className="w-full h-11 font-semibold" disabled={!selected || !title.trim() || saving} onClick={handleSubmit}>
           {saving ? 'Wird gespeichert…' : 'Hinzufügen'}
         </Button>
       </div>
@@ -473,7 +415,6 @@ export default function PacklistClient({
   tripId, items: initialItems, participants, myParticipantId, myGroupId, myGroupName, isActive,
 }: PacklistClientProps) {
   const router = useRouter()
-  // Sync items with server-side props on each refresh
   const [items, setItems] = useState<PacklistItem[]>(initialItems)
   useEffect(() => { setItems(initialItems) }, [initialItems])
 
@@ -497,61 +438,46 @@ export default function PacklistClient({
     }
   }
 
-  const bringItems   = items.filter(i => i.item_type === 'bringing')
-  const needItems    = items.filter(i => i.item_type === 'group_need')
-  const privateItems = items.filter(i => i.item_type === 'group_private')
+  const bringItems = items.filter(i => i.item_type === 'bringing')
+  const needItems  = items.filter(i => i.item_type === 'group_need')
 
+  // "Gruppe bringt mit" — overview of what's already covered
   const groupBringsRows: { participantId: string; name: string; title: string; subtitle: string }[] = []
-  bringItems.forEach(it => {
-    groupBringsRows.push({
-      participantId: it.created_by_participant_id,
-      name: it.creator_name,
-      title: it.title,
-      subtitle: `${it.creator_name} bringt mit`,
-    })
-  })
-  needItems.forEach(it => {
-    it.claims.forEach(c => {
-      groupBringsRows.push({
-        participantId: c.participant_id,
-        name: c.participant_name,
-        title: it.title,
-        subtitle: `${c.participant_name} · ${c.quantity_claimed}× zugesagt`,
-      })
-    })
-  })
+  bringItems.forEach(it => groupBringsRows.push({
+    participantId: it.created_by_participant_id, name: it.creator_name,
+    title: it.title, subtitle: `${it.creator_name} bringt mit`,
+  }))
+  needItems.forEach(it => it.claims.forEach(c => groupBringsRows.push({
+    participantId: c.participant_id, name: c.participant_name,
+    title: it.title, subtitle: `${c.participant_name} · ${c.quantity_claimed}× zugesagt`,
+  })))
 
   const isGroup = !!myGroupId
-
-  const showBring   = filter === 'all' || filter === 'bringing'
-  const showNeed    = filter === 'all' || filter === 'group_need'
-  const showGBring  = filter === 'all' || filter === 'bringing'
-  const showPrivate = filter === 'all' || filter === 'group_private'
+  const showBring  = filter === 'all' || filter === 'bringing'
+  const showNeed   = filter === 'all' || filter === 'group_need'
+  const showGBring = filter === 'all' || filter === 'bringing'
 
   const chipBase = 'flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold transition-all duration-100 active:scale-95 border-[1.5px]'
-  const chipActive = (key: FilterKey) => filter === key
 
   return (
     <div>
       {/* Filter chips */}
       <div className="flex gap-2 overflow-x-auto scrollbar-none pb-1 mb-3">
         {([
-          { key: 'all' as FilterKey, label: `Alle (${items.length})` },
-          { key: 'bringing' as FilterKey, label: '🎒 Bringe mit' },
+          { key: 'all' as FilterKey,        label: `Alle (${items.length})` },
+          { key: 'bringing' as FilterKey,   label: '🎒 Bringe mit' },
           { key: 'group_need' as FilterKey, label: '🛍️ Gruppe sucht' },
-          { key: 'group_private' as FilterKey, label: myGroupName ? `🔒 ${myGroupName}` : '🔒 Nur ich' },
-        ] as { key: FilterKey; label: string }[]).map(({ key, label }) => (
+        ]).map(({ key, label }) => (
           <button key={key} type="button" onClick={() => setFilter(key)}
-            className={cn(chipBase, chipActive(key)
+            className={cn(chipBase, filter === key
               ? 'bg-primary/10 text-primary border-primary/25'
-              : 'bg-muted text-muted-foreground border-transparent')}
-          >
+              : 'bg-muted text-muted-foreground border-transparent')}>
             {label}
           </button>
         ))}
       </div>
 
-      {/* Section 1: Ich bringe mit */}
+      {/* Section 1: Ich/Wir bringe mit */}
       {showBring && (
         <div className="mb-0.5">
           <Section icon="🎒" title={isGroup ? 'Wir bringen mit' : 'Ich bringe mit'}
@@ -586,7 +512,7 @@ export default function PacklistClient({
         </div>
       )}
 
-      {/* Section 3: Gruppe bringt mit (read-only) */}
+      {/* Section 3: Gruppe bringt mit (read-only overview) */}
       {showGBring && (
         <div className="mb-0.5">
           <div className="h-px bg-border mx-4 my-0.5" />
@@ -603,57 +529,19 @@ export default function PacklistClient({
         </div>
       )}
 
-      {/* Section 4: Privat */}
-      {showPrivate && (
-        <div className="mb-0.5">
-          <div className="h-px bg-border mx-4 my-0.5" />
-          <Section
-            icon={myGroupName ? '👨‍👩‍👧' : '🔒'}
-            title={
-              <span className="flex items-center gap-1.5">
-                {myGroupName ?? 'Nur ich'}
-                <Lock className="w-3 h-3 opacity-50" strokeWidth={2.5} />
-              </span>
-            }
-            titleClass="text-violet-700" badgeClass="bg-violet-50 text-violet-700"
-            accentColor="#6b4fa0" count={privateItems.length}
-          >
-            {myGroupName && (
-              <p className="text-[10px] text-muted-foreground bg-muted rounded-xl px-3 py-2 mb-1">
-                🔒 Nur für <strong>{myGroupName}</strong> sichtbar
-              </p>
-            )}
-            {privateItems.length === 0
-              ? <p className="text-xs text-muted-foreground text-center py-2">Keine privaten Items</p>
-              : privateItems.map(item => (
-                <ItemCard key={item.id} item={item} myParticipantId={myParticipantId}
-                  myGroupId={myGroupId} myGroupName={myGroupName}
-                  tripId={tripId} onRefresh={refresh} isActive={isActive} />
-              ))}
-          </Section>
-        </div>
-      )}
-
       {/* FAB */}
       {isActive && (
-        <button
-          type="button"
-          onClick={() => setShowSheet(true)}
+        <button type="button" onClick={() => setShowSheet(true)}
           className="fixed bottom-[84px] right-4 md:bottom-6 md:right-6 z-40 flex items-center gap-2 bg-primary text-white pl-4 pr-5 py-3.5 rounded-2xl shadow-lg active:scale-95 transition-all font-semibold text-[14px]"
-          style={{ boxShadow: '0 4px 16px rgba(27,92,88,0.35)' }}
-        >
+          style={{ boxShadow: '0 4px 16px rgba(27,92,88,0.35)' }}>
           <Plus className="w-5 h-5" strokeWidth={2.5} />
           Packliste
         </button>
       )}
 
       {showSheet && (
-        <AddItemSheet
-          onClose={() => setShowSheet(false)}
-          onAdd={handleAdd}
-          myGroupName={myGroupName}
-          isGroup={isGroup}
-        />
+        <AddItemSheet onClose={() => setShowSheet(false)} onAdd={handleAdd}
+          myGroupName={myGroupName} isGroup={isGroup} />
       )}
     </div>
   )

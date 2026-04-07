@@ -119,16 +119,6 @@ export default async function StatsPage({
     .filter(x => x.count > 0)
     .sort((a, b) => b.count - a.count)
 
-  // Most private items (group_private)
-  const privateByParticipant = new Map<string, number>()
-  packlistItems.filter(i => i.item_type === 'group_private').forEach(i => {
-    privateByParticipant.set(i.created_by_participant_id, (privateByParticipant.get(i.created_by_participant_id) ?? 0) + 1)
-  })
-  const mostPrivate = participants
-    .map(p => ({ participantId: p.id, participantName: p.name, count: privateByParticipant.get(p.id) ?? 0 }))
-    .filter(x => x.count > 0)
-    .sort((a, b) => b.count - a.count)
-
   const hasPacklistData = packlistItems.length > 0
 
   return (
@@ -216,25 +206,13 @@ export default async function StatsPage({
                 }))}
               />
             )}
-            {mostPrivate.length > 0 && (
-              <LeaderboardCard
-                title="Geheimniskrämerln"
-                emoji="🕵️"
-                items={mostPrivate.map((b, i) => ({
-                  label: b.participantName,
-                  value: `${b.count} geheime${b.count === 1 ? 's' : ''} Item${b.count === 1 ? '' : 's'}`,
-                  highlight: i === 0,
-                }))}
-              />
-            )}
             <div className="bg-card card-shadow rounded-2xl p-4 text-center">
               <p className="text-sm font-semibold text-foreground">
                 🧳 {packlistItems.length} Item{packlistItems.length === 1 ? '' : 's'} auf der Packliste
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                davon {packlistItems.filter(i => i.item_type === 'bringing').length} mitgebracht,{' '}
-                {packlistItems.filter(i => i.item_type === 'group_need').length} gesucht,{' '}
-                {packlistItems.filter(i => i.item_type === 'group_private').length} privat
+                {packlistItems.filter(i => i.item_type === 'bringing').length} mitgebracht,{' '}
+                {packlistItems.filter(i => i.item_type === 'group_need').length} gesucht
               </p>
             </div>
           </div>

@@ -203,11 +203,10 @@ export default function HelpPage() {
             Im Tab «Packliste» hat jede Reise eine gemeinsame Packliste — für persönliches Gepäck, Gruppenartikel und alles, was noch jemand mitbringen muss.
           </p>
           <div className="space-y-2">
-            <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Die vier Bereiche</p>
+            <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Die drei Bereiche</p>
             <InfoRow label="🎒 Ich/Wir bringe mit" desc="Dinge, die du persönlich für die Gruppe mitbringst — für alle sichtbar (z.B. Bluetooth-Lautsprecher, Kartenspiel)." />
             <InfoRow label="🛍️ Gruppe sucht" desc="Artikel, die die Gruppe noch braucht — jeder kann ein Item hinzufügen und die benötigte Menge festlegen. Andere können sich bereit erklären, es mitzubringen." />
             <InfoRow label="📦 Gruppe bringt mit" desc="Zeigt, welche «Gruppe sucht»-Items bereits (teil-)gedeckt sind — wer bringt wie viele Einheiten mit." />
-            <InfoRow label="[Gruppenname] 🔒" desc="Nur für Mitglieder einer Gruppe sichtbar. Hier landen private Items der Gruppe — ideal für gruppeninterne Absprachen." />
           </div>
           <div className="space-y-2 mt-2">
             <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Schnellfilter</p>
@@ -217,13 +216,13 @@ export default function HelpPage() {
           </div>
           <div className="space-y-3 mt-2">
             <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">So geht&apos;s</p>
-            <Step num={1} title="Item hinzufügen" desc="Den «Packliste»-Button unten rechts antippen → Typ auswählen → Bezeichnung eingeben." />
+            <Step num={1} title="Item hinzufügen" desc="Den «Packliste»-Button unten rechts antippen → Typ auswählen (Ich bringe mit / Gruppe sucht) → Bezeichnung eingeben." />
             <Step num={2} title="Abhaken" desc="Die Checkbox links am Item antippen, um es als eingepackt zu markieren. Das Häkchen wird nur für dich gespeichert." />
             <Step num={3} title="Item bearbeiten" desc="Auf das Stift-Icon tippen, um den Namen eines eigenen Items zu ändern." />
             <Step num={4} title="«Gruppe sucht»-Item decken" desc="Bei einem offenen Item im Bereich «Gruppe sucht» auf «Ich bringe das» (bzw. «Wir bringen das» als Gruppe) tippen und ggf. die Menge anpassen." />
             <Step num={5} title="Menge anpassen" desc="Bei «Gruppe sucht»-Items: Benötigte Menge mit + / − einstellen. Mehrere Personen können anteilig mitbringen." />
           </div>
-          <Tip>Gruppenmitglieder sehen den privaten Gruppenbereich nur, wenn sie derselben Gruppe zugeordnet sind. Perfekt für Familienabsprachen!</Tip>
+          <Tip>Der «Gruppe bringt mit»-Bereich aktualisiert sich automatisch, sobald jemand ein «Gruppe sucht»-Item übernimmt oder selbst etwas hinzufügt.</Tip>
         </Section>
 
         {/* 7. Kategorien */}
