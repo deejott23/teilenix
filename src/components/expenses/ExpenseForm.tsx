@@ -113,12 +113,10 @@ export default function ExpenseForm({
   const router  = useRouter()
   const isEdit  = !!expenseId
 
-  // Splits: groups + standalone individuals
+  // Splits: groups + standalone individuals (not individual group members)
   const billableParticipants = participants.filter(p => !p.group_id)
-  // Payer options: individuals + groups that have no individual members assigned yet
-  // (once members are assigned, the individual member pays on behalf of the group)
-  const groupIdsWithMembers = new Set(participants.filter(p => p.group_id).map(p => p.group_id!))
-  const payerOptions = participants.filter(p => !p.is_group || !groupIdsWithMembers.has(p.id))
+  // Payer options: only groups and standalone individuals — group members are never payers
+  const payerOptions = participants.filter(p => p.is_group || !p.group_id)
   const participantLookup = new Map(participants.map(p => [p.id, p]))
 
   const [selectedCategory, setSelectedCategory] = useState<string>(initialData?.category ?? 'other')
@@ -158,8 +156,10 @@ export default function ExpenseForm({
     }))
   })
 
-  // Multi-payer state
-  const initialPayerId = initialData?.paidByParticipantId ?? myParticipantId
+  // Multi-payer state — if current user belongs to a group, default to the group
+  const myParticipant = participants.find(p => p.id === myParticipantId)
+  const myEffectiveId = myParticipant?.group_id ?? myParticipantId
+  const initialPayerId = initialData?.paidByParticipantId ?? myEffectiveId
   const initialCoPayerIds = (initialData?.coPayers ?? []).map(cp => cp.participant_id)
   const [payerIds, setPayerIds] = useState<string[]>([initialPayerId, ...initialCoPayerIds])
   // payerAmounts: euro string per payer, only used when multiple payers selected
@@ -384,25 +384,19 @@ export default function ExpenseForm({
           <label className={fieldLabel}>Bezahlt von</label>
           <div className="flex flex-wrap gap-2">
             {payerOptions.map(p => {
-              const groupName  = p.group_id ? participantLookup.get(p.group_id)?.name : null
               const isSelected = payerIds.includes(p.id)
               return (
                 <button
                   key={p.id}
                   type="button"
                   onClick={() => togglePayer(p.id)}
-                  className={`px-3 py-1.5 rounded-xl border text-sm font-semibold transition-[colors,transform] duration-100 active:scale-95 flex flex-col items-start leading-tight ${
+                  className={`px-3 py-1.5 rounded-xl border text-sm font-semibold transition-[colors,transform] duration-100 active:scale-95 ${
                     isSelected
                       ? 'border-primary bg-primary/10 text-primary'
                       : 'border-border text-muted-foreground hover:border-primary/40'
                   }`}
                 >
-                  <span>{p.name}</span>
-                  {groupName && (
-                    <span className={`text-[10px] font-normal ${isSelected ? 'text-primary/70' : 'text-muted-foreground/60'}`}>
-                      {groupName}
-                    </span>
-                  )}
+                  {p.name}
                 </button>
               )
             })}
