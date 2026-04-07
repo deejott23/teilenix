@@ -58,6 +58,37 @@ export default function ExpenseCard({ expense, myParticipantId, tripId, canEdit,
     }
   }
 
+  // Special rendering for partial payments
+  if (expense.category === 'payment') {
+    const recipientSplit = expense.expense_splits[0]
+    const recipientName = recipientSplit
+      ? (participantMap?.get(recipientSplit.participant_id)?.name ?? 'Unbekannt')
+      : 'Unbekannt'
+    return (
+      <div className="bg-green-50 border border-green-200 rounded-[18px] p-3.5 flex items-center gap-3">
+        <div className="w-9 h-9 rounded-xl bg-green-100 flex items-center justify-center text-lg flex-shrink-0">💸</div>
+        <div className="flex-1 min-w-0">
+          <p className="font-semibold text-green-800 text-[13px] truncate leading-tight">
+            {expense.title === 'Teilzahlung' ? 'Teilzahlung' : expense.title}
+          </p>
+          <p className="text-xs text-green-700/70 mt-0.5">
+            {payerName} → {recipientName}
+          </p>
+        </div>
+        <div className="text-right flex-shrink-0">
+          <p className="font-semibold text-green-800 text-[13px]">{formatCurrency(expense.amount_cents)}</p>
+          <p className="text-[10px] text-green-700/60">Teilzahlung</p>
+        </div>
+        {canEdit && (
+          <button onClick={handleDelete} disabled={deleting}
+            className="p-1.5 text-green-700/30 hover:text-destructive rounded-lg hover:bg-destructive/8 transition-colors">
+            <Trash2 className="w-4 h-4" strokeWidth={1.8} />
+          </button>
+        )}
+      </div>
+    )
+  }
+
   return (
     <div className="bg-card rounded-[18px] card-shadow p-4 flex items-center gap-3.5">
       <CategoryIcon category={expense.category} />

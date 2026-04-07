@@ -22,5 +22,12 @@ export async function PATCH(request: NextRequest) {
 
   if (error) return NextResponse.json({ error: 'Speichern fehlgeschlagen' }, { status: 500 })
 
+  // Also update the name shown in all trip participant lists
+  await supabase
+    .from('trip_participants')
+    .update({ name: parsed.data.displayName })
+    .eq('user_id', user.id)
+    .eq('is_group', false)
+
   return NextResponse.json({ success: true })
 }

@@ -14,12 +14,11 @@ export default function TripTabNav({ tripId, isEnded }: TripTabNavProps) {
   const base = `/trips/${tripId}`
 
   const tabs: { href: string; label: string; exact: boolean; dot?: boolean; hidden?: boolean }[] = [
-    { href: base,                   label: 'Übersicht',    exact: true  },
-    { href: `${base}/expenses`,     label: 'Ausgaben',     exact: false },
-    { href: `${base}/packlist`,     label: 'Liste',        exact: false },
-    { href: `${base}/stats`,        label: 'Statistiken',  exact: false },
-    { href: `${base}/settlement`,   label: 'Abrechnung',   exact: false, dot: isEnded },
-    { href: `${base}/participants`, label: 'Einstellungen', exact: false },
+    { href: base,                   label: 'Übersicht',     exact: true  },
+    { href: `${base}/expenses`,     label: 'Ausgaben',      exact: false },
+    { href: `${base}/packlist`,     label: 'Packliste',     exact: false },
+    { href: `${base}/stats`,        label: 'Statistiken',   exact: false },
+    { href: `${base}/participants`, label: 'Einstellungen', exact: false, dot: isEnded },
   ]
 
   return (
