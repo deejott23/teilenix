@@ -1,0 +1,1418 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TeileniX – Deployment-Konzept für Gruppentest</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=DM+Mono:wght@400;500&display=swap');
+
+:root {
+  --bg:        #080b12;
+  --surface:   #0f1420;
+  --surface2:  #161d2e;
+  --border:    rgba(255,255,255,0.07);
+  --border2:   rgba(255,255,255,0.12);
+  --text:      #e8ecf5;
+  --muted:     #6b7a99;
+  --gold:      #f0a500;
+  --gold-dim:  rgba(240,165,0,0.12);
+  --green:     #22c55e;
+  --green-dim: rgba(34,197,94,0.10);
+  --blue:      #60a5fa;
+  --blue-dim:  rgba(96,165,250,0.10);
+  --red:       #f87171;
+  --red-dim:   rgba(248,113,113,0.10);
+  --amber:     #fb923c;
+  --r:         12px;
+  --r-sm:      8px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── NOISE OVERLAY ─────────────────────────────────────── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.4;
+}
+
+/* ─── SCROLLBAR ─────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 2px; }
+
+/* ─── NAV ────────────────────────────────────────────────── */
+nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(8,11,18,0.88);
+  backdrop-filter: blur(20px) saturate(1.4);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  height: 52px;
+  overflow-x: auto;
+}
+
+nav a {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  text-decoration: none;
+  text-transform: uppercase;
+  padding: 0 1rem;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  transition: color .2s, border-color .2s;
+}
+nav a:hover { color: var(--text); border-color: var(--gold); }
+nav .nav-brand {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--gold);
+  margin-right: 1rem;
+  border: none;
+  letter-spacing: 0;
+}
+
+/* ─── HERO ───────────────────────────────────────────────── */
+.hero {
+  position: relative;
+  padding: 5rem 2rem 4rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+.hero-bg {
+  position: absolute;
+  top: -60px; right: -80px;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle at center, rgba(240,165,0,0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.hero-eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+.hero-eyebrow::before {
+  content: '';
+  width: 24px; height: 1px;
+  background: var(--gold);
+}
+
+h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(2.4rem, 5vw, 3.8rem);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin-bottom: 1.25rem;
+  background: linear-gradient(135deg, #fff 30%, #8899bb 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-sub {
+  font-size: 17px;
+  font-weight: 300;
+  color: var(--muted);
+  max-width: 580px;
+  line-height: 1.7;
+  margin-bottom: 2.5rem;
+}
+
+.hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+}
+
+/* ─── BADGES ─────────────────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  padding: .3rem .7rem;
+  border-radius: 4px;
+  border: 1px solid;
+}
+.badge-gold { background: var(--gold-dim); border-color: rgba(240,165,0,0.3); color: var(--gold); }
+.badge-green { background: var(--green-dim); border-color: rgba(34,197,94,0.3); color: var(--green); }
+.badge-blue { background: var(--blue-dim); border-color: rgba(96,165,250,0.3); color: var(--blue); }
+.badge-red { background: var(--red-dim); border-color: rgba(248,113,113,0.3); color: var(--red); }
+.badge-muted { background: rgba(255,255,255,0.04); border-color: var(--border2); color: var(--muted); }
+
+/* ─── SECTIONS ───────────────────────────────────────────── */
+section {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 4rem 2rem;
+  border-top: 1px solid var(--border);
+}
+
+.section-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: .6rem;
+}
+
+h2 {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin-bottom: .75rem;
+}
+
+h3 {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: .5rem;
+}
+
+p { color: #a0aec5; line-height: 1.75; margin-bottom: .75rem; }
+p:last-child { margin-bottom: 0; }
+
+/* ─── CONTEXT CARDS ──────────────────────────────────────── */
+.context-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--gold), transparent);
+}
+
+.stat-num {
+  font-family: 'Syne', sans-serif;
+  font-size: 2.5rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--gold);
+  margin-bottom: .3rem;
+}
+.stat-label { font-size: 13px; color: var(--muted); }
+
+/* ─── VARIANT CARDS ──────────────────────────────────────── */
+.variants-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.25rem;
+  margin-top: 2.5rem;
+}
+
+.variant-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 1.75rem;
+  position: relative;
+  transition: border-color .25s, transform .25s;
+  cursor: default;
+}
+.variant-card:hover {
+  border-color: var(--border2);
+  transform: translateY(-2px);
+}
+.variant-card.recommended {
+  border-color: rgba(240,165,0,0.35);
+  background: linear-gradient(135deg, var(--surface) 0%, rgba(240,165,0,0.04) 100%);
+}
+.variant-card.recommended::after {
+  content: 'EMPFOHLEN';
+  position: absolute;
+  top: 1rem; right: 1rem;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  background: var(--gold);
+  color: #000;
+  padding: .2rem .5rem;
+  border-radius: 3px;
+  font-weight: 500;
+}
+
+.variant-letter {
+  font-family: 'Syne', sans-serif;
+  font-size: 3rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--surface2);
+  position: absolute;
+  top: 1rem; right: 1.5rem;
+  user-select: none;
+}
+.variant-card.recommended .variant-letter { color: rgba(240,165,0,0.08); }
+
+.variant-tag {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: .5rem;
+}
+
+.variant-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: .35rem;
+  color: var(--text);
+}
+
+.variant-desc { font-size: 13px; color: var(--muted); margin-bottom: 1.25rem; line-height: 1.6; }
+
+.metric-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: .4rem 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.metric-row:last-child { border-bottom: none; }
+.metric-key { color: var(--muted); }
+.metric-val { font-weight: 500; }
+
+.stars {
+  display: inline-flex;
+  gap: 2px;
+  font-size: 11px;
+}
+.star-on { color: var(--gold); }
+.star-off { color: rgba(255,255,255,0.12); }
+
+/* ─── COMPARISON TABLE ───────────────────────────────────── */
+.table-wrap {
+  overflow-x: auto;
+  margin-top: 2rem;
+  border-radius: var(--r);
+  border: 1px solid var(--border);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 680px;
+}
+
+th {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 1rem 1.25rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border2);
+  background: var(--surface);
+  white-space: nowrap;
+}
+th:first-child { color: var(--text); width: 200px; }
+
+td {
+  padding: .9rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 13.5px;
+  vertical-align: middle;
+}
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(255,255,255,0.015); }
+
+td:first-child {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  color: var(--text);
+  font-size: 13px;
+}
+
+.col-rec {
+  background: rgba(240,165,0,0.04) !important;
+}
+th.col-rec { color: var(--gold) !important; }
+
+/* ─── DETAIL SECTIONS ────────────────────────────────────── */
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin-top: 1.75rem;
+}
+@media (max-width: 680px) {
+  .detail-grid { grid-template-columns: 1fr; }
+}
+
+.detail-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 1.5rem;
+}
+
+.detail-card h4 {
+  font-family: 'Syne', sans-serif;
+  font-size: .9rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+
+ul.pro-con {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+}
+ul.pro-con li {
+  font-size: 13px;
+  color: #8a9bb8;
+  display: flex;
+  align-items: flex-start;
+  gap: .5rem;
+  line-height: 1.5;
+}
+ul.pro-con li::before {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 700;
+  margin-top: 1px;
+}
+ul.pro-con.pros li::before { content: '+'; background: var(--green-dim); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+ul.pro-con.cons li::before { content: '−'; background: var(--red-dim); color: var(--red); border: 1px solid rgba(248,113,113,0.3); }
+
+/* ─── TECH DEEP DIVES ────────────────────────────────────── */
+.tech-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.25rem;
+  margin-top: 2rem;
+}
+
+.tech-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 1.75rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.tech-card::before {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  opacity: 0;
+  transition: opacity .3s;
+}
+.tech-card:hover::before { opacity: 1; }
+
+.tech-icon {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.tech-card h3 { margin-bottom: .5rem; }
+
+.code-block {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 1rem 1.25rem;
+  margin-top: 1rem;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: #7dd3fc;
+  line-height: 1.7;
+  overflow-x: auto;
+}
+.code-block .comment { color: var(--muted); }
+.code-block .keyword { color: #c084fc; }
+.code-block .string { color: #86efac; }
+
+/* ─── ROADMAP ────────────────────────────────────────────── */
+.roadmap {
+  margin-top: 2rem;
+  position: relative;
+}
+
+.roadmap::before {
+  content: '';
+  position: absolute;
+  left: 20px;
+  top: 0; bottom: 0;
+  width: 1px;
+  background: linear-gradient(to bottom, var(--gold), rgba(240,165,0,0.1));
+}
+
+.roadmap-step {
+  display: flex;
+  gap: 1.5rem;
+  padding-bottom: 2.5rem;
+  position: relative;
+}
+.roadmap-step:last-child { padding-bottom: 0; }
+
+.step-dot {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 2px solid var(--gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--gold);
+  position: relative;
+  z-index: 1;
+}
+
+.step-content {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 1.25rem 1.5rem;
+  flex: 1;
+}
+
+.step-content h4 {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: .95rem;
+  margin-bottom: .35rem;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+}
+
+.step-content p { font-size: 13px; margin-bottom: 0; }
+
+/* ─── RECOMMENDATION BOX ─────────────────────────────────── */
+.rec-box {
+  background: linear-gradient(135deg, rgba(240,165,0,0.08) 0%, rgba(240,165,0,0.03) 100%);
+  border: 1px solid rgba(240,165,0,0.3);
+  border-radius: var(--r);
+  padding: 2.5rem;
+  margin-top: 2.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.rec-box::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--gold), var(--amber));
+}
+
+.rec-box h3 {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--gold);
+  margin-bottom: .5rem;
+}
+
+.rec-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin: 1rem 0;
+}
+
+/* ─── DECISION MATRIX ────────────────────────────────────── */
+.matrix-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border-radius: var(--r);
+  overflow: hidden;
+  margin-top: 2rem;
+}
+@media (max-width: 600px) { .matrix-grid { grid-template-columns: 1fr; } }
+
+.matrix-cell {
+  background: var(--surface);
+  padding: 1.5rem;
+}
+.matrix-cell h4 {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: .75rem;
+}
+.matrix-cell p { font-size: 13px; margin-bottom: 0; }
+.matrix-highlight { background: rgba(240,165,0,0.04) !important; }
+.matrix-highlight h4 { color: var(--gold) !important; }
+
+/* ─── FOOTER ─────────────────────────────────────────────── */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 2rem;
+  text-align: center;
+  color: var(--muted);
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+}
+
+/* ─── ANIMATIONS ─────────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.hero > * {
+  animation: fadeUp .6s ease both;
+}
+.hero-eyebrow { animation-delay: .05s; }
+h1 { animation-delay: .15s; }
+.hero-sub { animation-delay: .25s; }
+.hero-meta { animation-delay: .35s; }
+
+.variant-card, .tech-card, .stat-card {
+  animation: fadeUp .5s ease both;
+}
+
+/* ─── DIVIDER ────────────────────────────────────────────── */
+.divider {
+  border: none;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border2), transparent);
+  margin: 2rem 0;
+}
+
+/* ─── EFFORT PILL ────────────────────────────────────────── */
+.effort {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  font-size: 12px;
+  font-family: 'DM Mono', monospace;
+  padding: .2rem .6rem;
+  border-radius: 4px;
+}
+.effort-low    { background: var(--green-dim); color: var(--green); border: 1px solid rgba(34,197,94,0.2); }
+.effort-medium { background: rgba(251,146,60,0.1); color: var(--amber); border: 1px solid rgba(251,146,60,0.2); }
+.effort-high   { background: var(--red-dim); color: var(--red); border: 1px solid rgba(248,113,113,0.2); }
+
+/* ─── CHECK LIST ─────────────────────────────────────────── */
+ul.checklist { list-style: none; display: flex; flex-direction: column; gap: .4rem; margin-top: .75rem; }
+ul.checklist li { font-size: 13px; color: #8a9bb8; display: flex; align-items: flex-start; gap: .5rem; line-height: 1.5; }
+ul.checklist li::before { content: '✓'; color: var(--green); flex-shrink: 0; font-weight: 700; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-brand">TeileniX</a>
+  <a href="#kontext">Kontext</a>
+  <a href="#varianten">Varianten</a>
+  <a href="#vergleich">Vergleich</a>
+  <a href="#details">Details</a>
+  <a href="#technologien">Technologien</a>
+  <a href="#empfehlung">Empfehlung</a>
+  <a href="#roadmap">Roadmap</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-eyebrow">Technisches Konzept — April 2026</div>
+  <h1>Deployment-Strategie<br>für den Gruppentest</h1>
+  <p class="hero-sub">
+    Analyse der technischen Möglichkeiten für eine performante, native-ähnliche App-Erfahrung mit 16 Personen auf iOS und Android — von PWA-Optimierung bis nativer App.
+  </p>
+  <div class="hero-meta">
+    <span class="badge badge-gold">16 Personen</span>
+    <span class="badge badge-muted">4 Familien</span>
+    <span class="badge badge-muted">iOS + Android</span>
+    <span class="badge badge-blue">Next.js + Supabase</span>
+    <span class="badge badge-green">4 Varianten</span>
+  </div>
+</div>
+
+<!-- KONTEXT -->
+<section id="kontext">
+  <div class="section-label">Ausgangslage</div>
+  <h2>Der Testkontext</h2>
+  <p>TeileniX ist eine mobile-first Reisekostenapp (Next.js App Router, Supabase, TypeScript, Tailwind). Ziel ist ein realer Gruppentest unter Alltagsbedingungen — spontane Eingaben, schlechtes Netz, gemischte Geräte.</p>
+
+  <div class="context-grid">
+    <div class="stat-card">
+      <div class="stat-num">16</div>
+      <div class="stat-label">Aktive Nutzer gleichzeitig</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">4</div>
+      <div class="stat-label">Familien / Gruppen</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">2</div>
+      <div class="stat-label">Plattformen: iOS & Android</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">∞</div>
+      <div class="stat-label">Echtzeit-Updates nötig</div>
+    </div>
+  </div>
+
+  <div class="detail-grid" style="margin-top:2rem;">
+    <div class="detail-card">
+      <h4>Anforderungen</h4>
+      <ul class="checklist">
+        <li>Komfort wie eine native App (smooth, snappy)</li>
+        <li>Funktioniert auch bei schlechtem Mobilfunk</li>
+        <li>Kein App-Store-Download nötig (für schnellen Test-Start)</li>
+        <li>Echtzeit-Synchronisation zwischen allen 16 Personen</li>
+        <li>Kein separates Backend — Supabase bleibt bestehen</li>
+        <li>Minimaler Entwicklungsaufwand vor dem Gruppentest</li>
+      </ul>
+    </div>
+    <div class="detail-card">
+      <h4>Herausforderungen</h4>
+      <ul class="pro-con cons">
+        <li>iOS Safari beschränkt PWA-Features (Push, Hintergrundprozesse)</li>
+        <li>16 Supabase Realtime-Verbindungen gleichzeitig</li>
+        <li>Netzausfall beim Hinzufügen von Ausgaben im Urlaub</li>
+        <li>Unterschiedliche Gerätegeschwindigkeiten in der Gruppe</li>
+        <li>Onboarding ohne Tech-Kenntnisse (Großeltern, Kinder)</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- VARIANTEN OVERVIEW -->
+<section id="varianten">
+  <div class="section-label">Technische Optionen</div>
+  <h2>Die vier Varianten im Überblick</h2>
+  <p>Von der kurzfristig umsetzbaren PWA-Optimierung bis zur vollständigen nativen Neuentwicklung — mit klaren Abwägungen zu Aufwand, Performance und Nutzererlebnis.</p>
+
+  <div class="variants-grid">
+    <!-- A -->
+    <div class="variant-card recommended">
+      <div class="variant-letter">A</div>
+      <div class="variant-tag">Variante A · Kurzfristig</div>
+      <div class="variant-title">Optimiertes PWA</div>
+      <p class="variant-desc">Service Worker, Web App Manifest, Offline-Cache und Install-Prompt. Die bestehende Next.js App wird zur installierbaren Web-App.</p>
+      <hr class="divider">
+      <div class="metric-row">
+        <span class="metric-key">Aufwand</span>
+        <span class="metric-val"><span class="effort effort-low">Niedrig</span></span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">Performance</span>
+        <span class="stars"><span class="star-on">★</span><span class="star-on">★</span><span class="star-on">★</span><span class="star-on">★</span><span class="star-off">★</span></span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">Native-Feel</span>
+        <span class="stars"><span class="star-on">★</span><span class="star-on">★</span><span class="star-on">★</span><span class="star-off">★</span><span class="star-off">★</span></span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">Entwicklung</span>
+        <span class="metric-val" style="color:var(--green)">8–20h</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">App Store</span>
+        <span class="metric-val" style="color:var(--muted)">Nein</span>
+      </div>
+    </div>
+
+    <!-- B -->
+    <div class="variant-card">
+      <div class="variant-letter">B</div>
+      <div class="variant-tag">Variante B · Mittelfristig</div>
+      <div class="variant-title">Capacitor-Wrapper</div>
+      <p class="variant-desc">Die bestehende Web-App wird in einen nativen Shell verpackt (Capacitor.js). Zugang zu nativen APIs, App Store Distribution möglich.</p>
+      <hr class="divider">
+      <div class="metric-row">
+        <span class="metric-key">Aufwand</span>
+        <span class="metric-val"><span class="effort effort-medium">Mittel</span></span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">Performance</span>
+        <span class="stars"><span class="star-on">★</span><span class="star-on">★</span><span class="star-on">★</span><span class="star-on">★</span><span class="star-off">★</span></span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">Native-Feel</span>
+        <span class="stars"><span class="star-on">★</span><span class="star-on">★</span><span class="star-on">★</span><span class="star-on">★</span><span class="star-off">★</span></span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">Entwicklung</span>
+        <span class="metric-val" style="color:var(--amber)">40–80h</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">App Store</span>
+        <span class="metric-val" style="color:var(--green)">iOS + Android</span>
+      </div>
+    </div>
+
+    <!-- C -->
+    <div class="variant-card">
+      <div class="variant-letter">C</div>
+      <div class="variant-tag">Variante C · Langfristig</div>
+      <div class="variant-title">Expo / React Native</div>
+      <p class="variant-desc">Vollständige Neuentwicklung als echte native App. Maximale Performance und Plattform-Integration — aber deutlich höherer Aufwand.</p>
+      <hr class="divider">
+      <div class="metric-row">
+        <span class="metric-key">Aufwand</span>
+        <span class="metric-val"><span class="effort effort-high">Hoch</span></span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">Performance</span>
+        <span class="stars"><span class="star-on">★</span><span class="star-on">★</span><span class="star-on">★</span><span class="star-on">★</span><span class="star-on">★</span></span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">Native-Feel</span>
+        <span class="stars"><span class="star-on">★</span><span class="star-on">★</span><span class="star-on">★</span><span class="star-on">★</span><span class="star-on">★</span></span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">Entwicklung</span>
+        <span class="metric-val" style="color:var(--red)">200–400h</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">App Store</span>
+        <span class="metric-val" style="color:var(--green)">iOS + Android</span>
+      </div>
+    </div>
+
+    <!-- D -->
+    <div class="variant-card recommended">
+      <div class="variant-letter">D</div>
+      <div class="variant-tag">Variante D · Kurzfristig</div>
+      <div class="variant-title">Vercel Edge + PWA</div>
+      <p class="variant-desc">Vercel Edge Network mit globalem CDN, aggressivem Caching, Supabase Realtime für Live-Sync und Optimistic UI für sofortige Reaktion.</p>
+      <hr class="divider">
+      <div class="metric-row">
+        <span class="metric-key">Aufwand</span>
+        <span class="metric-val"><span class="effort effort-low">Niedrig</span></span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">Performance</span>
+        <span class="stars"><span class="star-on">★</span><span class="star-on">★</span><span class="star-on">★</span><span class="star-on">★</span><span class="star-on">★</span></span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">Native-Feel</span>
+        <span class="stars"><span class="star-on">★</span><span class="star-on">★</span><span class="star-on">★</span><span class="star-on">★</span><span class="star-off">★</span></span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">Entwicklung</span>
+        <span class="metric-val" style="color:var(--green)">10–20h</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">App Store</span>
+        <span class="metric-val" style="color:var(--muted)">Nein</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- VERGLEICH -->
+<section id="vergleich">
+  <div class="section-label">Gegenüberstellung</div>
+  <h2>Detaillierter Vergleich</h2>
+  <p>Alle vier Varianten auf einen Blick — von technischen Metriken bis hin zur Deploymentkomplexität.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Kriterium</th>
+          <th class="col-rec">A · PWA-Opt.</th>
+          <th>B · Capacitor</th>
+          <th>C · Expo RN</th>
+          <th class="col-rec">D · Vercel Edge</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Entwicklungsaufwand</td>
+          <td class="col-rec"><span class="effort effort-low">8–20h</span></td>
+          <td><span class="effort effort-medium">40–80h</span></td>
+          <td><span class="effort effort-high">200–400h</span></td>
+          <td class="col-rec"><span class="effort effort-low">10–20h</span></td>
+        </tr>
+        <tr>
+          <td>Ladezeit (TTFB)</td>
+          <td class="col-rec">~200ms</td>
+          <td>~150ms (cached)</td>
+          <td>~100ms</td>
+          <td class="col-rec"><strong style="color:var(--green)">~50ms</strong></td>
+        </tr>
+        <tr>
+          <td>Offline-Fähigkeit</td>
+          <td class="col-rec">Basis-Cache</td>
+          <td>Vollständig</td>
+          <td>Vollständig</td>
+          <td class="col-rec">Optimistic UI</td>
+        </tr>
+        <tr>
+          <td>iOS Safari Support</td>
+          <td class="col-rec"><span class="badge badge-muted">Eingeschränkt</span></td>
+          <td><span class="badge badge-green">Voll</span></td>
+          <td><span class="badge badge-green">Voll</span></td>
+          <td class="col-rec"><span class="badge badge-muted">Eingeschränkt</span></td>
+        </tr>
+        <tr>
+          <td>Auf Homescreen installierbar</td>
+          <td class="col-rec">Ja (manuell)</td>
+          <td>Ja (App Store)</td>
+          <td>Ja (App Store)</td>
+          <td class="col-rec">Ja (manuell)</td>
+        </tr>
+        <tr>
+          <td>Push Notifications</td>
+          <td class="col-rec">iOS 16.4+</td>
+          <td>Voll (FCM/APNs)</td>
+          <td>Voll (Expo Push)</td>
+          <td class="col-rec">iOS 16.4+</td>
+        </tr>
+        <tr>
+          <td>Realtime-Sync (16 User)</td>
+          <td class="col-rec">Supabase WS</td>
+          <td>Supabase WS</td>
+          <td>Supabase WS</td>
+          <td class="col-rec"><strong style="color:var(--green)">Optimiert</strong></td>
+        </tr>
+        <tr>
+          <td>Deployment-Komplexität</td>
+          <td class="col-rec"><span class="badge badge-green">Niedrig</span></td>
+          <td><span class="badge badge-muted">Mittel</span></td>
+          <td><span class="badge badge-red">Hoch</span></td>
+          <td class="col-rec"><span class="badge badge-green">Niedrig</span></td>
+        </tr>
+        <tr>
+          <td>Bestehender Code nutzbar</td>
+          <td class="col-rec" style="color:var(--green)">100%</td>
+          <td style="color:var(--green)">95%</td>
+          <td style="color:var(--red)">~10%</td>
+          <td class="col-rec" style="color:var(--green)">100%</td>
+        </tr>
+        <tr>
+          <td>App Store Verteilung</td>
+          <td class="col-rec" style="color:var(--muted)">Nein</td>
+          <td style="color:var(--green)">iOS + Android</td>
+          <td style="color:var(--green)">iOS + Android</td>
+          <td class="col-rec" style="color:var(--muted)">Nein</td>
+        </tr>
+        <tr>
+          <td>Zeit bis Gruppentest</td>
+          <td class="col-rec"><strong style="color:var(--green)">2–3 Tage</strong></td>
+          <td>2–3 Wochen</td>
+          <td>3–6 Monate</td>
+          <td class="col-rec"><strong style="color:var(--green)">1–2 Tage</strong></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- DETAILS -->
+<section id="details">
+  <div class="section-label">Detailanalyse</div>
+  <h2>Jede Variante im Detail</h2>
+
+  <!-- A -->
+  <div style="margin-bottom: 3rem;">
+    <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1rem;">
+      <h3 style="font-size:1.25rem;">Variante A — Optimiertes PWA</h3>
+      <span class="badge badge-gold">Empfohlen für Gruppentest</span>
+      <span class="effort effort-low">8–20h</span>
+    </div>
+    <p>Die bestehende Next.js App erhält ein vollständiges Web App Manifest, einen Service Worker (z.B. via <code style="font-family:DM Mono,monospace;font-size:12px;color:var(--blue)">next-pwa</code> oder <code style="font-family:DM Mono,monospace;font-size:12px;color:var(--blue)">Workbox</code>) und einen Install-Banner. Nutzer können die App auf dem Homescreen installieren — sie startet vollbild ohne Browser-Chrome.</p>
+
+    <div class="detail-grid">
+      <div class="detail-card">
+        <h4 style="color:var(--green)">✦ Vorteile</h4>
+        <ul class="pro-con pros">
+          <li>Keine Codebase-Änderung nötig — reines Konfiguration</li>
+          <li>Homescreen-Icon auf iOS und Android</li>
+          <li>Vollbild-Modus ohne Browser-Leiste</li>
+          <li>Offline-Cache für bereits geladene Seiten</li>
+          <li>Sofort testbereit — Link teilen, fertig</li>
+          <li>Kein App Store Review-Prozess</li>
+        </ul>
+      </div>
+      <div class="detail-card">
+        <h4 style="color:var(--red)">✦ Einschränkungen</h4>
+        <ul class="pro-con cons">
+          <li>iOS: Push Notifications nur ab iOS 16.4 (und nur wenn installiert)</li>
+          <li>iOS: Kein Background Sync, kein Vibrations-API</li>
+          <li>Kein echter Offline-First (nur Cache-First für Assets)</li>
+          <li>Installation muss manuell erklärt werden (Add to Homescreen)</li>
+          <li>Safari PWA-Support bleibt hinter Chrome/Android zurück</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="code-block" style="margin-top:1.25rem;">
+<span class="comment">// next.config.js — PWA mit next-pwa aktivieren</span>
+<span class="keyword">const</span> withPWA = <span class="keyword">require</span>(<span class="string">'next-pwa'</span>)({
+  dest: <span class="string">'public'</span>,
+  register: <span class="keyword">true</span>,
+  skipWaiting: <span class="keyword">true</span>,
+  runtimeCaching: workboxCaching,  <span class="comment">// Cache-Strategie</span>
+  buildExcludes: [/middleware-manifest\.json$/],
+});
+    </div>
+  </div>
+
+  <!-- B -->
+  <div style="margin-bottom: 3rem;">
+    <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1rem; flex-wrap:wrap;">
+      <h3 style="font-size:1.25rem;">Variante B — Capacitor-Wrapper</h3>
+      <span class="badge badge-blue">Upgrade-Pfad</span>
+      <span class="effort effort-medium">40–80h</span>
+    </div>
+    <p>Capacitor.js (von Ionic) verpackt die bestehende Web-App in einen nativen iOS/Android Container. Die App wird im App Store vertrieben, hat Zugang zu nativen APIs (Kamera, Haptik, Push via APNs/FCM) und fühlt sich echter an.</p>
+
+    <div class="detail-grid">
+      <div class="detail-card">
+        <h4 style="color:var(--green)">✦ Vorteile</h4>
+        <ul class="pro-con pros">
+          <li>95% des bestehenden Next.js-Codes bleibt unverändert</li>
+          <li>Echter App Store Vertrieb (professioneller Eindruck)</li>
+          <li>Voller Zugang zu nativen iOS/Android APIs</li>
+          <li>Haptisches Feedback, Push Notifications, Camera</li>
+          <li>Kein Browser-Chrome — echte native Shell</li>
+          <li>Capacitor hat exzellente Next.js-Kompatibilität</li>
+        </ul>
+      </div>
+      <div class="detail-card">
+        <h4 style="color:var(--red)">✦ Einschränkungen</h4>
+        <ul class="pro-con cons">
+          <li>Xcode + Android Studio Setup nötig (macOS für iOS)</li>
+          <li>Apple Developer Account: 99$/Jahr</li>
+          <li>App Store Review: 1–3 Tage für initiale Einreichung</li>
+          <li>Next.js SSR muss auf Static Export umgestellt werden</li>
+          <li>Supabase Auth-Flow muss für native Deeplinks angepasst werden</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- C -->
+  <div style="margin-bottom: 3rem;">
+    <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1rem; flex-wrap:wrap;">
+      <h3 style="font-size:1.25rem;">Variante C — Expo / React Native</h3>
+      <span class="badge badge-muted">Langfristige Option</span>
+      <span class="effort effort-high">200–400h</span>
+    </div>
+    <p>Eine vollständige Neuentwicklung als echte React Native App mit Expo. Maximale native Performance, perfekte Plattform-Integration — aber komplette Neuentwicklung aller UI-Komponenten.</p>
+
+    <div class="detail-grid">
+      <div class="detail-card">
+        <h4 style="color:var(--green)">✦ Vorteile</h4>
+        <ul class="pro-con pros">
+          <li>Echte native Performance — keine Web-Layer</li>
+          <li>Native Gesten, Animationen, Scrolling</li>
+          <li>Volle Plattform-Integration auf beiden OS</li>
+          <li>Expo EAS Build vereinfacht Deployment massiv</li>
+          <li>Supabase JS SDK funktioniert identisch in RN</li>
+        </ul>
+      </div>
+      <div class="detail-card">
+        <h4 style="color:var(--red)">✦ Einschränkungen</h4>
+        <ul class="pro-con cons">
+          <li>Komplette Neuentwicklung — kein Tailwind, keine Web-Komponenten</li>
+          <li>Sehr hoher Zeitaufwand vor dem Gruppentest</li>
+          <li>Separate Codebasis zu pflegen (Web + Native)</li>
+          <li>React Native-Spezifische Debugging-Komplexität</li>
+          <li>Für einen ersten Gruppentest deutlich überdimensioniert</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- D -->
+  <div>
+    <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1rem; flex-wrap:wrap;">
+      <h3 style="font-size:1.25rem;">Variante D — Vercel Edge + PWA Optimierung</h3>
+      <span class="badge badge-gold">Empfohlen für Gruppentest</span>
+      <span class="effort effort-low">10–20h</span>
+    </div>
+    <p>Die App wird auf Vercel deployed (oder bleibt dort) mit aktiviertem Edge Network. Supabase Realtime wird für Live-Synchronisation aller 16 Nutzer eingerichtet. Optimistic UI sorgt dafür, dass Aktionen sofort reagieren — auch bei 200ms Netzlatenz.</p>
+
+    <div class="detail-grid">
+      <div class="detail-card">
+        <h4 style="color:var(--green)">✦ Vorteile</h4>
+        <ul class="pro-con pros">
+          <li>TTFB unter 50ms durch Edge-nahe Auslieferung</li>
+          <li>Optimistic UI: UI reagiert sofort, Sync im Hintergrund</li>
+          <li>Supabase Realtime: Änderungen aller 16 User sofort sichtbar</li>
+          <li>Zero Deployment-Aufwand (Vercel CI/CD already works)</li>
+          <li>Kein App Store nötig — URL teilen reicht für Test</li>
+          <li>Verbessert die "native-feel" deutlich ohne nativen Code</li>
+        </ul>
+      </div>
+      <div class="detail-card">
+        <h4 style="color:var(--red)">✦ Einschränkungen</h4>
+        <ul class="pro-con cons">
+          <li>Gleiche iOS Safari PWA-Limitierungen wie Variante A</li>
+          <li>Optimistic UI benötigt sorgfältige Fehlerbehandlung (Rollback)</li>
+          <li>Supabase Free Tier: max. 200 gleichzeitige Realtime-Verbindungen (reicht)</li>
+          <li>Edge-Caching muss mit Supabase RLS-Auth koordiniert werden</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TECHNOLOGIEN -->
+<section id="technologien">
+  <div class="section-label">Querschnitts-Technologien</div>
+  <h2>Schlüsseltechnologien für alle Varianten</h2>
+  <p>Diese drei Konzepte sind unabhängig von der gewählten Variante und machen den größten Unterschied für das Nutzererlebnis der Reisegruppe.</p>
+
+  <div class="tech-grid">
+    <!-- Realtime -->
+    <div class="tech-card">
+      <span class="tech-icon">⚡</span>
+      <h3>Supabase Realtime</h3>
+      <p style="font-size:13px;">Alle 16 Personen sehen Ausgaben und Packlisten-Updates sofort — ohne manuelle Aktualisierung. WebSocket-basiert, direkt in Supabase integriert.</p>
+      <div class="code-block">
+<span class="comment">// Echtzeit-Subscription für Ausgaben</span>
+<span class="keyword">const</span> channel = supabase
+  .channel(<span class="string">'expenses'</span>)
+  .on(<span class="string">'postgres_changes'</span>, {
+    event: <span class="string">'*'</span>,
+    schema: <span class="string">'public'</span>,
+    table: <span class="string">'expenses'</span>,
+    filter: <span class="string">`trip_id=eq.${tripId}`</span>
+  }, handleUpdate)
+  .subscribe();
+      </div>
+      <div style="margin-top:1rem; display:flex; gap:.5rem; flex-wrap:wrap;">
+        <span class="badge badge-green">16 User problemlos</span>
+        <span class="badge badge-blue">WebSocket</span>
+      </div>
+    </div>
+
+    <!-- Optimistic UI -->
+    <div class="tech-card">
+      <span class="tech-icon">🚀</span>
+      <h3>Optimistic UI Updates</h3>
+      <p style="font-size:13px;">UI reagiert sofort auf Aktionen — der Netzwerk-Request läuft im Hintergrund. Bei Fehler wird automatisch zurückgerollt. Macht die App blitzschnell.</p>
+      <div class="code-block">
+<span class="comment">// Ausgabe sofort anzeigen, dann speichern</span>
+<span class="keyword">function</span> addExpense(data) {
+  <span class="comment">// 1. Sofort in UI einfügen</span>
+  setExpenses(prev => [optimisticItem, ...prev]);
+
+  <span class="comment">// 2. Im Hintergrund speichern</span>
+  saveToSupabase(data).catch(() => {
+    <span class="comment">// 3. Rollback bei Fehler</span>
+    setExpenses(prev => prev.filter(e => e.id !== tempId));
+    toast.error(<span class="string">'Nicht gespeichert'</span>);
+  });
+}
+      </div>
+      <div style="margin-top:1rem; display:flex; gap:.5rem; flex-wrap:wrap;">
+        <span class="badge badge-gold">Gefühl = nativ</span>
+        <span class="badge badge-blue">Next.js useOptimistic</span>
+      </div>
+    </div>
+
+    <!-- Offline First -->
+    <div class="tech-card">
+      <span class="tech-icon">📡</span>
+      <h3>Offline-First Strategien</h3>
+      <p style="font-size:13px;">Im Urlaub ist das Netz oft schlecht. Mit einer Offline-Queue werden Eingaben lokal gespeichert und bei Netzwiederkehr automatisch synchronisiert.</p>
+      <div class="code-block">
+<span class="comment">// Offline-Queue mit IndexedDB</span>
+<span class="keyword">async function</span> queueOfflineAction(action) {
+  <span class="keyword">const</span> queue = <span class="keyword">await</span> getOfflineQueue();
+  queue.push({ ...action, timestamp: Date.now() });
+  <span class="keyword">await</span> saveQueue(queue);
+}
+
+<span class="comment">// Beim Netzwiederkehr abspielen</span>
+window.addEventListener(<span class="string">'online'</span>, syncQueue);
+      </div>
+      <div style="margin-top:1rem; display:flex; gap:.5rem; flex-wrap:wrap;">
+        <span class="badge badge-muted">IndexedDB</span>
+        <span class="badge badge-muted">Service Worker</span>
+        <span class="badge badge-green">Urlaubs-tauglich</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- iOS Install Anleitung -->
+  <div class="detail-card" style="margin-top:1.5rem; background: var(--surface2);">
+    <h4 style="font-size:1rem; margin-bottom:.75rem;">📱 iOS "Add to Homescreen" — Onboarding für die Gruppe</h4>
+    <p style="font-size:13px; margin-bottom:1rem;">iOS erfordert einen manuellen Schritt zum Installieren von PWAs. Mit einer eingebetteten Anleitung beim ersten Besuch wird das für alle Familien verständlich:</p>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px,1fr)); gap:.75rem;">
+      <div style="background:var(--bg); border:1px solid var(--border); border-radius:var(--r-sm); padding:1rem; text-align:center;">
+        <div style="font-size:1.5rem; margin-bottom:.5rem;">1️⃣</div>
+        <div style="font-size:12px; color:var(--muted);">Safari öffnen und URL aufrufen</div>
+      </div>
+      <div style="background:var(--bg); border:1px solid var(--border); border-radius:var(--r-sm); padding:1rem; text-align:center;">
+        <div style="font-size:1.5rem; margin-bottom:.5rem;">2️⃣</div>
+        <div style="font-size:12px; color:var(--muted);">Teilen-Symbol antippen (□↑)</div>
+      </div>
+      <div style="background:var(--bg); border:1px solid var(--border); border-radius:var(--r-sm); padding:1rem; text-align:center;">
+        <div style="font-size:1.5rem; margin-bottom:.5rem;">3️⃣</div>
+        <div style="font-size:12px; color:var(--muted);">"Zum Home-Bildschirm" wählen</div>
+      </div>
+      <div style="background:var(--bg); border:1px solid var(--border); border-radius:var(--r-sm); padding:1rem; text-align:center;">
+        <div style="font-size:1.5rem; margin-bottom:.5rem;">4️⃣</div>
+        <div style="font-size:12px; color:var(--muted);">App-Icon erscheint — fertig!</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EMPFEHLUNG -->
+<section id="empfehlung">
+  <div class="section-label">Empfehlung</div>
+  <h2>Die optimale Strategie</h2>
+
+  <div class="rec-box">
+    <h3>Variante A + D kombinieren</h3>
+    <p style="color:#c8d5e8; font-size:15px; margin-bottom:1rem;">
+      Für den Gruppentest in der nächsten Zeit ist die Kombination aus <strong>PWA-Optimierung (A)</strong> und <strong>Vercel Edge + Supabase Realtime (D)</strong> die klar beste Wahl. Geringer Aufwand, maximale Wirkung, keine neue Infrastruktur.
+    </p>
+    <div class="rec-tags">
+      <span class="badge badge-gold">Bereit in 2–3 Tagen</span>
+      <span class="badge badge-green">~20–30h Entwicklung</span>
+      <span class="badge badge-blue">100% bestehender Code</span>
+      <span class="badge badge-muted">Kein App Store nötig</span>
+    </div>
+    <hr class="divider">
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem;">
+      <div>
+        <h4 style="font-family:DM Mono,monospace; font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--gold); margin-bottom:.75rem;">Was konkret gebaut wird</h4>
+        <ul class="checklist">
+          <li>Web App Manifest mit Icon (alle Größen) + Splashscreen</li>
+          <li>Service Worker für Asset-Caching (next-pwa)</li>
+          <li>Install-Banner mit iOS-Anleitung in der App</li>
+          <li>Supabase Realtime auf Ausgaben + Packliste</li>
+          <li>Optimistic UI für Ausgabe-Hinzufügen</li>
+          <li>Offline-Queue für Eingaben ohne Netz</li>
+          <li>Vercel Edge Config für schnellste Auslieferung</li>
+        </ul>
+      </div>
+      <div>
+        <h4 style="font-family:DM Mono,monospace; font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--gold); margin-bottom:.75rem;">Ergebnis für die Gruppe</h4>
+        <ul class="checklist">
+          <li>App öffnet in &lt;1 Sekunde auf allen Geräten</li>
+          <li>Ausgaben erscheinen bei allen 16 sofort</li>
+          <li>Funktioniert auch bei schlechtem Netz im Urlaub</li>
+          <li>Homescreen-Icon — fühlt sich wie echte App an</li>
+          <li>Kein Download, kein App Store — einfach Link schicken</li>
+          <li>Großeltern-tauglich durch einfaches Onboarding</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Später: Capacitor -->
+  <div style="margin-top:1.5rem; background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:1.75rem;">
+    <div style="display:flex; align-items:center; gap:.75rem; margin-bottom:.75rem;">
+      <h3 style="font-size:1.05rem; margin:0;">Upgrade-Pfad: Variante B (Capacitor)</h3>
+      <span class="badge badge-blue">Nach dem Gruppentest</span>
+    </div>
+    <p style="font-size:13px; margin-bottom:0;">Falls nach dem Gruppentest eine echte App-Store-Distribution gewünscht wird (professionelleres Auftreten, Push-Notifications für alle iOS-Versionen, besseres Installations-Erlebnis): <strong>Capacitor.js</strong> ist der natürliche nächste Schritt. 95% des Codes bleibt unverändert, der Aufwand ist überschaubar, und es entsteht eine vollwertige App im App Store.</p>
+  </div>
+</section>
+
+<!-- ROADMAP -->
+<section id="roadmap">
+  <div class="section-label">Umsetzungsplan</div>
+  <h2>Roadmap zum Gruppentest</h2>
+  <p>Konkrete Schritte für die Umsetzung von Variante A+D — von der Entwicklung bis zum ersten Testabend mit der Gruppe.</p>
+
+  <div class="roadmap">
+    <div class="roadmap-step">
+      <div class="step-dot">1</div>
+      <div class="step-content">
+        <h4>Vercel + Supabase Realtime konfigurieren <span class="effort effort-low">~4h</span></h4>
+        <p>Supabase Realtime auf den relevanten Tabellen aktivieren (expenses, packlist_items). Vercel Production-Domain einrichten, Environment Variables prüfen. Edge Network ist bei Vercel Pro automatisch aktiv.</p>
+      </div>
+    </div>
+
+    <div class="roadmap-step">
+      <div class="step-dot">2</div>
+      <div class="step-content">
+        <h4>Optimistic UI für Ausgaben implementieren <span class="effort effort-low">~6h</span></h4>
+        <p>useOptimistic Hook in den Ausgaben-Formularen einsetzen. Rollback-Logik bei Fehlern. Toast-Benachrichtigungen für Fehler. Supabase Realtime-Listener für automatische Updates registrieren.</p>
+      </div>
+    </div>
+
+    <div class="roadmap-step">
+      <div class="step-dot">3</div>
+      <div class="step-content">
+        <h4>PWA Manifest + Service Worker <span class="effort effort-low">~6h</span></h4>
+        <p>next-pwa installieren und konfigurieren. App-Icons in allen nötigen Größen erstellen (512px, 192px, 180px für iOS). Splashscreen für iPhone. manifest.json mit korrekter display: standalone konfiguration.</p>
+      </div>
+    </div>
+
+    <div class="roadmap-step">
+      <div class="step-dot">4</div>
+      <div class="step-content">
+        <h4>Install-Banner + iOS-Onboarding <span class="effort effort-low">~4h</span></h4>
+        <p>Install-Banner für Android (BeforeInstallPrompt). iOS-spezifische Anleitung mit Screenshot-Anleitung beim ersten Besuch (einmalig zeigen, dann localStorage-Flag). Android zeigt automatischen Prompt.</p>
+      </div>
+    </div>
+
+    <div class="roadmap-step">
+      <div class="step-dot">5</div>
+      <div class="step-content">
+        <h4>Offline-Queue implementieren (optional) <span class="effort effort-medium">~8h</span></h4>
+        <p>IndexedDB-basierte Queue für Aktionen bei fehlender Verbindung. Background Sync via Service Worker für automatisches Abspielen. Visuelle Anzeige für "ausstehende" Einträge in der UI.</p>
+      </div>
+    </div>
+
+    <div class="roadmap-step">
+      <div class="step-dot">6</div>
+      <div class="step-content">
+        <h4>Gruppentest-Vorbereitung <span class="effort effort-low">~2h</span></h4>
+        <p>Einladungs-URL vorbereiten. Kurze Anleitung (Whatsapp-Nachricht oder PDF) für nicht-technische Nutzer: "Öffne diesen Link in Safari und füge die App zum Homescreen hinzu." Test-Reise anlegen mit allen 16 Personen.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Matrix -->
+  <div style="margin-top:3rem;">
+    <div class="section-label">Entscheidungshilfe</div>
+    <h3 style="font-size:1.25rem; margin-bottom:.25rem;">Wann welche Variante wählen?</h3>
+    <p>Kurze Übersicht für verschiedene Szenarien und Anforderungen.</p>
+
+    <div class="matrix-grid" style="margin-top:1.5rem;">
+      <div class="matrix-cell matrix-highlight">
+        <h4>Gruppentest in &lt;1 Woche</h4>
+        <p>→ <strong style="color:var(--gold)">Variante A + D</strong>: PWA + Vercel Edge. Schnellste Umsetzung, sofort teilbar, kein App Store.</p>
+      </div>
+      <div class="matrix-cell">
+        <h4>App Store Distribution gewünscht</h4>
+        <p>→ <strong style="color:var(--blue)">Variante B</strong>: Capacitor-Wrapper nach dem ersten Test. Apple Developer Account notwendig.</p>
+      </div>
+      <div class="matrix-cell">
+        <h4>Maximale native Performance</h4>
+        <p>→ <strong style="color:var(--amber)">Variante C</strong>: Expo/React Native — aber erst nach echtem Produkt-Markt-Fit und größerem Budget.</p>
+      </div>
+      <div class="matrix-cell matrix-highlight">
+        <h4>Schlechte Netzverbindung im Urlaub</h4>
+        <p>→ <strong style="color:var(--gold)">Variante A + D</strong> mit Offline-Queue: Eingaben werden lokal gespeichert und bei Netz synchronisiert.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  TeileniX Deployment-Konzept · Erstellt April 2026 · Next.js + Supabase + Vercel
+</footer>
+
+<script>
+// Staggered animation for cards
+const cards = document.querySelectorAll('.variant-card, .stat-card, .tech-card');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) {
+      entry.target.style.animationDelay = (i * 0.08) + 's';
+      entry.target.style.opacity = '1';
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.1 });
+
+cards.forEach(card => {
+  card.style.opacity = '0';
+  observer.observe(card);
+});
+
+// Active nav highlight on scroll
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('nav a[href^="#"]');
+
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => {
+    if (window.scrollY >= s.offsetTop - 80) current = s.id;
+  });
+  navLinks.forEach(a => {
+    a.style.color = a.getAttribute('href') === '#' + current ? 'var(--text)' : '';
+    a.style.borderBottomColor = a.getAttribute('href') === '#' + current ? 'var(--gold)' : 'transparent';
+  });
+});
+</script>
+</body>
+</html>

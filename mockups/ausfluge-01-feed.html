@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=390, initial-scale=1">
+<title>Ausflüge – Feed</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f4f1ed; color: #1a1612; max-width: 390px; margin: 0 auto; min-height: 100vh; }
+
+  /* ── Variables ── */
+  :root {
+    --primary: #1b5c58;
+    --primary-light: rgba(27,92,88,0.10);
+    --amber: #c47a1e;
+    --amber-light: #fef3e2;
+    --green: #2d7a4f;
+    --green-light: #f0faf4;
+    --muted: #f0ece7;
+    --muted-fg: #8a7f74;
+    --border: #e5dfd8;
+    --card: #ffffff;
+    --fg: #1a1612;
+  }
+
+  /* ── Header ── */
+  .header {
+    background: linear-gradient(150deg, #1b5c58 0%, #134844 100%);
+    padding: 52px 16px 14px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .header-back { width:32px; height:32px; border-radius:10px; background:rgba(255,255,255,0.15); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; }
+  .header-back svg { width:16px; height:16px; stroke:#fff; }
+  .header-title { font-size:18px; font-weight:800; color:#fff; flex:1; }
+  .header-trip { font-size:11px; color:rgba(255,255,255,0.55); font-weight:500; }
+
+  /* ── Tab Nav ── */
+  .tab-nav { background:#fff; border-bottom:1px solid var(--border); padding:8px 12px; display:flex; gap:4px; overflow-x:auto; scrollbar-width:none; }
+  .tab-nav::-webkit-scrollbar { display:none; }
+  .tab { flex-shrink:0; padding:6px 12px; border-radius:10px; font-size:13px; font-weight:600; color:var(--muted-fg); white-space:nowrap; cursor:pointer; transition:.15s; }
+  .tab.active { background:var(--primary); color:#fff; }
+
+  /* ── Calendar Strip ── */
+  .cal-strip { background:var(--card); border-bottom:1px solid var(--border); padding:12px 16px 14px; }
+  .cal-label { font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.06em; color:var(--muted-fg); margin-bottom:10px; }
+  .cal-days { display:flex; gap:6px; }
+  .cal-day { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; }
+  .cal-wd { font-size:10px; font-weight:600; color:var(--muted-fg); }
+  .cal-num { width:32px; height:32px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:var(--fg); }
+  .cal-num.active { background:var(--primary); color:#fff; }
+  .cal-num.has-event { background:var(--primary-light); color:var(--primary); }
+  .cal-dots { display:flex; gap:2px; height:5px; align-items:center; justify-content:center; }
+  .cal-dot { width:4px; height:4px; border-radius:50%; background:var(--primary); opacity:.5; }
+  .cal-dot.confirmed { background:var(--green); opacity:1; }
+
+  /* ── Content ── */
+  .content { padding:14px 14px 100px; display:flex; flex-direction:column; gap:10px; }
+
+  .section-label { font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.06em; color:var(--muted-fg); padding:4px 2px; }
+
+  /* ── Activity Card ── */
+  .act-card { background:var(--card); border-radius:18px; overflow:hidden; box-shadow:0 1px 3px rgba(26,22,18,.05), 0 2px 10px rgba(26,22,18,.07); border:1px solid var(--border); cursor:pointer; }
+
+  .act-card-img { height:110px; background:linear-gradient(135deg,#b2e8e5 0%,#4ab5ae 100%); position:relative; display:flex; align-items:flex-end; padding:10px 12px; overflow:hidden; }
+  .act-card-img.boat { background:linear-gradient(135deg,#7dd1cc 0%,#1b5c58 100%); }
+  .act-card-img.wine { background:linear-gradient(135deg,#e8c4a0 0%,#8b4513 100%); }
+  .act-card-img.ruins { background:linear-gradient(135deg,#d4c4a0 0%,#8b7355 100%); }
+  .act-card-img.vespa { background:linear-gradient(135deg,#ffd6a5 0%,#e65c00 100%); }
+
+  .act-card-img-emoji { font-size:40px; position:absolute; right:12px; bottom:8px; opacity:.5; }
+  .act-card-status { display:inline-flex; align-items:center; gap:4px; padding:3px 8px; border-radius:20px; font-size:10px; font-weight:700; }
+  .act-card-status.idea { background:rgba(255,255,255,0.25); color:#fff; border:1px solid rgba(255,255,255,0.3); }
+  .act-card-status.planned { background:rgba(45,122,79,0.9); color:#fff; }
+  .act-card-status.confirmed { background:#2d7a4f; color:#fff; }
+
+  .act-card-body { padding:12px 14px 10px; }
+  .act-card-title { font-size:15px; font-weight:800; color:var(--fg); line-height:1.2; margin-bottom:3px; }
+  .act-card-meta { font-size:11px; color:var(--muted-fg); display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-bottom:10px; }
+  .act-card-meta-dot { width:2px; height:2px; border-radius:50%; background:var(--muted-fg); flex-shrink:0; }
+
+  /* Consensus bar */
+  .consensus { margin-bottom:10px; }
+  .consensus-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:5px; }
+  .consensus-avatars { display:flex; }
+  .consensus-av { width:20px; height:20px; border-radius:50%; border:2px solid #fff; margin-left:-5px; display:flex; align-items:center; justify-content:center; font-size:8px; font-weight:800; color:#fff; flex-shrink:0; }
+  .consensus-av:first-child { margin-left:0; }
+  .consensus-count { font-size:11px; font-weight:700; color:var(--fg); }
+  .consensus-bar { height:5px; border-radius:3px; background:var(--muted); overflow:hidden; }
+  .consensus-fill { height:100%; border-radius:3px; background:linear-gradient(90deg,var(--primary),#4ab5ae); transition:width .3s; }
+  .consensus-fill.full { background:linear-gradient(90deg,var(--green),#4ab5ae); }
+
+  /* Vote buttons */
+  .vote-row { display:flex; gap:6px; }
+  .vote-btn { flex:1; padding:8px 4px; border-radius:12px; border:1.5px solid var(--border); font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:4px; cursor:pointer; transition:.12s; background:transparent; color:var(--muted-fg); }
+  .vote-btn.in { border-color:#1b5c58; background:var(--primary-light); color:var(--primary); }
+  .vote-btn.maybe { border-color:var(--amber); background:var(--amber-light); color:var(--amber); }
+  .vote-btn.out { border-color:#e5dfd8; background:var(--muted); color:var(--muted-fg); }
+  .vote-btn .cnt { font-size:10px; opacity:.7; }
+
+  /* Confirmed card variant */
+  .act-card.is-confirmed .act-card-body { border-top:3px solid var(--green); }
+  .act-card.is-idea .act-card-body {}
+
+  /* ── Empty state ── */
+  .empty { text-align:center; padding:32px 20px; }
+  .empty-icon { font-size:40px; margin-bottom:10px; }
+  .empty-title { font-size:14px; font-weight:700; color:var(--fg); margin-bottom:4px; }
+  .empty-sub { font-size:12px; color:var(--muted-fg); line-height:1.5; }
+
+  /* ── Filter tabs ── */
+  .filter-row { display:flex; gap:6px; overflow-x:auto; scrollbar-width:none; padding:2px 0; }
+  .filter-row::-webkit-scrollbar { display:none; }
+  .filter-chip { flex-shrink:0; padding:6px 12px; border-radius:20px; font-size:11px; font-weight:700; border:1.5px solid transparent; cursor:pointer; }
+  .filter-chip.active { background:var(--primary-light); color:var(--primary); border-color:rgba(27,92,88,.25); }
+  .filter-chip.inactive { background:var(--muted); color:var(--muted-fg); }
+
+  /* ── FAB ── */
+  .fab { position:fixed; bottom:84px; right:14px; background:var(--primary); color:#fff; border-radius:18px; padding:14px 18px; font-size:14px; font-weight:700; display:flex; align-items:center; gap:8px; box-shadow:0 4px 18px rgba(27,92,88,.35); cursor:pointer; z-index:30; border:none; }
+  .fab svg { width:20px; height:20px; stroke:#fff; flex-shrink:0; }
+
+  /* ── Bottom Nav ── */
+  .bottom-nav { position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:390px; background:#fff; border-top:1px solid var(--border); padding:8px 8px 20px; display:flex; justify-content:space-around; }
+  .nav-item { display:flex; flex-direction:column; align-items:center; gap:3px; cursor:pointer; flex:1; }
+  .nav-icon { width:24px; height:24px; }
+  .nav-icon svg { width:100%; height:100%; stroke:var(--muted-fg); fill:none; stroke-width:1.8; }
+  .nav-icon.active svg { stroke:var(--primary); }
+  .nav-label { font-size:10px; font-weight:600; color:var(--muted-fg); }
+  .nav-item.active .nav-label { color:var(--primary); }
+
+  /* ── Link ── */
+  a { text-decoration:none; color:inherit; }
+
+  /* Dot on badge */
+  .tab-dot { width:5px; height:5px; background:var(--primary); border-radius:50%; display:inline-block; margin-left:3px; vertical-align:middle; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-back">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+  </div>
+  <div>
+    <div class="header-title">Toskana 2025</div>
+    <div class="header-trip">14.–21. Juli · 9 Personen</div>
+  </div>
+</div>
+
+<!-- Tab Nav -->
+<div class="tab-nav">
+  <div class="tab">Übersicht</div>
+  <div class="tab">Ausgaben</div>
+  <div class="tab">Packliste</div>
+  <div class="tab active">Ausflüge</div>
+  <div class="tab">Statistiken</div>
+  <div class="tab">Einstellungen</div>
+</div>
+
+<!-- Calendar Strip -->
+<div class="cal-strip">
+  <div class="cal-label">Juli 2025 · Reisetage</div>
+  <div class="cal-days">
+    <div class="cal-day">
+      <div class="cal-wd">Mo</div>
+      <div class="cal-num">14</div>
+      <div class="cal-dots"></div>
+    </div>
+    <div class="cal-day">
+      <div class="cal-wd">Di</div>
+      <div class="cal-num has-event">15</div>
+      <div class="cal-dots"><div class="cal-dot confirmed"></div></div>
+    </div>
+    <div class="cal-day">
+      <div class="cal-wd">Mi</div>
+      <div class="cal-num">16</div>
+      <div class="cal-dots"></div>
+    </div>
+    <div class="cal-day">
+      <div class="cal-wd">Do</div>
+      <div class="cal-num active">17</div>
+      <div class="cal-dots"><div class="cal-dot"></div><div class="cal-dot"></div></div>
+    </div>
+    <div class="cal-day">
+      <div class="cal-wd">Fr</div>
+      <div class="cal-num has-event">18</div>
+      <div class="cal-dots"><div class="cal-dot confirmed"></div></div>
+    </div>
+    <div class="cal-day">
+      <div class="cal-wd">Sa</div>
+      <div class="cal-num">19</div>
+      <div class="cal-dots"></div>
+    </div>
+    <div class="cal-day">
+      <div class="cal-wd">So</div>
+      <div class="cal-num">20</div>
+      <div class="cal-dots"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Content -->
+<div class="content">
+
+  <!-- Filter -->
+  <div class="filter-row">
+    <div class="filter-chip active">Alle (5)</div>
+    <div class="filter-chip inactive">✅ Bestätigt (2)</div>
+    <div class="filter-chip inactive">💡 Ideen (3)</div>
+    <div class="filter-chip inactive">📅 Ungeplant</div>
+  </div>
+
+  <!-- Section: Bestätigt -->
+  <div class="section-label">✅ Bestätigt</div>
+
+  <!-- Card 1: Confirmed -->
+  <a href="ausfluge-02-detail.html">
+  <div class="act-card is-confirmed">
+    <div class="act-card-img boat">
+      <div class="act-card-status confirmed">✓ Bestätigt · Di 15. Juli</div>
+      <div class="act-card-img-emoji">⛵</div>
+    </div>
+    <div class="act-card-body">
+      <div class="act-card-title">Bootstour nach Capri</div>
+      <div class="act-card-meta">
+        <span>🕘 09:00 Abfahrt</span>
+        <div class="act-card-meta-dot"></div>
+        <span>⏱ 6h</span>
+        <div class="act-card-meta-dot"></div>
+        <span>💶 ~35€/P</span>
+        <div class="act-card-meta-dot"></div>
+        <span>von Anna</span>
+      </div>
+      <div class="consensus">
+        <div class="consensus-row">
+          <div class="consensus-avatars">
+            <div class="consensus-av" style="background:#1b5c58">AN</div>
+            <div class="consensus-av" style="background:#2d8a84">MA</div>
+            <div class="consensus-av" style="background:#4ab5ae">LI</div>
+            <div class="consensus-av" style="background:#c47a1e">TO</div>
+            <div class="consensus-av" style="background:#6b4fa0">BE</div>
+            <div class="consensus-av" style="background:#2d7a4f" >+4</div>
+          </div>
+          <div class="consensus-count" style="color:#2d7a4f">9 von 9 dabei 🎉</div>
+        </div>
+        <div class="consensus-bar">
+          <div class="consensus-fill full" style="width:100%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </a>
+
+  <!-- Card 2: Confirmed -->
+  <div class="act-card is-confirmed">
+    <div class="act-card-img ruins">
+      <div class="act-card-status confirmed">✓ Bestätigt · Fr 18. Juli</div>
+      <div class="act-card-img-emoji">🏛️</div>
+    </div>
+    <div class="act-card-body">
+      <div class="act-card-title">Pompeii & Herculaneum</div>
+      <div class="act-card-meta">
+        <span>🕗 07:30 Abfahrt</span>
+        <div class="act-card-meta-dot"></div>
+        <span>⏱ ganztägig</span>
+        <div class="act-card-meta-dot"></div>
+        <span>💶 ~20€/P</span>
+      </div>
+      <div class="consensus">
+        <div class="consensus-row">
+          <div class="consensus-avatars">
+            <div class="consensus-av" style="background:#1b5c58">AN</div>
+            <div class="consensus-av" style="background:#2d8a84">MA</div>
+            <div class="consensus-av" style="background:#c47a1e">TO</div>
+            <div class="consensus-av" style="background:#6b4fa0">BE</div>
+            <div class="consensus-av" style="background:#2d7a4f">+3</div>
+          </div>
+          <div class="consensus-count" style="color:#2d7a4f">7 von 9 dabei</div>
+        </div>
+        <div class="consensus-bar">
+          <div class="consensus-fill full" style="width:78%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section: Ideen -->
+  <div class="section-label" style="margin-top:4px">💡 Vorschläge – stimme ab!</div>
+
+  <!-- Card 3: Idea with my vote = in -->
+  <div class="act-card">
+    <div class="act-card-img wine">
+      <div class="act-card-status idea">💡 Idee · Do 17. Juli (vorgeschlagen)</div>
+      <div class="act-card-img-emoji">🍷</div>
+    </div>
+    <div class="act-card-body">
+      <div class="act-card-title">Weinprobe Chianti</div>
+      <div class="act-card-meta">
+        <span>⏱ ~3h</span>
+        <div class="act-card-meta-dot"></div>
+        <span>💶 ~28€/P</span>
+        <div class="act-card-meta-dot"></div>
+        <span>von Max</span>
+      </div>
+      <div class="consensus">
+        <div class="consensus-row">
+          <div class="consensus-avatars">
+            <div class="consensus-av" style="background:#1b5c58">AN</div>
+            <div class="consensus-av" style="background:#2d8a84">MA</div>
+            <div class="consensus-av" style="background:#4ab5ae">LI</div>
+            <div class="consensus-av" style="background:#c47a1e">TO</div>
+          </div>
+          <div class="consensus-count">4 dabei · 2 vlt. · <span style="color:#aaa">1 nein</span></div>
+        </div>
+        <div class="consensus-bar">
+          <div class="consensus-fill" style="width:55%"></div>
+        </div>
+      </div>
+      <div class="vote-row">
+        <button class="vote-btn in">😄 Dabei <span class="cnt">(4)</span></button>
+        <button class="vote-btn">🤷 Vielleicht <span class="cnt">(2)</span></button>
+        <button class="vote-btn">😴 Nein <span class="cnt">(1)</span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 4: Vespa -->
+  <div class="act-card">
+    <div class="act-card-img vespa">
+      <div class="act-card-status idea">💡 Idee · kein Datum</div>
+      <div class="act-card-img-emoji">🛵</div>
+    </div>
+    <div class="act-card-body">
+      <div class="act-card-title">Vespa-Tour durch die Hügel</div>
+      <div class="act-card-meta">
+        <span>⏱ ~4h</span>
+        <div class="act-card-meta-dot"></div>
+        <span>💶 ~45€/P</span>
+        <div class="act-card-meta-dot"></div>
+        <span>von Lisa</span>
+      </div>
+      <div class="consensus">
+        <div class="consensus-row">
+          <div class="consensus-avatars">
+            <div class="consensus-av" style="background:#4ab5ae">LI</div>
+            <div class="consensus-av" style="background:#2d8a84">MA</div>
+          </div>
+          <div class="consensus-count">2 dabei · noch 5 ausstehend ⏳</div>
+        </div>
+        <div class="consensus-bar">
+          <div class="consensus-fill" style="width:22%"></div>
+        </div>
+      </div>
+      <div class="vote-row">
+        <button class="vote-btn">😄 Dabei <span class="cnt">(2)</span></button>
+        <button class="vote-btn maybe">🤷 Vielleicht <span class="cnt">(0)</span></button>
+        <button class="vote-btn">😴 Nein <span class="cnt">(0)</span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 5: New idea, no votes yet -->
+  <div class="act-card">
+    <div class="act-card-img" style="background:linear-gradient(135deg,#c8e6c9 0%,#388e3c 100%)">
+      <div class="act-card-status idea">💡 Neu · gerade vorgeschlagen</div>
+      <div class="act-card-img-emoji">🏊</div>
+    </div>
+    <div class="act-card-body">
+      <div class="act-card-title">Badetag am Laceno-See</div>
+      <div class="act-card-meta">
+        <span>⏱ ganztägig</span>
+        <div class="act-card-meta-dot"></div>
+        <span>💶 kostenlos</span>
+        <div class="act-card-meta-dot"></div>
+        <span>von Ben</span>
+      </div>
+      <div class="consensus">
+        <div class="consensus-row">
+          <div style="font-size:11px; color:var(--muted-fg)">Noch keine Stimmen – sei der Erste!</div>
+        </div>
+        <div class="consensus-bar">
+          <div class="consensus-fill" style="width:0%"></div>
+        </div>
+      </div>
+      <div class="vote-row">
+        <button class="vote-btn">😄 Dabei</button>
+        <button class="vote-btn">🤷 Vielleicht</button>
+        <button class="vote-btn">😴 Nein</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- FAB -->
+<button class="fab">
+  <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  Ausflug vorschlagen
+</button>
+
+<!-- Bottom Nav -->
+<div class="bottom-nav">
+  <div class="nav-item">
+    <div class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 8 12 12 14 14"/></svg></div>
+    <div class="nav-label">Übersicht</div>
+  </div>
+  <div class="nav-item active">
+    <div class="nav-icon active"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+    <div class="nav-label" style="color:#1b5c58">Ausflüge</div>
+  </div>
+  <div class="nav-item">
+    <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+    <div class="nav-label">Profil</div>
+  </div>
+</div>
+
+</body>
+</html>

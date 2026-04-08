@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TeileniX – Konzept 2: Dashboard Hub</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #0f172a;
+  padding: 40px 20px;
+  min-height: 100vh;
+}
+.page-title {
+  color: white;
+  text-align: center;
+  margin-bottom: 8px;
+  font-size: 22px;
+  font-weight: 800;
+}
+.page-subtitle {
+  color: rgba(255,255,255,0.5);
+  text-align: center;
+  font-size: 14px;
+  margin-bottom: 40px;
+  line-height: 1.5;
+}
+.screens-row {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+.screen-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.screen-label {
+  color: rgba(255,255,255,0.6);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.phone {
+  width: 320px;
+  background: #f8fafc;
+  border-radius: 44px;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08);
+  position: relative;
+}
+.phone-inner {
+  border-radius: 40px;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Status bar */
+.status-bar {
+  background: #1b5c58;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 20px 6px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* Big trip header */
+.trip-header {
+  background: linear-gradient(170deg, #1b5c58 0%, #0f3836 100%);
+  padding: 16px 16px 24px;
+  position: relative;
+  overflow: hidden;
+}
+.trip-header::before {
+  content: '';
+  position: absolute;
+  top: -30px; right: -30px;
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+}
+.trip-header::after {
+  content: '';
+  position: absolute;
+  bottom: -20px; left: 20px;
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.04);
+}
+.th-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  position: relative;
+  z-index: 1;
+}
+.th-trip-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+.th-emoji {
+  width: 34px; height: 34px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.15);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+}
+.th-title { color: white; font-size: 16px; font-weight: 800; }
+.th-sub { color: rgba(255,255,255,0.65); font-size: 11px; }
+.th-arrow { color: rgba(255,255,255,0.5); font-size: 12px; }
+.th-profile {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+}
+
+/* Progress bar in header */
+.th-progress-row {
+  position: relative; z-index: 1;
+}
+.th-progress-label {
+  display: flex; justify-content: space-between;
+  color: rgba(255,255,255,0.7); font-size: 11px; font-weight: 600;
+  margin-bottom: 6px;
+}
+.th-progress-bar {
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.15);
+  overflow: hidden;
+}
+.th-progress-fill {
+  height: 100%;
+  background: rgba(255,255,255,0.7);
+  border-radius: 2px;
+  width: 23%;
+}
+
+/* Stats in header */
+.th-stats {
+  display: flex;
+  gap: 6px;
+  margin-top: 14px;
+  position: relative; z-index: 1;
+}
+.th-stat {
+  flex: 1;
+  background: rgba(255,255,255,0.12);
+  border-radius: 10px;
+  padding: 8px 6px;
+  text-align: center;
+}
+.th-stat-v { color: white; font-size: 16px; font-weight: 800; }
+.th-stat-l { color: rgba(255,255,255,0.6); font-size: 9px; font-weight: 600; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* Module grid */
+.module-grid {
+  padding: 16px 12px 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.module-card {
+  background: white;
+  border-radius: 20px;
+  padding: 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  min-height: 110px;
+}
+.module-card.wide {
+  grid-column: span 2;
+  min-height: auto;
+}
+.mc-icon {
+  font-size: 24px;
+  margin-bottom: 8px;
+  display: block;
+}
+.mc-title { font-size: 13px; font-weight: 800; color: #111827; }
+.mc-meta { font-size: 11px; color: #9ca3af; margin-top: 3px; line-height: 1.4; }
+.mc-badge {
+  position: absolute;
+  top: 12px; right: 12px;
+  background: #ef4444;
+  color: white;
+  border-radius: 20px;
+  padding: 2px 7px;
+  font-size: 10px;
+  font-weight: 700;
+}
+.mc-badge.green { background: #059669; }
+.mc-badge.amber { background: #d97706; }
+
+/* Accent cards */
+.mc-ausgaben { border-left: 3px solid #1b5c58; }
+.mc-packliste { border-left: 3px solid #3b82f6; }
+.mc-ausfluge { border-left: 3px solid #f59e0b; }
+.mc-essen { border-left: 3px solid #ec4899; }
+.mc-einkauf { border-left: 3px solid #8b5cf6; }
+.mc-gruppe { border-left: 3px solid #06b6d4; }
+
+/* Progress micro */
+.mc-progress {
+  height: 3px;
+  border-radius: 2px;
+  background: #f0f0f0;
+  margin-top: 8px;
+  overflow: hidden;
+}
+.mc-progress-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: #1b5c58;
+}
+
+/* Wide card (Ausflüge) */
+.mc-wide-inner { display: flex; gap: 12px; align-items: center; }
+.mc-wide-left { flex: 1; }
+.mc-wide-img {
+  width: 70px; height: 70px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #a8d5d1, #1b5c58);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 30px;
+  flex-shrink: 0;
+}
+
+/* Quick add bar */
+.quick-add-bar {
+  margin: 12px 12px 0;
+  background: white;
+  border-radius: 16px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.qa-icon { font-size: 18px; }
+.qa-input {
+  flex: 1;
+  font-size: 13px;
+  color: #9ca3af;
+}
+.qa-chips { display: flex; gap: 4px; }
+.qa-chip {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: #f0f4f4;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+}
+
+/* Bottom nav (minimal 3) */
+.bottom-nav {
+  background: white;
+  border-top: 1px solid #f0f0f0;
+  display: flex;
+  padding: 8px 0 16px;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
+}
+.nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 0;
+}
+.nav-icon {
+  width: 26px; height: 26px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  border-radius: 8px;
+}
+.nav-icon.active { background: #e8f4f3; }
+.nav-label {
+  font-size: 10px;
+  color: #9ca3af;
+  font-weight: 600;
+}
+.nav-item.active .nav-label { color: #1b5c58; font-weight: 700; }
+.nav-badge {
+  position: absolute; top: -2px; right: -2px;
+  width: 14px; height: 14px;
+  background: #ef4444;
+  border-radius: 50%;
+  font-size: 8px;
+  color: white;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* Module detail (drill-in) */
+.detail-header {
+  background: white;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid #f0f0f0;
+}
+.back-btn {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: #f0f4f4;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; color: #374151;
+}
+.detail-title { font-size: 17px; font-weight: 800; color: #111827; }
+
+/* Geld screen */
+.geld-summary {
+  margin: 12px;
+  background: #1b5c58;
+  border-radius: 18px;
+  padding: 16px;
+  color: white;
+}
+.gs-total { font-size: 11px; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.06em; }
+.gs-amount { font-size: 28px; font-weight: 800; margin: 4px 0; }
+.gs-sub { font-size: 12px; opacity: 0.7; }
+.gs-row { display: flex; gap: 8px; margin-top: 12px; }
+.gs-btn {
+  flex: 1;
+  background: rgba(255,255,255,0.15);
+  border-radius: 10px;
+  padding: 8px;
+  text-align: center;
+  font-size: 11px; font-weight: 700;
+}
+
+.expense-item {
+  background: white;
+  margin: 0 12px 6px;
+  border-radius: 14px;
+  padding: 11px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.exp-icon {
+  width: 34px; height: 34px;
+  border-radius: 10px;
+  background: #f0f4f4;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; flex-shrink: 0;
+}
+.exp-text { flex: 1; }
+.exp-title { font-size: 13px; font-weight: 600; color: #111827; }
+.exp-meta { font-size: 11px; color: #9ca3af; margin-top: 2px; }
+.exp-amount { font-size: 14px; font-weight: 700; color: #111827; }
+
+.concept-badge {
+  background: rgba(15,23,42,0.6);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  padding: 8px 14px;
+  color: rgba(255,255,255,0.6);
+  font-size: 11px;
+  line-height: 1.5;
+  max-width: 320px;
+  text-align: center;
+}
+
+.section-spacer { height: 8px; }
+
+.feed-label {
+  padding: 8px 12px 4px;
+  font-size: 11px; font-weight: 700; color: #9ca3af;
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+.feed-item {
+  background: white;
+  margin: 0 12px 6px;
+  border-radius: 14px;
+  padding: 11px 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.fi { width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+.fi-green { background: #d1fae5; }
+.fi-blue { background: #dbeafe; }
+.fi-amber { background: #fef3c7; }
+.feed-text { flex: 1; }
+.feed-title { font-size: 13px; font-weight: 600; color: #111827; }
+.feed-sub { font-size: 11px; color: #9ca3af; margin-top: 2px; }
+.feed-time { font-size: 10px; color: #d1d5db; }
+</style>
+</head>
+<body>
+
+<div class="page-title">Konzept 2 — Dashboard Hub</div>
+<div class="page-subtitle">Großer Trip-Header · Module-Grid als Startseite · Drill-in für Details<br>Alles sichtbar auf einen Blick · Minimale Bottom-Nav</div>
+
+<div class="screens-row">
+
+  <!-- Screen 1: Home Dashboard -->
+  <div class="screen-wrap">
+    <div class="screen-label">Home Dashboard</div>
+    <div class="phone">
+      <div class="phone-inner">
+        <div class="status-bar"><span>9:41</span><span>●●● 100%</span></div>
+
+        <div class="trip-header">
+          <div class="th-top">
+            <div class="th-trip-row">
+              <div class="th-emoji">🌿</div>
+              <div>
+                <div class="th-title">Toskana 2025 ⌄</div>
+                <div class="th-sub">14.–21. Juli · 9 Personen</div>
+              </div>
+            </div>
+            <div class="th-profile">👤</div>
+          </div>
+          <div class="th-progress-row">
+            <div class="th-progress-label">
+              <span>Reise in 97 Tagen</span>
+              <span>23% geplant</span>
+            </div>
+            <div class="th-progress-bar">
+              <div class="th-progress-fill"></div>
+            </div>
+          </div>
+          <div class="th-stats">
+            <div class="th-stat">
+              <div class="th-stat-v">€342</div>
+              <div class="th-stat-l">offen</div>
+            </div>
+            <div class="th-stat">
+              <div class="th-stat-v">68%</div>
+              <div class="th-stat-l">gepackt</div>
+            </div>
+            <div class="th-stat">
+              <div class="th-stat-v">2/5</div>
+              <div class="th-stat-l">ausflüge</div>
+            </div>
+            <div class="th-stat">
+              <div class="th-stat-v">12</div>
+              <div class="th-stat-l">nachrichten</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick add -->
+        <div class="quick-add-bar">
+          <div class="qa-icon">✏️</div>
+          <div class="qa-input">Schnell hinzufügen...</div>
+          <div class="qa-chips">
+            <div class="qa-chip">💶</div>
+            <div class="qa-chip">🗺️</div>
+            <div class="qa-chip">📝</div>
+          </div>
+        </div>
+
+        <!-- Module grid -->
+        <div class="module-grid">
+          <!-- Ausgaben -->
+          <div class="module-card mc-ausgaben">
+            <span class="mc-icon">💰</span>
+            <div class="mc-title">Ausgaben</div>
+            <div class="mc-meta">€1.240 gesamt<br>5 Einträge</div>
+            <div class="mc-badge amber">€342 offen</div>
+          </div>
+
+          <!-- Packliste -->
+          <div class="module-card mc-packliste">
+            <span class="mc-icon">🎒</span>
+            <div class="mc-title">Packliste</div>
+            <div class="mc-meta">11 von 16 erledigt</div>
+            <div class="mc-progress">
+              <div class="mc-progress-fill" style="width:68%; background:#3b82f6;"></div>
+            </div>
+          </div>
+
+          <!-- Ausflüge – wide -->
+          <div class="module-card wide mc-ausfluge">
+            <div class="mc-wide-inner">
+              <div class="mc-wide-left">
+                <span class="mc-icon" style="margin-bottom:4px;">🗺️</span>
+                <div class="mc-title">Ausflüge</div>
+                <div class="mc-meta">1 bestätigt · 4 Ideen<br>Nächster: Bootstour Do.</div>
+              </div>
+              <div class="mc-wide-img">⛵</div>
+            </div>
+            <div class="mc-badge amber">3 neue Votes</div>
+          </div>
+
+          <!-- Essenplanung -->
+          <div class="module-card mc-essen">
+            <span class="mc-icon">🍽️</span>
+            <div class="mc-title">Essen</div>
+            <div class="mc-meta">2 von 7 Tagen geplant</div>
+            <div class="mc-progress">
+              <div class="mc-progress-fill" style="width:28%; background:#ec4899;"></div>
+            </div>
+          </div>
+
+          <!-- Einkauf -->
+          <div class="module-card mc-einkauf">
+            <span class="mc-icon">🛒</span>
+            <div class="mc-title">Einkauf</div>
+            <div class="mc-meta">8 Artikel<br>3 noch offen</div>
+          </div>
+
+          <!-- Gruppe -->
+          <div class="module-card wide mc-gruppe">
+            <div class="mc-wide-inner">
+              <div class="mc-wide-left">
+                <span class="mc-icon" style="margin-bottom:4px;">💬</span>
+                <div class="mc-title">Gruppe</div>
+                <div class="mc-meta">Max: "Wer bucht die Fähre?"<br>vor 23 Minuten</div>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:4px; align-items:flex-end;">
+                <div style="width:32px;height:32px;border-radius:50%;background:#dbeafe;display:flex;align-items:center;justify-content:center;font-size:14px;">👤</div>
+                <div style="width:24px;height:24px;border-radius:50%;background:#fef3c7;display:flex;align-items:center;justify-content:center;font-size:12px;margin-right:4px;">👤</div>
+              </div>
+            </div>
+            <div class="mc-badge" style="background:#06b6d4;">12 neu</div>
+          </div>
+        </div>
+
+        <div style="height: 12px;"></div>
+
+        <div class="bottom-nav">
+          <div class="nav-item active">
+            <div class="nav-icon active">🏠</div>
+            <div class="nav-label">Home</div>
+          </div>
+          <div class="nav-item">
+            <div class="nav-icon" style="position:relative;">
+              🔔
+              <div class="nav-badge" style="position:absolute;top:-2px;right:-2px;width:14px;height:14px;background:#ef4444;border-radius:50%;font-size:8px;color:white;font-weight:700;display:flex;align-items:center;justify-content:center;">5</div>
+            </div>
+            <div class="nav-label">Aktivität</div>
+          </div>
+          <div class="nav-item">
+            <div class="nav-icon">👤</div>
+            <div class="nav-label">Profil</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="concept-badge">Großer Header zeigt Reise-Status auf einen Blick.<br>Module-Grid: alle Features direkt sichtbar und erreichbar.<br>Minimal-Nav: nur Home, Aktivität, Profil.</div>
+  </div>
+
+  <!-- Screen 2: Drill into Geld -->
+  <div class="screen-wrap">
+    <div class="screen-label">Modul Geld (drill-in)</div>
+    <div class="phone">
+      <div class="phone-inner">
+        <div class="status-bar"><span>9:41</span><span>●●● 100%</span></div>
+
+        <div class="detail-header">
+          <div class="back-btn">‹</div>
+          <div class="detail-title">💰 Ausgaben</div>
+        </div>
+
+        <!-- Geld summary card -->
+        <div class="geld-summary">
+          <div class="gs-total">Gesamtausgaben</div>
+          <div class="gs-amount">€1.240</div>
+          <div class="gs-sub">€342 noch offen · 9 Teilnehmer</div>
+          <div class="gs-row">
+            <div class="gs-btn">📊 Abrechnung</div>
+            <div class="gs-btn">📈 Statistiken</div>
+          </div>
+        </div>
+
+        <div class="feed-label">Letzte Ausgaben</div>
+
+        <div class="expense-item">
+          <div class="exp-icon">⛵</div>
+          <div class="exp-text">
+            <div class="exp-title">Fähre nach Capri</div>
+            <div class="exp-meta">Anna · 12. Apr</div>
+          </div>
+          <div class="exp-amount">€285</div>
+        </div>
+        <div class="expense-item">
+          <div class="exp-icon">🍕</div>
+          <div class="exp-text">
+            <div class="exp-title">Abendessen Florenz</div>
+            <div class="exp-meta">Tom · 11. Apr</div>
+          </div>
+          <div class="exp-amount">€96</div>
+        </div>
+        <div class="expense-item">
+          <div class="exp-icon">🏠</div>
+          <div class="exp-text">
+            <div class="exp-title">Ferienhaus Anzahlung</div>
+            <div class="exp-meta">Max · 10. Apr</div>
+          </div>
+          <div class="exp-amount">€450</div>
+        </div>
+        <div class="expense-item" style="background:#f0fdf4;border: 1.5px solid #bbf7d0;">
+          <div class="exp-icon" style="background:#dcfce7;">💸</div>
+          <div class="exp-text">
+            <div class="exp-title" style="color:#065f46;">Lisa → Max</div>
+            <div class="exp-meta">Teilzahlung · 8. Apr</div>
+          </div>
+          <div class="exp-amount" style="color:#065f46;">€100</div>
+        </div>
+        <div class="expense-item">
+          <div class="exp-icon">⛽</div>
+          <div class="exp-text">
+            <div class="exp-title">Benzin Hinfahrt</div>
+            <div class="exp-meta">Sarah · 7. Apr</div>
+          </div>
+          <div class="exp-amount">€85</div>
+        </div>
+
+        <div style="height:12px;"></div>
+
+        <div class="bottom-nav">
+          <div class="nav-item active">
+            <div class="nav-icon active">🏠</div>
+            <div class="nav-label">Home</div>
+          </div>
+          <div class="nav-item">
+            <div class="nav-icon">🔔</div>
+            <div class="nav-label">Aktivität</div>
+          </div>
+          <div class="nav-item">
+            <div class="nav-icon">👤</div>
+            <div class="nav-label">Profil</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="concept-badge">Tippen auf eine Modul-Kachel öffnet<br>die Vollansicht des Moduls.<br>Zurück-Button führt zum Dashboard.</div>
+  </div>
+
+  <!-- Screen 3: Aktivitäts-Feed -->
+  <div class="screen-wrap">
+    <div class="screen-label">Aktivitäts-Feed</div>
+    <div class="phone">
+      <div class="phone-inner">
+        <div class="status-bar"><span>9:41</span><span>●●● 100%</span></div>
+
+        <div style="background: #1b5c58; padding: 12px 16px 16px;">
+          <div style="color:rgba(255,255,255,0.7); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px;">Toskana 2025</div>
+          <div style="color:white; font-size:18px; font-weight:800;">Aktivitäten</div>
+        </div>
+
+        <div style="background: #f8fafc; flex: 1;">
+          <!-- Filter chips -->
+          <div style="display:flex; gap:6px; padding: 10px 12px; overflow-x:auto;">
+            <div style="background:#1b5c58; color:white; border-radius:20px; padding:5px 12px; font-size:11px; font-weight:700; flex-shrink:0;">Alle</div>
+            <div style="background:white; color:#374151; border-radius:20px; padding:5px 12px; font-size:11px; font-weight:700; flex-shrink:0; box-shadow:0 1px 3px rgba(0,0,0,0.08);">💰 Geld</div>
+            <div style="background:white; color:#374151; border-radius:20px; padding:5px 12px; font-size:11px; font-weight:700; flex-shrink:0; box-shadow:0 1px 3px rgba(0,0,0,0.08);">🗺️ Ausflüge</div>
+            <div style="background:white; color:#374151; border-radius:20px; padding:5px 12px; font-size:11px; font-weight:700; flex-shrink:0; box-shadow:0 1px 3px rgba(0,0,0,0.08);">📋 Listen</div>
+            <div style="background:white; color:#374151; border-radius:20px; padding:5px 12px; font-size:11px; font-weight:700; flex-shrink:0; box-shadow:0 1px 3px rgba(0,0,0,0.08);">💬 Gruppe</div>
+          </div>
+
+          <!-- Day group -->
+          <div style="padding: 4px 12px 6px; font-size:11px; font-weight:700; color:#9ca3af;">Heute</div>
+
+          <div class="feed-item">
+            <div class="fi fi-green">💶</div>
+            <div class="feed-text">
+              <div class="feed-title">Anna hat Fähre nach Capri eingetragen</div>
+              <div class="feed-sub">Ausgaben · €285 · auf alle aufgeteilt</div>
+            </div>
+            <div class="feed-time">2h</div>
+          </div>
+
+          <div class="feed-item">
+            <div class="fi fi-amber">🗳️</div>
+            <div class="feed-text">
+              <div class="feed-title">Max hat Vespa-Tour vorgeschlagen</div>
+              <div class="feed-sub">Ausflüge · 3 haben schon abgestimmt</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+              <div class="feed-time">5h</div>
+              <div style="background:#fef3c7;border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700;color:#92400e;">Abstimmen →</div>
+            </div>
+          </div>
+
+          <div style="padding: 8px 12px 4px; font-size:11px; font-weight:700; color:#9ca3af;">Gestern</div>
+
+          <div class="feed-item">
+            <div class="fi fi-blue">🎒</div>
+            <div class="feed-text">
+              <div class="feed-title">Lisa hat 3 Artikel zur Packliste hinzugefügt</div>
+              <div class="feed-sub">Packliste · Sonnencreme, Adapter...</div>
+            </div>
+            <div class="feed-time">1d</div>
+          </div>
+
+          <div class="feed-item">
+            <div class="fi" style="background:#fce7f3;">💬</div>
+            <div class="feed-text">
+              <div class="feed-title">Tom: "Wer bucht das Haus?"</div>
+              <div class="feed-sub">Gruppe · 2 Antworten</div>
+            </div>
+            <div class="feed-time">1d</div>
+          </div>
+
+          <div class="feed-item">
+            <div class="fi" style="background:#ede9fe;">🍽️</div>
+            <div class="feed-text">
+              <div class="feed-title">Sarah hat Di. Abend geplant</div>
+              <div class="feed-sub">Essenplanung · Pizzeria in Florenz</div>
+            </div>
+            <div class="feed-time">2d</div>
+          </div>
+        </div>
+
+        <div class="bottom-nav">
+          <div class="nav-item">
+            <div class="nav-icon">🏠</div>
+            <div class="nav-label">Home</div>
+          </div>
+          <div class="nav-item active">
+            <div class="nav-icon active">🔔</div>
+            <div class="nav-label">Aktivität</div>
+          </div>
+          <div class="nav-item">
+            <div class="nav-icon">👤</div>
+            <div class="nav-label">Profil</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="concept-badge">Zentrale Aktivitätsliste aller Änderungen.<br>Filter nach Modulen. Mit Inline-Aktionen<br>(z. B. direkt abstimmen).</div>
+  </div>
+
+</div>
+
+</body>
+</html>

@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import GeldSubNav from '@/components/layout/GeldSubNav'
 import { computeSettlement, computeGroupBreakdowns } from '@/lib/settlement'
 import SettlementTransferList from '@/components/settlement/SettlementTransferList'
 import BalanceTable from '@/components/settlement/BalanceTable'
@@ -61,6 +62,7 @@ export default async function SettlementPage({
 
   return (
     <div className="space-y-5">
+      <GeldSubNav tripId={tripId} />
 
       {/* Summary header */}
       <div className="bg-card card-shadow rounded-2xl p-5">

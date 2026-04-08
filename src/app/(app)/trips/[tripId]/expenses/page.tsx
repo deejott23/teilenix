@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Plus } from 'lucide-react'
 import ExpenseList from '@/components/expenses/ExpenseList'
+import GeldSubNav from '@/components/layout/GeldSubNav'
 import type { ExpenseWithSplits, TripParticipant } from '@/types/app'
 
 export default async function ExpensesPage({
@@ -54,6 +55,7 @@ export default async function ExpensesPage({
 
   return (
     <div className="space-y-4">
+      <GeldSubNav tripId={tripId} />
       {trip?.status === 'active' && (
         <Link
           href={`/trips/${tripId}/expenses/new`}

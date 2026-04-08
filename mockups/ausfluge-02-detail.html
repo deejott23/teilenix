@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=390, initial-scale=1">
+<title>Ausflug Detail – Bootstour</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f4f1ed; color: #1a1612; max-width: 390px; margin: 0 auto; min-height: 100vh; }
+
+  :root {
+    --primary: #1b5c58;
+    --primary-light: rgba(27,92,88,0.10);
+    --amber: #c47a1e;
+    --amber-light: #fef3e2;
+    --green: #2d7a4f;
+    --green-light: #f0faf4;
+    --muted: #f0ece7;
+    --muted-fg: #8a7f74;
+    --border: #e5dfd8;
+    --card: #ffffff;
+    --fg: #1a1612;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    height: 220px;
+    background: linear-gradient(160deg, #7dd1cc 0%, #1b5c58 100%);
+    position: relative;
+    display: flex; flex-direction: column; justify-content: space-between;
+    padding: 52px 16px 16px;
+  }
+  .hero-emoji { position:absolute; right:20px; bottom:16px; font-size:72px; opacity:.35; }
+  .hero-top { display:flex; align-items:center; gap:10px; }
+  .hero-back { width:34px; height:34px; border-radius:12px; background:rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; }
+  .hero-back svg { width:18px; height:18px; stroke:#fff; }
+  .hero-badges { display:flex; gap:6px; flex-wrap:wrap; margin-top:auto; }
+  .hero-badge { padding:4px 10px; border-radius:20px; font-size:10px; font-weight:700; }
+  .hero-badge.confirmed { background:#2d7a4f; color:#fff; }
+  .hero-badge.date { background:rgba(255,255,255,0.2); color:#fff; border:1px solid rgba(255,255,255,0.3); }
+
+  /* ── Content ── */
+  .content { padding:0 14px 120px; }
+
+  /* ── Title section ── */
+  .title-section { background:var(--card); border-radius:0 0 20px 20px; padding:16px 16px 18px; border:1px solid var(--border); border-top:none; margin-bottom:10px; box-shadow:0 2px 8px rgba(26,22,18,.06); }
+  .act-title { font-size:22px; font-weight:900; color:var(--fg); line-height:1.15; margin-bottom:4px; }
+  .act-by { font-size:12px; color:var(--muted-fg); display:flex; align-items:center; gap:6px; }
+  .act-by-av { width:18px; height:18px; border-radius:50%; background:var(--primary); display:flex; align-items:center; justify-content:center; font-size:7px; font-weight:800; color:#fff; }
+
+  /* ── Card ── */
+  .card { background:var(--card); border-radius:18px; border:1px solid var(--border); box-shadow:0 1px 4px rgba(26,22,18,.05); margin-bottom:10px; overflow:hidden; }
+  .card-header { display:flex; align-items:center; gap:10px; padding:14px 16px; border-bottom:1px solid var(--border); }
+  .card-header-icon { width:30px; height:30px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; }
+  .card-header-title { font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.06em; color:var(--muted-fg); }
+  .card-body { padding:14px 16px; }
+
+  /* ── Info rows ── */
+  .info-row { display:flex; align-items:flex-start; gap:10px; padding:8px 0; border-bottom:1px solid var(--border); }
+  .info-row:last-child { border-bottom:none; padding-bottom:0; }
+  .info-icon { font-size:16px; flex-shrink:0; width:22px; text-align:center; margin-top:1px; }
+  .info-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--muted-fg); margin-bottom:2px; }
+  .info-value { font-size:14px; font-weight:600; color:var(--fg); line-height:1.3; }
+  .info-sub { font-size:11px; color:var(--muted-fg); margin-top:2px; }
+
+  /* ── Voting ── */
+  .vote-section { padding:16px; }
+  .vote-title { font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.06em; color:var(--muted-fg); margin-bottom:12px; }
+
+  .consensus-big { margin-bottom:14px; }
+  .consensus-nums { display:flex; align-items:baseline; gap:6px; margin-bottom:6px; }
+  .consensus-main { font-size:28px; font-weight:900; color:var(--primary); }
+  .consensus-of { font-size:14px; color:var(--muted-fg); font-weight:600; }
+  .consensus-bar { height:8px; border-radius:4px; background:var(--muted); overflow:hidden; }
+  .consensus-fill { height:100%; border-radius:4px; background:linear-gradient(90deg,var(--green),#4ab5ae); }
+
+  .voter-groups { display:flex; flex-direction:column; gap:8px; margin-bottom:14px; }
+  .voter-group { }
+  .voter-group-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--muted-fg); margin-bottom:5px; }
+  .voter-list { display:flex; flex-wrap:wrap; gap:5px; }
+  .voter-chip { display:flex; align-items:center; gap:5px; padding:3px 8px 3px 3px; border-radius:20px; background:var(--muted); }
+  .voter-chip-av { width:18px; height:18px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:7px; font-weight:800; color:#fff; flex-shrink:0; }
+  .voter-chip-name { font-size:11px; font-weight:600; color:var(--fg); }
+  .voter-chip.in-chip { background:var(--primary-light); }
+  .voter-chip.in-chip .voter-chip-name { color:var(--primary); }
+  .voter-chip.maybe-chip { background:var(--amber-light); }
+  .voter-chip.maybe-chip .voter-chip-name { color:var(--amber); }
+
+  .vote-my { background:var(--muted); border-radius:14px; padding:12px; }
+  .vote-my-label { font-size:11px; font-weight:700; color:var(--muted-fg); margin-bottom:8px; }
+  .vote-btns { display:flex; gap:6px; }
+  .vote-btn { flex:1; padding:10px 6px; border-radius:12px; border:1.5px solid var(--border); font-size:12px; font-weight:700; display:flex; flex-direction:column; align-items:center; gap:2px; cursor:pointer; background:#fff; color:var(--muted-fg); transition:.12s; }
+  .vote-btn.active-in { border-color:var(--primary); background:var(--primary-light); color:var(--primary); }
+  .vote-btn .vote-emoji { font-size:18px; }
+  .vote-btn .vote-label { font-size:10px; }
+
+  /* ── Description ── */
+  .desc-text { font-size:14px; color:var(--fg); line-height:1.6; }
+
+  /* ── Links ── */
+  .link-card { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:12px; border:1px solid var(--border); background:var(--muted); margin-bottom:7px; cursor:pointer; }
+  .link-favicon { width:28px; height:28px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:14px; background:#fff; border:1px solid var(--border); flex-shrink:0; }
+  .link-info { flex:1; min-width:0; }
+  .link-title { font-size:13px; font-weight:700; color:var(--fg); truncate; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .link-domain { font-size:10px; color:var(--muted-fg); }
+  .link-arrow { font-size:14px; color:var(--muted-fg); flex-shrink:0; }
+
+  /* ── Comments ── */
+  .comment { display:flex; gap:9px; padding:10px 0; border-bottom:1px solid var(--border); }
+  .comment:last-child { border-bottom:none; }
+  .comment-av { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#fff; flex-shrink:0; }
+  .comment-body { flex:1; }
+  .comment-name { font-size:11px; font-weight:700; color:var(--fg); }
+  .comment-time { font-size:10px; color:var(--muted-fg); margin-left:5px; }
+  .comment-text { font-size:13px; color:var(--fg); margin-top:2px; line-height:1.4; }
+
+  .comment-input-row { display:flex; gap:8px; align-items:center; padding:12px 16px; border-top:1px solid var(--border); }
+  .comment-av-me { width:30px; height:30px; border-radius:50%; background:var(--primary); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800; color:#fff; flex-shrink:0; }
+  .comment-input { flex:1; background:var(--muted); border:none; outline:none; border-radius:12px; padding:8px 12px; font-size:13px; color:var(--fg); }
+  .comment-send { width:32px; height:32px; border-radius:10px; background:var(--primary); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; }
+  .comment-send svg { width:15px; height:15px; stroke:#fff; }
+
+  /* ── Action bar ── */
+  .action-bar { position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:390px; background:#fff; border-top:1px solid var(--border); padding:10px 16px 28px; display:flex; gap:8px; }
+  .action-btn { flex:1; height:44px; border-radius:14px; font-size:14px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:6px; cursor:pointer; border:none; }
+  .action-btn.primary { background:var(--primary); color:#fff; }
+  .action-btn.secondary { background:var(--muted); color:var(--fg); }
+  .action-btn svg { width:16px; height:16px; }
+
+  /* Weather badge */
+  .weather-badge { display:inline-flex; align-items:center; gap:4px; padding:3px 8px; border-radius:20px; background:#fef3e2; color:#c47a1e; font-size:11px; font-weight:700; border:1px solid #fcd19c; }
+
+  a { text-decoration:none; color:inherit; }
+</style>
+</head>
+<body>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-emoji">⛵</div>
+  <div class="hero-top">
+    <a href="ausfluge-01-feed.html">
+      <div class="hero-back">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      </div>
+    </a>
+  </div>
+  <div class="hero-badges">
+    <div class="hero-badge confirmed">✓ Bestätigt</div>
+    <div class="hero-badge date">📅 Di, 15. Juli 2025</div>
+    <div class="weather-badge">☀️ 28°C erwartet</div>
+  </div>
+</div>
+
+<!-- Title Section -->
+<div class="title-section">
+  <div class="act-title">Bootstour nach Capri</div>
+  <div class="act-by">
+    <div class="act-by-av">AN</div>
+    <span>Vorgeschlagen von <strong>Anna</strong> · vor 3 Tagen</span>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- Details Card -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-header-icon" style="background:#e8f7f6">📋</div>
+      <div class="card-header-title">Details</div>
+    </div>
+    <div class="card-body" style="padding:8px 16px 14px">
+      <div class="info-row">
+        <div class="info-icon">🕘</div>
+        <div>
+          <div class="info-label">Abfahrt</div>
+          <div class="info-value">09:00 Uhr</div>
+        </div>
+      </div>
+      <div class="info-row">
+        <div class="info-icon">📍</div>
+        <div>
+          <div class="info-label">Treffpunkt</div>
+          <div class="info-value">Hafen Sorrent · Pier 3</div>
+          <div class="info-sub">→ In Google Maps öffnen</div>
+        </div>
+      </div>
+      <div class="info-row">
+        <div class="info-icon">⏱</div>
+        <div>
+          <div class="info-label">Dauer</div>
+          <div class="info-value">ca. 6 Stunden</div>
+          <div class="info-sub">Rückkehr ca. 15:00 Uhr</div>
+        </div>
+      </div>
+      <div class="info-row">
+        <div class="info-icon">💶</div>
+        <div>
+          <div class="info-label">Kosten (geschätzt)</div>
+          <div class="info-value">~35€ pro Person</div>
+          <div class="info-sub">Fähre hin & zurück · Eintritt Blaue Grotte separat</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Voting Card -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-header-icon" style="background:#e8f7f6">🗳️</div>
+      <div class="card-header-title">Abstimmung</div>
+    </div>
+    <div class="vote-section">
+      <div class="consensus-big">
+        <div class="consensus-nums">
+          <div class="consensus-main">9</div>
+          <div class="consensus-of">von 9 sind dabei</div>
+        </div>
+        <div class="consensus-bar">
+          <div class="consensus-fill" style="width:100%"></div>
+        </div>
+      </div>
+
+      <div class="voter-groups">
+        <div class="voter-group">
+          <div class="voter-group-label">✅ Dabei (9)</div>
+          <div class="voter-list">
+            <div class="voter-chip in-chip"><div class="voter-chip-av" style="background:#1b5c58">AN</div><div class="voter-chip-name">Anna</div></div>
+            <div class="voter-chip in-chip"><div class="voter-chip-av" style="background:#2d8a84">MA</div><div class="voter-chip-name">Max</div></div>
+            <div class="voter-chip in-chip"><div class="voter-chip-av" style="background:#4ab5ae">LI</div><div class="voter-chip-name">Lisa</div></div>
+            <div class="voter-chip in-chip"><div class="voter-chip-av" style="background:#c47a1e">TO</div><div class="voter-chip-name">Tom</div></div>
+            <div class="voter-chip in-chip"><div class="voter-chip-av" style="background:#6b4fa0">BE</div><div class="voter-chip-name">Ben</div></div>
+            <div class="voter-chip in-chip"><div class="voter-chip-av" style="background:#2d7a4f">KL</div><div class="voter-chip-name">Klaus</div></div>
+            <div class="voter-chip in-chip"><div class="voter-chip-av" style="background:#c47a1e">SA</div><div class="voter-chip-name">Sara</div></div>
+            <div class="voter-chip in-chip"><div class="voter-chip-av" style="background:#1b5c58">PE</div><div class="voter-chip-name">Peter</div></div>
+            <div class="voter-chip in-chip"><div class="voter-chip-av" style="background:#4ab5ae">JU</div><div class="voter-chip-name">Julia</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="vote-my">
+        <div class="vote-my-label">Deine Stimme</div>
+        <div class="vote-btns">
+          <button class="vote-btn active-in">
+            <span class="vote-emoji">😄</span>
+            <span class="vote-label">Dabei!</span>
+          </button>
+          <button class="vote-btn">
+            <span class="vote-emoji">🤷</span>
+            <span class="vote-label">Vielleicht</span>
+          </button>
+          <button class="vote-btn">
+            <span class="vote-emoji">😴</span>
+            <span class="vote-label">Nein</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Description Card -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-header-icon" style="background:#e8f7f6">📝</div>
+      <div class="card-header-title">Beschreibung</div>
+    </div>
+    <div class="card-body">
+      <div class="desc-text">
+        Fähre von Sorrent nach Capri — ca. 50 min Überfahrt. Vor Ort: Blaue Grotte (extra ~15€), Villa Jovis, Spaziergang durch Anacapri. Mittagessen im Ort, dann zurück.<br><br>
+        Wichtig: Tickets möglichst 2 Tage vorher buchen, es kann voll werden!
+      </div>
+    </div>
+  </div>
+
+  <!-- Links Card -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-header-icon" style="background:#e8f7f6">🔗</div>
+      <div class="card-header-title">Links & Infos</div>
+    </div>
+    <div class="card-body">
+      <div class="link-card">
+        <div class="link-favicon">⛵</div>
+        <div class="link-info">
+          <div class="link-title">Fähre Sorrent–Capri buchen</div>
+          <div class="link-domain">bookaway.com</div>
+        </div>
+        <div class="link-arrow">↗</div>
+      </div>
+      <div class="link-card">
+        <div class="link-favicon">⭐</div>
+        <div class="link-info">
+          <div class="link-title">Capri – Top Sehenswürdigkeiten</div>
+          <div class="link-domain">tripadvisor.de</div>
+        </div>
+        <div class="link-arrow">↗</div>
+      </div>
+      <div style="display:flex; align-items:center; gap:6px; margin-top:8px; cursor:pointer;">
+        <div style="font-size:12px; color:var(--primary); font-weight:700;">+ Link hinzufügen</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Comments Card -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-header-icon" style="background:#e8f7f6">💬</div>
+      <div class="card-header-title">Kommentare (3)</div>
+    </div>
+    <div class="card-body" style="padding:6px 16px 10px">
+      <div class="comment">
+        <div class="comment-av" style="background:#1b5c58">AN</div>
+        <div class="comment-body">
+          <div><span class="comment-name">Anna</span><span class="comment-time">vor 1h</span></div>
+          <div class="comment-text">Tickets sollten wir bald buchen — die Juli-Touren sind immer schnell ausgebucht! 🎟️</div>
+        </div>
+      </div>
+      <div class="comment">
+        <div class="comment-av" style="background:#2d8a84">MA</div>
+        <div class="comment-body">
+          <div><span class="comment-name">Max</span><span class="comment-time">vor 45min</span></div>
+          <div class="comment-text">Bin dabei! Brauche ich Bargeld für die Blaue Grotte?</div>
+        </div>
+      </div>
+      <div class="comment">
+        <div class="comment-av" style="background:#4ab5ae">LI</div>
+        <div class="comment-body">
+          <div><span class="comment-name">Lisa</span><span class="comment-time">vor 20min</span></div>
+          <div class="comment-text">Ich organisiere die Fähre und schicke euch den Link 👍</div>
+        </div>
+      </div>
+    </div>
+    <div class="comment-input-row">
+      <div class="comment-av-me">ME</div>
+      <input class="comment-input" placeholder="Kommentar schreiben…" />
+      <div class="comment-send">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Expense hint -->
+  <div style="background:#fff; border-radius:18px; border:1px solid var(--border); padding:14px 16px; display:flex; align-items:center; gap:12px; box-shadow:0 1px 4px rgba(26,22,18,.05);">
+    <div style="font-size:24px">💸</div>
+    <div style="flex:1">
+      <div style="font-size:13px; font-weight:700; color:var(--fg);">Ausgabe erfassen</div>
+      <div style="font-size:11px; color:var(--muted-fg); margin-top:1px;">Nach dem Ausflug direkt die Kosten eintragen</div>
+    </div>
+    <div style="font-size:12px; font-weight:700; color:var(--primary);">→</div>
+  </div>
+
+</div>
+
+<!-- Action Bar -->
+<div class="action-bar">
+  <button class="action-btn secondary">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+    Teilen
+  </button>
+  <button class="action-btn primary">
+    ✏️ Bearbeiten
+  </button>
+</div>
+
+</body>
+</html>

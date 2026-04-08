@@ -1,11 +1,12 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
-import TripTabNav from '@/components/layout/TripTabNav'
+import TripBottomNav from '@/components/layout/TripBottomNav'
 import AddExpenseFab from '@/components/trips/AddExpenseFab'
 import TripEmojiPicker from '@/components/trips/TripEmojiPicker'
-import { ChevronLeft } from 'lucide-react'
+import { ChevronLeft, Settings } from 'lucide-react'
 import Link from 'next/link'
 import { pickFallbackEmoji } from '@/lib/tripEmojis'
+import { formatDate } from '@/lib/formatting'
 
 export default async function TripLayout({
   children,
@@ -28,11 +29,9 @@ export default async function TripLayout({
   if (!trip) notFound()
 
   const isActive = trip.status === 'active'
-  // Same fallback logic as TripCard to keep emoji consistent
   const coverEmoji = (trip.cover_emoji as string | null) ?? pickFallbackEmoji(trip.name as string)
   const coverImageUrl = (trip.cover_image_url as string | null) ?? null
 
-  // Check if user is a participant (to allow emoji changes for all participants)
   const { data: myParticipant } = await supabase
     .from('trip_participants')
     .select('id')
@@ -42,11 +41,15 @@ export default async function TripLayout({
 
   const isParticipant = !!myParticipant
 
+  const dateRange = trip.start_date && trip.end_date
+    ? `${formatDate(trip.start_date as string)} – ${formatDate(trip.end_date as string)}`
+    : trip.start_date ? `ab ${formatDate(trip.start_date as string)}` : null
+
   return (
     <div>
-      {/* Teal header — NO overflow-hidden so the emoji picker popover is visible */}
+      {/* Teal header strip — NO overflow-hidden so emoji picker popover is visible */}
       <div
-        className="-mx-4 -mt-7 mb-5 px-5 pt-8 pb-5 rounded-b-3xl relative"
+        className="-mx-4 -mt-7 mb-5 px-4 pt-7 pb-4 rounded-b-3xl relative"
         style={{ background: 'linear-gradient(150deg, #1b5c58 0%, #134844 100%)' }}
       >
         {/* Cover image background */}
@@ -61,15 +64,16 @@ export default async function TripLayout({
         {/* Big background emoji (only when no cover image) */}
         {!coverImageUrl && (
           <span
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-[80px] leading-none select-none pointer-events-none"
-            style={{ opacity: 0.18, filter: 'blur(1px)' }}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-[72px] leading-none select-none pointer-events-none"
+            style={{ opacity: 0.15, filter: 'blur(1px)' }}
             aria-hidden
           >
             {coverEmoji}
           </span>
         )}
 
-        <div className="flex items-center gap-3 relative">
+        <div className="flex items-center gap-2.5 relative">
+          {/* Back to dashboard */}
           <Link
             href="/dashboard"
             className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-xl transition-colors"
@@ -78,7 +82,7 @@ export default async function TripLayout({
             <ChevronLeft className="w-5 h-5" strokeWidth={2} />
           </Link>
 
-          {/* Emoji badge — any participant can change */}
+          {/* Emoji badge */}
           <TripEmojiPicker
             tripId={tripId}
             currentEmoji={coverEmoji}
@@ -86,25 +90,36 @@ export default async function TripLayout({
             canEdit={isParticipant}
           />
 
-          <h1 className="text-[18px] font-bold text-white truncate flex-1">{trip.name as string}</h1>
-          <span className="flex-shrink-0 px-2.5 py-1 rounded-full text-[10px] font-bold" style={{
-            background: isActive ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.1)',
-            color: isActive ? '#fff' : 'rgba(255,255,255,0.5)',
-          }}>
-            {isActive ? '● Aktiv' : 'Fertig'}
-          </span>
+          {/* Trip name + date */}
+          <div className="flex-1 min-w-0">
+            <h1 className="text-[16px] font-bold text-white truncate leading-tight">{trip.name as string}</h1>
+            {dateRange && (
+              <p className="text-[11px] text-white/60 mt-0.5 leading-tight">{dateRange}</p>
+            )}
+          </div>
+
+          {/* Settings gear */}
+          <Link
+            href={`/trips/${tripId}/participants`}
+            className="relative flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-xl transition-colors"
+            style={{ background: 'rgba(255,255,255,0.15)', color: '#fff' }}
+          >
+            <Settings className="w-4 h-4" strokeWidth={1.8} />
+            {!isActive && (
+              <span className="absolute top-1 right-1 w-2 h-2 bg-amber-400 rounded-full" />
+            )}
+          </Link>
         </div>
       </div>
 
-      {/* Tabs */}
-      <TripTabNav tripId={tripId} isEnded={!isActive} />
-
       {/* Content */}
-      <div className="mt-5">
+      <div>
         {children}
       </div>
 
       {isActive && <AddExpenseFab tripId={tripId} />}
+
+      <TripBottomNav tripId={tripId} isEnded={!isActive} />
     </div>
   )
 }

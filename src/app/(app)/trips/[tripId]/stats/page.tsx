@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import GeldSubNav from '@/components/layout/GeldSubNav'
 import { computeSettlement } from '@/lib/settlement'
 import { formatCurrency, categoryLabels } from '@/lib/formatting'
 import SpendingByCategoryChart from '@/components/stats/SpendingByCategoryChart'
@@ -123,6 +124,7 @@ export default async function StatsPage({
 
   return (
     <div className="space-y-6">
+      <GeldSubNav tripId={tripId} />
       <div className="bg-card card-shadow rounded-2xl p-5 text-center">
         <p className="text-sm text-muted-foreground mb-1">Gesamtausgaben</p>
         <p className="text-3xl font-bold text-foreground">{formatCurrency(settlement.totalSpentCents)}</p>

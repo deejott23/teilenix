@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TeileniX – Konzept 3: Spaces</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #18181b;
+  padding: 40px 20px;
+  min-height: 100vh;
+}
+.page-title {
+  color: white;
+  text-align: center;
+  margin-bottom: 8px;
+  font-size: 22px;
+  font-weight: 800;
+}
+.page-subtitle {
+  color: rgba(255,255,255,0.5);
+  text-align: center;
+  font-size: 14px;
+  margin-bottom: 40px;
+  line-height: 1.5;
+}
+.screens-row {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+.screen-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.screen-label {
+  color: rgba(255,255,255,0.6);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.phone {
+  width: 320px;
+  background: #f0f4f4;
+  border-radius: 44px;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08);
+}
+.phone-inner {
+  border-radius: 40px;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Status */
+.status-bar {
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 20px 6px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* ─── Concept 3: "Spaces" ─── */
+/* Each module is a Space with its own color identity.
+   Navigation is a side-scrolling module strip + a pinned header.
+   Tabs are replaced by a swipeable space strip at top. */
+
+/* Persistent app bar */
+.app-bar {
+  padding: 10px 14px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.ab-trip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ab-emoji {
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px;
+}
+.ab-name { font-size: 14px; font-weight: 800; }
+.ab-arr { font-size: 12px; opacity: 0.6; }
+.ab-right { display: flex; align-items: center; gap: 6px; }
+.ab-icon {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+}
+
+/* Space strip (horizontal scroll) */
+.space-strip {
+  display: flex;
+  gap: 0;
+  padding: 10px 14px 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.space-strip::-webkit-scrollbar { display: none; }
+.space-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 14px 6px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  flex-shrink: 0;
+  gap: 4px;
+  position: relative;
+}
+.space-tab.active {
+  border-bottom-color: var(--space-color);
+}
+.space-dot {
+  width: 28px; height: 28px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  background: #f0f0f0;
+}
+.space-tab.active .space-dot {
+  background: var(--space-bg);
+}
+.space-name { font-size: 10px; font-weight: 700; color: #9ca3af; }
+.space-tab.active .space-name { color: var(--space-color); }
+.space-notif {
+  position: absolute; top: 6px; right: 8px;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #ef4444;
+  border: 1.5px solid white;
+}
+
+.strip-divider { width: 1px; background: #f0f0f0; margin: 8px 0 4px; }
+
+/* Space content */
+.space-content {
+  padding: 12px;
+  min-height: 460px;
+}
+
+/* Space: Gruppe (chat-like) */
+.chat-messages { display: flex; flex-direction: column; gap: 8px; }
+.chat-msg {
+  display: flex; gap: 8px; align-items: flex-end;
+}
+.chat-msg.mine { flex-direction: row-reverse; }
+.chat-avatar {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: #e8f4f3;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; flex-shrink: 0;
+}
+.chat-bubble {
+  background: white;
+  border-radius: 16px 16px 16px 4px;
+  padding: 9px 12px;
+  max-width: 200px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.chat-msg.mine .chat-bubble {
+  background: #1b5c58;
+  color: white;
+  border-radius: 16px 16px 4px 16px;
+}
+.chat-name { font-size: 10px; font-weight: 700; color: #1b5c58; margin-bottom: 3px; }
+.chat-msg.mine .chat-name { display: none; }
+.chat-text { font-size: 13px; color: #111827; line-height: 1.4; }
+.chat-msg.mine .chat-text { color: white; }
+.chat-time { font-size: 10px; color: #9ca3af; align-self: flex-end; }
+.chat-msg.mine .chat-time { order: -1; }
+
+.chat-action-card {
+  background: #f0f9f8;
+  border: 1.5px solid #a8d5d1;
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin: 4px 0;
+}
+.cac-label { font-size: 10px; font-weight: 700; color: #1b5c58; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+.cac-title { font-size: 13px; font-weight: 700; color: #111827; }
+.cac-meta { font-size: 11px; color: #6b7280; margin-top: 2px; }
+
+.chat-input-bar {
+  background: white;
+  border-top: 1px solid #f0f0f0;
+  padding: 10px 12px 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.chat-input {
+  flex: 1;
+  background: #f9fafb;
+  border-radius: 20px;
+  padding: 9px 14px;
+  font-size: 13px;
+  color: #9ca3af;
+}
+.chat-send {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: #1b5c58;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+}
+
+/* Space: Planen (Ausflüge) */
+.plan-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 10px;
+}
+.ph-title { font-size: 15px; font-weight: 800; color: #111827; }
+.ph-add {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: #fef3c7;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; color: #92400e; line-height: 1;
+}
+
+/* Calendar mini */
+.cal-strip {
+  display: flex; gap: 4px; margin-bottom: 12px;
+}
+.cal-day {
+  flex: 1;
+  border-radius: 10px;
+  padding: 6px 4px;
+  text-align: center;
+  background: white;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.cal-day.has-event { background: #fef3c7; }
+.cal-day.confirmed { background: #d1fae5; }
+.cal-wd { font-size: 9px; color: #9ca3af; font-weight: 700; text-transform: uppercase; }
+.cal-d { font-size: 13px; font-weight: 800; color: #374151; }
+.cal-day.has-event .cal-d { color: #92400e; }
+.cal-day.confirmed .cal-d { color: #065f46; }
+.cal-dot { width: 5px; height: 5px; border-radius: 50%; margin: 2px auto 0; }
+.cal-day.has-event .cal-dot { background: #f59e0b; }
+.cal-day.confirmed .cal-dot { background: #059669; }
+
+.event-card {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  display: flex;
+}
+.ec-accent { width: 4px; flex-shrink: 0; }
+.ec-green { background: #059669; }
+.ec-amber { background: #d97706; }
+.ec-body { padding: 10px 12px; flex: 1; }
+.ec-title { font-size: 13px; font-weight: 700; color: #111827; }
+.ec-meta { font-size: 11px; color: #9ca3af; margin-top: 2px; }
+.ec-row { display: flex; align-items: center; justify-content: space-between; margin-top: 6px; }
+.vote-row { display: flex; gap: 4px; }
+.vr-chip { background: #f9fafb; border-radius: 20px; padding: 3px 8px; font-size: 10px; font-weight: 700; color: #374151; }
+
+/* Essen mini card */
+.essen-day {
+  background: white;
+  border-radius: 14px;
+  padding: 10px 12px;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.ed-day { width: 32px; text-align: center; }
+.ed-wd { font-size: 10px; color: #9ca3af; font-weight: 700; }
+.ed-d { font-size: 15px; font-weight: 800; color: #374151; }
+.ed-content { flex: 1; }
+.ed-meal { font-size: 13px; font-weight: 700; color: #111827; }
+.ed-place { font-size: 11px; color: #9ca3af; margin-top: 1px; }
+.ed-add { width: 28px; height: 28px; border-radius: 50%; background: #f0f4f4; display: flex; align-items: center; justify-content: center; font-size: 18px; color: #9ca3af; }
+.essen-day.planned { background: #f0fdf4; }
+.essen-day.planned .ed-meal { color: #065f46; }
+
+/* Bottom nav for concept 3 */
+.bottom-nav-3 {
+  background: white;
+  border-top: 1px solid #f0f0f0;
+  display: flex;
+  padding: 8px 0 16px;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
+}
+.bn3-item {
+  flex: 1;
+  display: flex; flex-direction: column;
+  align-items: center; gap: 3px;
+  padding: 4px 0;
+}
+.bn3-icon {
+  width: 26px; height: 26px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  border-radius: 8px;
+}
+.bn3-icon.active { background: #e8f4f3; }
+.bn3-label { font-size: 10px; color: #9ca3af; font-weight: 600; }
+.bn3-item.active .bn3-label { color: #1b5c58; font-weight: 700; }
+
+.concept-badge {
+  background: rgba(24,24,27,0.6);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  padding: 8px 14px;
+  color: rgba(255,255,255,0.6);
+  font-size: 11px;
+  line-height: 1.5;
+  max-width: 320px;
+  text-align: center;
+}
+</style>
+</head>
+<body>
+
+<div class="page-title">Konzept 3 — Spaces</div>
+<div class="page-subtitle">Module als horizontale "Spaces" — scrollbarer Tab-Strip oben · Kein starres Bottom-Nav<br>Gruppe als Chat-ähnlicher Raum · Planen kombiniert Ausflüge + Essen in einer Ansicht</div>
+
+<div class="screens-row">
+
+  <!-- Screen 1: Gruppe / Chat Space -->
+  <div class="screen-wrap">
+    <div class="screen-label">Gruppe-Space</div>
+    <div class="phone">
+      <div class="phone-inner">
+        <div class="status-bar" style="background:#1b5c58;"><span>9:41</span><span>●●● 100%</span></div>
+
+        <div style="background:#1b5c58;">
+          <div class="app-bar">
+            <div class="ab-trip">
+              <div class="ab-emoji" style="background:rgba(255,255,255,0.15);">🌿</div>
+              <div class="ab-name" style="color:white;">Toskana 2025</div>
+              <div class="ab-arr" style="color:white;">⌄</div>
+            </div>
+            <div class="ab-right">
+              <div class="ab-icon" style="background:rgba(255,255,255,0.15);color:white;">🔍</div>
+              <div class="ab-icon" style="background:rgba(255,255,255,0.15);color:white;">👤</div>
+            </div>
+          </div>
+
+          <!-- Space strip -->
+          <div class="space-strip" style="background:#1b5c58; border-bottom: 1px solid rgba(255,255,255,0.1);">
+            <div class="space-tab" style="--space-color:#f59e0b; --space-bg:rgba(245,158,11,0.15);">
+              <div class="space-dot">🏠</div>
+              <div class="space-name" style="color:rgba(255,255,255,0.5);">Home</div>
+            </div>
+            <div class="space-tab" style="--space-color:#f59e0b; --space-bg:rgba(245,158,11,0.15);">
+              <div class="space-dot">🗺️</div>
+              <div class="space-name" style="color:rgba(255,255,255,0.5);">Planen</div>
+              <div class="space-notif"></div>
+            </div>
+            <div class="space-tab" style="--space-color:#f59e0b; --space-bg:rgba(245,158,11,0.15);">
+              <div class="space-dot">📋</div>
+              <div class="space-name" style="color:rgba(255,255,255,0.5);">Listen</div>
+            </div>
+            <div class="space-tab active" style="--space-color:#22d3ee; --space-bg:rgba(34,211,238,0.15); border-bottom-color:#22d3ee;">
+              <div class="space-dot" style="background:rgba(34,211,238,0.2);">💬</div>
+              <div class="space-name" style="color:#22d3ee;">Gruppe</div>
+            </div>
+            <div class="space-tab" style="--space-color:#f59e0b; --space-bg:rgba(245,158,11,0.15);">
+              <div class="space-dot">💰</div>
+              <div class="space-name" style="color:rgba(255,255,255,0.5);">Geld</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chat content -->
+        <div style="background:#f8fafc; padding: 12px; min-height: 440px;">
+          <div class="chat-messages">
+
+            <div class="chat-msg">
+              <div class="chat-avatar">👩</div>
+              <div>
+                <div style="margin-bottom:2px;">
+                  <span style="font-size:10px; font-weight:700; color:#1b5c58;">Anna</span>
+                  <span style="font-size:10px; color:#9ca3af; margin-left:4px;">10:12</span>
+                </div>
+                <div class="chat-bubble">
+                  <div class="chat-text">Hab die Fähre gefunden! Buchen wir das?</div>
+                </div>
+                <div class="chat-action-card">
+                  <div class="cac-label">🗺️ Ausflug vorgeschlagen</div>
+                  <div class="cac-title">Bootstour nach Capri</div>
+                  <div class="cac-meta">Do, 17. Juli · 35€/P · 6h</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="chat-msg">
+              <div class="chat-avatar">👨</div>
+              <div>
+                <div style="margin-bottom:2px;">
+                  <span style="font-size:10px; font-weight:700; color:#1b5c58;">Max</span>
+                  <span style="font-size:10px; color:#9ca3af; margin-left:4px;">10:34</span>
+                </div>
+                <div class="chat-bubble">
+                  <div class="chat-text">😄 Unbedingt! Ich bin dabei. Wer bucht?</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="chat-msg mine">
+              <div class="chat-avatar" style="background:#1b5c58;color:white;">Ich</div>
+              <div style="display:flex;flex-direction:column;align-items:flex-end;">
+                <div style="margin-bottom:2px; text-align:right;">
+                  <span style="font-size:10px; color:#9ca3af; margin-right:4px;">10:41</span>
+                </div>
+                <div class="chat-bubble">
+                  <div class="chat-text">Ich buch das! Hab mal eine Ausgabe angelegt.</div>
+                </div>
+                <div class="chat-action-card" style="text-align:left;">
+                  <div class="cac-label">💰 Ausgabe erfasst</div>
+                  <div class="cac-title">Fähre Capri · €285</div>
+                  <div class="cac-meta">Auf alle aufgeteilt</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="chat-msg">
+              <div class="chat-avatar">👩‍🦱</div>
+              <div>
+                <div style="margin-bottom:2px;">
+                  <span style="font-size:10px; font-weight:700; color:#1b5c58;">Lisa</span>
+                  <span style="font-size:10px; color:#9ca3af; margin-left:4px;">11:02</span>
+                </div>
+                <div class="chat-bubble">
+                  <div class="chat-text">Super! Treffpunkt schon festgelegt?</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Chat input -->
+        <div class="chat-input-bar">
+          <div style="font-size:20px;">📎</div>
+          <div class="chat-input">Nachricht...</div>
+          <div class="chat-send">➤</div>
+        </div>
+
+      </div>
+    </div>
+    <div class="concept-badge">Gruppe als Chat-Space mit eingebetteten<br>Aktionskarten (Ausgabe, Ausflug). Cross-linking<br>zwischen Modulen ohne App-Wechsel.</div>
+  </div>
+
+  <!-- Screen 2: Planen Space -->
+  <div class="screen-wrap">
+    <div class="screen-label">Planen-Space</div>
+    <div class="phone">
+      <div class="phone-inner">
+        <div class="status-bar" style="background:#92400e;"><span>9:41</span><span>●●● 100%</span></div>
+
+        <div style="background:#92400e;">
+          <div class="app-bar">
+            <div class="ab-trip">
+              <div class="ab-emoji" style="background:rgba(255,255,255,0.15);">🌿</div>
+              <div class="ab-name" style="color:white;">Toskana 2025</div>
+              <div class="ab-arr" style="color:white;">⌄</div>
+            </div>
+            <div class="ab-right">
+              <div class="ab-icon" style="background:rgba(255,255,255,0.15);color:white;">＋</div>
+            </div>
+          </div>
+
+          <div class="space-strip" style="background:#92400e; border-bottom: 1px solid rgba(255,255,255,0.1);">
+            <div class="space-tab" style="--space-color:white; --space-bg:rgba(255,255,255,0.15);">
+              <div class="space-dot">🏠</div>
+              <div class="space-name" style="color:rgba(255,255,255,0.5);">Home</div>
+            </div>
+            <div class="space-tab active" style="--space-color:#fbbf24; --space-bg:rgba(251,191,36,0.15); border-bottom-color:#fbbf24;">
+              <div class="space-dot" style="background:rgba(251,191,36,0.2);">🗺️</div>
+              <div class="space-name" style="color:#fbbf24;">Planen</div>
+            </div>
+            <div class="space-tab" style="">
+              <div class="space-dot">📋</div>
+              <div class="space-name" style="color:rgba(255,255,255,0.5);">Listen</div>
+            </div>
+            <div class="space-tab" style="">
+              <div class="space-dot">💬</div>
+              <div class="space-name" style="color:rgba(255,255,255,0.5);">Gruppe</div>
+            </div>
+            <div class="space-tab" style="">
+              <div class="space-dot">💰</div>
+              <div class="space-name" style="color:rgba(255,255,255,0.5);">Geld</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-content" style="background:#f8fafc;">
+          <!-- Sub-tabs -->
+          <div style="display:flex; gap:8px; margin-bottom:12px;">
+            <div style="flex:1; padding:7px; border-radius:10px; background:white; text-align:center; font-size:12px; font-weight:700; color:#1b5c58; box-shadow:0 1px 3px rgba(0,0,0,0.08);">🗺️ Ausflüge</div>
+            <div style="flex:1; padding:7px; border-radius:10px; background:transparent; text-align:center; font-size:12px; font-weight:700; color:#9ca3af;">🍽️ Essen</div>
+          </div>
+
+          <!-- Calendar strip -->
+          <div class="cal-strip">
+            <div class="cal-day"><div class="cal-wd">Mo</div><div class="cal-d">14</div><div class="cal-dot"></div></div>
+            <div class="cal-day"><div class="cal-wd">Di</div><div class="cal-d">15</div><div class="cal-dot"></div></div>
+            <div class="cal-day has-event"><div class="cal-wd">Mi</div><div class="cal-d">16</div><div class="cal-dot"></div></div>
+            <div class="cal-day confirmed"><div class="cal-wd">Do</div><div class="cal-d">17</div><div class="cal-dot"></div></div>
+            <div class="cal-day"><div class="cal-wd">Fr</div><div class="cal-d">18</div><div class="cal-dot"></div></div>
+            <div class="cal-day has-event"><div class="cal-wd">Sa</div><div class="cal-d">19</div><div class="cal-dot"></div></div>
+            <div class="cal-day"><div class="cal-wd">So</div><div class="cal-d">20</div><div class="cal-dot"></div></div>
+          </div>
+
+          <!-- Confirmed -->
+          <div style="font-size:11px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px;">Bestätigt</div>
+
+          <div class="event-card">
+            <div class="ec-accent ec-green"></div>
+            <div class="ec-body">
+              <div class="ec-title">⛵ Bootstour nach Capri</div>
+              <div class="ec-meta">Do, 17. Juli · 09:00 · 35€/P</div>
+              <div class="ec-row">
+                <div class="vote-row">
+                  <div class="vr-chip">😄 7</div>
+                  <div class="vr-chip">🤷 1</div>
+                </div>
+                <div style="font-size:10px; font-weight:700; color:#059669; background:#d1fae5; border-radius:20px; padding:2px 8px;">✓ Bestätigt</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Voting -->
+          <div style="font-size:11px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin: 10px 0 6px;">Abstimmung läuft</div>
+
+          <div class="event-card">
+            <div class="ec-accent ec-amber"></div>
+            <div class="ec-body">
+              <div class="ec-title">🍷 Chianti-Weinprobe</div>
+              <div class="ec-meta">Mi, 16. Juli · ~25€/P</div>
+              <div class="ec-row">
+                <div class="vote-row">
+                  <div class="vr-chip">😄 5</div>
+                  <div class="vr-chip">🤷 2</div>
+                  <div class="vr-chip">😴 1</div>
+                </div>
+                <div style="display:flex;gap:4px;">
+                  <div style="background:#f0fdf4; border-radius:20px; padding:3px 8px; font-size:11px; font-weight:700; color:#059669; cursor:pointer;">😄</div>
+                  <div style="background:#fef3c7; border-radius:20px; padding:3px 8px; font-size:11px; font-weight:700; color:#92400e; cursor:pointer;">🤷</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="event-card">
+            <div class="ec-accent" style="background:#8b5cf6;"></div>
+            <div class="ec-body">
+              <div class="ec-title">🛵 Vespa-Tour Chianti</div>
+              <div class="ec-meta">Sa, 19. Juli? · ~45€/P</div>
+              <div class="ec-row">
+                <div class="vote-row">
+                  <div class="vr-chip">😄 3</div>
+                  <div class="vr-chip">😴 3</div>
+                </div>
+                <div style="display:flex;gap:4px;">
+                  <div style="background:#f0fdf4; border-radius:20px; padding:3px 8px; font-size:11px; font-weight:700; color:#059669; cursor:pointer;">😄</div>
+                  <div style="background:#fef3c7; border-radius:20px; padding:3px 8px; font-size:11px; font-weight:700; color:#92400e; cursor:pointer;">🤷</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="bottom-nav-3">
+          <div class="bn3-item">
+            <div class="bn3-icon">🏠</div>
+            <div class="bn3-label">Home</div>
+          </div>
+          <div class="bn3-item active">
+            <div class="bn3-icon active">🗺️</div>
+            <div class="bn3-label">Planen</div>
+          </div>
+          <div class="bn3-item">
+            <div class="bn3-icon">📋</div>
+            <div class="bn3-label">Listen</div>
+          </div>
+          <div class="bn3-item">
+            <div class="bn3-icon">💬</div>
+            <div class="bn3-label">Gruppe</div>
+          </div>
+          <div class="bn3-item">
+            <div class="bn3-icon">💰</div>
+            <div class="bn3-label">Geld</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <div class="concept-badge">Jeder Space hat eigene Farbidentität.<br>Planen-Space in Bernstein-Tönen.<br>Inline-Voting direkt in der Listenansicht.</div>
+  </div>
+
+  <!-- Screen 3: Home Space -->
+  <div class="screen-wrap">
+    <div class="screen-label">Home-Space</div>
+    <div class="phone">
+      <div class="phone-inner">
+        <div class="status-bar" style="background:#1b5c58;"><span>9:41</span><span>●●● 100%</span></div>
+
+        <div style="background:#1b5c58;">
+          <div class="app-bar">
+            <div class="ab-trip">
+              <div class="ab-emoji" style="background:rgba(255,255,255,0.15);">🌿</div>
+              <div class="ab-name" style="color:white;">Toskana 2025</div>
+              <div class="ab-arr" style="color:white;">⌄</div>
+            </div>
+            <div class="ab-right">
+              <div class="ab-icon" style="background:rgba(255,255,255,0.15);color:white;">🔔</div>
+              <div class="ab-icon" style="background:rgba(255,255,255,0.15);color:white;">👤</div>
+            </div>
+          </div>
+
+          <div class="space-strip" style="background:#1b5c58; border-bottom: 1px solid rgba(255,255,255,0.1);">
+            <div class="space-tab active" style="--space-color:white; --space-bg:rgba(255,255,255,0.15); border-bottom-color:white;">
+              <div class="space-dot" style="background:rgba(255,255,255,0.2);">🏠</div>
+              <div class="space-name" style="color:white;">Home</div>
+            </div>
+            <div class="space-tab" style="">
+              <div class="space-dot">🗺️</div>
+              <div class="space-name" style="color:rgba(255,255,255,0.5);">Planen</div>
+              <div class="space-notif"></div>
+            </div>
+            <div class="space-tab" style="">
+              <div class="space-dot">📋</div>
+              <div class="space-name" style="color:rgba(255,255,255,0.5);">Listen</div>
+            </div>
+            <div class="space-tab" style="">
+              <div class="space-dot">💬</div>
+              <div class="space-name" style="color:rgba(255,255,255,0.5);">Gruppe</div>
+            </div>
+            <div class="space-tab" style="">
+              <div class="space-dot">💰</div>
+              <div class="space-name" style="color:rgba(255,255,255,0.5);">Geld</div>
+            </div>
+          </div>
+
+          <!-- Hero countdown -->
+          <div style="padding: 16px 16px 20px; text-align:center;">
+            <div style="color:rgba(255,255,255,0.7); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:4px;">Abflug in</div>
+            <div style="color:white; font-size:48px; font-weight:900; line-height:1;">97</div>
+            <div style="color:rgba(255,255,255,0.7); font-size:13px; font-weight:600;">Tagen · 14. Juli 2025</div>
+          </div>
+        </div>
+
+        <div style="background:#f8fafc; padding: 12px;">
+
+          <!-- Status row -->
+          <div style="display:flex; gap:8px; margin-bottom:12px;">
+            <div style="flex:1; background:white; border-radius:14px; padding:10px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+              <div style="font-size:18px; font-weight:800; color:#1b5c58;">68%</div>
+              <div style="font-size:10px; color:#9ca3af; font-weight:600; margin-top:2px;">Gepackt</div>
+            </div>
+            <div style="flex:1; background:white; border-radius:14px; padding:10px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+              <div style="font-size:18px; font-weight:800; color:#d97706;">€342</div>
+              <div style="font-size:10px; color:#9ca3af; font-weight:600; margin-top:2px;">Offen</div>
+            </div>
+            <div style="flex:1; background:white; border-radius:14px; padding:10px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+              <div style="font-size:18px; font-weight:800; color:#f59e0b;">3</div>
+              <div style="font-size:10px; color:#9ca3af; font-weight:600; margin-top:2px;">Abstimmen</div>
+            </div>
+          </div>
+
+          <!-- Pinned: Nächster Ausflug -->
+          <div style="background:linear-gradient(135deg,#1b5c58,#0f3836); border-radius:18px; padding:14px; margin-bottom:10px; color:white;">
+            <div style="font-size:10px; opacity:0.7; text-transform:uppercase; letter-spacing:0.06em; font-weight:700; margin-bottom:4px;">⛵ Nächste Aktivität</div>
+            <div style="font-size:16px; font-weight:800;">Bootstour nach Capri</div>
+            <div style="font-size:12px; opacity:0.7; margin-top:3px;">Do, 17. Juli · 09:00 · Hafen Sorrent</div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+              <div style="font-size:12px; opacity:0.8;">👥 7 von 9 dabei</div>
+              <div style="background:rgba(255,255,255,0.2); border-radius:20px; padding:4px 12px; font-size:11px; font-weight:700;">Details →</div>
+            </div>
+          </div>
+
+          <!-- Quick access row -->
+          <div style="display:flex; gap:8px; margin-bottom:10px;">
+            <div style="flex:1; background:white; border-radius:14px; padding:12px 10px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,0.06); cursor:pointer;">
+              <div style="font-size:22px; margin-bottom:4px;">💶</div>
+              <div style="font-size:11px; font-weight:700; color:#374151;">Ausgabe</div>
+            </div>
+            <div style="flex:1; background:white; border-radius:14px; padding:12px 10px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,0.06); cursor:pointer;">
+              <div style="font-size:22px; margin-bottom:4px;">🗺️</div>
+              <div style="font-size:11px; font-weight:700; color:#374151;">Ausflug</div>
+            </div>
+            <div style="flex:1; background:white; border-radius:14px; padding:12px 10px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,0.06); cursor:pointer;">
+              <div style="font-size:22px; margin-bottom:4px;">📝</div>
+              <div style="font-size:11px; font-weight:700; color:#374151;">Notiz</div>
+            </div>
+            <div style="flex:1; background:white; border-radius:14px; padding:12px 10px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,0.06); cursor:pointer;">
+              <div style="font-size:22px; margin-bottom:4px;">🛒</div>
+              <div style="font-size:11px; font-weight:700; color:#374151;">Einkauf</div>
+            </div>
+          </div>
+
+          <!-- Last activity -->
+          <div style="font-size:11px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px;">Zuletzt</div>
+          <div style="background:white; border-radius:14px; padding:11px 12px; margin-bottom:6px; display:flex; align-items:center; gap:10px; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+            <div style="width:32px;height:32px;border-radius:10px;background:#d1fae5;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">💶</div>
+            <div style="flex:1;">
+              <div style="font-size:13px; font-weight:600; color:#111827;">Fähre nach Capri – 285€</div>
+              <div style="font-size:11px; color:#9ca3af; margin-top:2px;">Anna · Ausgaben · 2h</div>
+            </div>
+          </div>
+          <div style="background:white; border-radius:14px; padding:11px 12px; display:flex; align-items:center; gap:10px; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+            <div style="width:32px;height:32px;border-radius:10px;background:#fef3c7;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">🗳️</div>
+            <div style="flex:1;">
+              <div style="font-size:13px; font-weight:600; color:#111827;">Neue Abstimmung: Vespa-Tour</div>
+              <div style="font-size:11px; color:#9ca3af; margin-top:2px;">Max · Ausflüge · 5h</div>
+            </div>
+            <div style="background:#fef3c7;border-radius:20px;padding:3px 8px;font-size:10px;font-weight:700;color:#92400e;">→</div>
+          </div>
+
+        </div>
+
+        <div class="bottom-nav-3">
+          <div class="bn3-item active">
+            <div class="bn3-icon active">🏠</div>
+            <div class="bn3-label">Home</div>
+          </div>
+          <div class="bn3-item">
+            <div class="bn3-icon">🗺️</div>
+            <div class="bn3-label">Planen</div>
+          </div>
+          <div class="bn3-item">
+            <div class="bn3-icon">📋</div>
+            <div class="bn3-label">Listen</div>
+          </div>
+          <div class="bn3-item">
+            <div class="bn3-icon">💬</div>
+            <div class="bn3-label">Gruppe</div>
+          </div>
+          <div class="bn3-item">
+            <div class="bn3-icon">💰</div>
+            <div class="bn3-label">Geld</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <div class="concept-badge">Großer Countdown als emotionaler Hook.<br>Schnellzugriff-Kacheln für häufige Aktionen.<br>Tab-Strip doppelt als Farb-Navigationssystem.</div>
+  </div>
+
+</div>
+
+</body>
+</html>

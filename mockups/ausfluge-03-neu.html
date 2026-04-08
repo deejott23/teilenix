@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=390, initial-scale=1">
+<title>TeileniX – Ausflug vorschlagen</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f0f4f4;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 0;
+  }
+  .phone {
+    width: 390px;
+    min-height: 100vh;
+    background: #f0f4f4;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* ─── Status bar ─── */
+  .status-bar {
+    background: #1b5c58;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 20px 8px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  /* ─── Header ─── */
+  .header {
+    background: #1b5c58;
+    padding: 0 16px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .header-back {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .header-back svg { width: 18px; height: 18px; stroke: white; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+  .header-title {
+    color: white;
+    font-size: 18px;
+    font-weight: 700;
+    flex: 1;
+  }
+  .header-subtitle {
+    color: rgba(255,255,255,0.7);
+    font-size: 13px;
+    margin-top: 1px;
+  }
+
+  /* ─── Progress bar ─── */
+  .progress-bar-wrap {
+    background: #1b5c58;
+    padding: 0 16px 16px;
+  }
+  .progress-steps {
+    display: flex;
+    gap: 4px;
+  }
+  .progress-step {
+    flex: 1;
+    height: 3px;
+    border-radius: 2px;
+    background: rgba(255,255,255,0.25);
+  }
+  .progress-step.active {
+    background: white;
+  }
+  .progress-step.done {
+    background: rgba(255,255,255,0.6);
+  }
+
+  /* ─── Form scroll area ─── */
+  .form-scroll {
+    padding: 16px;
+    padding-bottom: 120px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  /* ─── Section header ─── */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+    margin-bottom: 2px;
+  }
+  .section-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: #1b5c58;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+  }
+  .section-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1b5c58;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* ─── Cards ─── */
+  .card {
+    background: white;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+
+  /* ─── Field rows ─── */
+  .field-row {
+    display: flex;
+    align-items: center;
+    padding: 14px 16px;
+    gap: 12px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .field-row:last-child { border-bottom: none; }
+  .field-icon {
+    width: 20px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .field-icon svg { width: 18px; height: 18px; stroke: #9ca3af; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .field-content { flex: 1; min-width: 0; }
+  .field-label {
+    font-size: 11px;
+    color: #9ca3af;
+    font-weight: 500;
+    margin-bottom: 2px;
+  }
+  .field-input {
+    font-size: 15px;
+    color: #111827;
+    font-weight: 500;
+    border: none;
+    outline: none;
+    width: 100%;
+    background: transparent;
+    padding: 0;
+  }
+  .field-input::placeholder { color: #d1d5db; font-weight: 400; }
+  .field-input.filled { color: #111827; }
+  .field-value {
+    font-size: 15px;
+    color: #111827;
+    font-weight: 500;
+  }
+  .field-value.placeholder { color: #d1d5db; font-weight: 400; }
+  .field-chevron { color: #d1d5db; font-size: 18px; }
+
+  /* ─── Textarea field ─── */
+  .textarea-field {
+    padding: 14px 16px;
+  }
+  .textarea-label {
+    font-size: 11px;
+    color: #9ca3af;
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+  .fake-textarea {
+    font-size: 14px;
+    color: #111827;
+    line-height: 1.5;
+    min-height: 60px;
+  }
+  .fake-textarea.placeholder { color: #d1d5db; }
+
+  /* ─── Type selector ─── */
+  .type-selector {
+    display: flex;
+    padding: 10px;
+    gap: 8px;
+  }
+  .type-btn {
+    flex: 1;
+    padding: 10px 8px;
+    border-radius: 12px;
+    text-align: center;
+    cursor: pointer;
+    border: 2px solid transparent;
+    background: #f9fafb;
+    transition: all 0.15s;
+  }
+  .type-btn.selected {
+    background: #e8f4f3;
+    border-color: #1b5c58;
+  }
+  .type-btn-icon { font-size: 20px; margin-bottom: 4px; }
+  .type-btn-label { font-size: 12px; font-weight: 600; color: #374151; }
+  .type-btn-sub { font-size: 10px; color: #9ca3af; margin-top: 1px; }
+  .type-btn.selected .type-btn-label { color: #1b5c58; }
+
+  /* ─── Date strip ─── */
+  .date-strip {
+    display: flex;
+    padding: 10px 12px;
+    gap: 6px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .date-strip::-webkit-scrollbar { display: none; }
+  .date-chip {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px 10px;
+    border-radius: 12px;
+    background: #f9fafb;
+    border: 2px solid transparent;
+    cursor: pointer;
+    min-width: 46px;
+  }
+  .date-chip.selected {
+    background: #e8f4f3;
+    border-color: #1b5c58;
+  }
+  .date-chip.tbd {
+    background: #f9fafb;
+    border-style: dashed;
+    border-color: #d1d5db;
+    min-width: 56px;
+  }
+  .date-weekday { font-size: 10px; color: #9ca3af; font-weight: 600; text-transform: uppercase; }
+  .date-day { font-size: 16px; font-weight: 700; color: #374151; margin: 2px 0; }
+  .date-chip.selected .date-weekday { color: #1b5c58; }
+  .date-chip.selected .date-day { color: #1b5c58; }
+  .date-chip.tbd .date-weekday { font-size: 9px; color: #9ca3af; }
+  .date-chip.tbd .date-day { font-size: 12px; font-weight: 600; color: #9ca3af; }
+
+  /* ─── Time picker row ─── */
+  .time-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    border-top: 1px solid #f0f0f0;
+  }
+  .time-pill {
+    background: #f9fafb;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 8px 14px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #374151;
+    cursor: pointer;
+  }
+  .time-pill.selected {
+    background: #e8f4f3;
+    border-color: #1b5c58;
+    color: #1b5c58;
+  }
+  .time-divider { font-size: 18px; color: #9ca3af; }
+  .time-label { font-size: 12px; color: #9ca3af; margin-left: 4px; }
+
+  /* ─── Duration chips ─── */
+  .duration-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px 16px 14px;
+    border-top: 1px solid #f0f0f0;
+  }
+  .dur-chip {
+    padding: 6px 14px;
+    border-radius: 20px;
+    background: #f9fafb;
+    border: 1.5px solid #e5e7eb;
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+    cursor: pointer;
+  }
+  .dur-chip.selected {
+    background: #e8f4f3;
+    border-color: #1b5c58;
+    color: #1b5c58;
+  }
+  .dur-chip-label { font-size: 10px; color: #9ca3af; width: 100%; padding: 0 4px; margin-bottom: 4px; font-weight: 600; text-transform: uppercase; }
+
+  /* ─── Cost field ─── */
+  .cost-row {
+    display: flex;
+    align-items: center;
+    padding: 14px 16px;
+    gap: 8px;
+    border-top: 1px solid #f0f0f0;
+  }
+  .cost-input-wrap {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    flex: 1;
+  }
+  .cost-currency { font-size: 18px; color: #9ca3af; font-weight: 700; }
+  .cost-input {
+    font-size: 28px;
+    font-weight: 700;
+    color: #111827;
+    border: none;
+    outline: none;
+    background: transparent;
+    width: 80px;
+  }
+  .cost-per { font-size: 13px; color: #9ca3af; }
+  .cost-hint { font-size: 12px; color: #9ca3af; }
+
+  /* ─── Link add ─── */
+  .link-list {
+    padding: 10px 16px;
+  }
+  .link-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f9fafb;
+  }
+  .link-item:last-of-type { border-bottom: none; }
+  .link-preview-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: #f0f4f4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .link-domain { font-size: 13px; font-weight: 600; color: #374151; }
+  .link-url { font-size: 11px; color: #9ca3af; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
+  .link-remove { color: #ef4444; font-size: 18px; cursor: pointer; margin-left: auto; }
+  .add-link-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border-top: 1px solid #f0f0f0;
+    cursor: pointer;
+  }
+  .add-link-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #f0f4f4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #1b5c58;
+    font-size: 20px;
+    font-weight: 300;
+  }
+  .add-link-text { font-size: 14px; color: #1b5c58; font-weight: 600; }
+
+  /* ─── Image upload ─── */
+  .image-add-area {
+    padding: 12px 16px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .image-placeholder {
+    width: 80px;
+    height: 80px;
+    border-radius: 14px;
+    background: #f0f4f4;
+    border: 2px dashed #d1d5db;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    gap: 4px;
+  }
+  .image-placeholder svg { width: 22px; height: 22px; stroke: #9ca3af; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .image-placeholder-label { font-size: 10px; color: #9ca3af; font-weight: 600; }
+  .image-thumb {
+    width: 80px;
+    height: 80px;
+    border-radius: 14px;
+    object-fit: cover;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .image-thumb-wrap { position: relative; flex-shrink: 0; }
+  .image-thumb-img {
+    width: 80px;
+    height: 80px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #a8d5d1 0%, #5ba8a4 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+  }
+  .image-thumb-remove {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #ef4444;
+    color: white;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    line-height: 1;
+  }
+  .image-hint { font-size: 12px; color: #9ca3af; line-height: 1.5; }
+
+  /* ─── Visibility toggle ─── */
+  .visibility-row {
+    display: flex;
+    align-items: center;
+    padding: 14px 16px;
+    gap: 12px;
+  }
+  .vis-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: #fef3c7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .vis-text { flex: 1; }
+  .vis-title { font-size: 14px; font-weight: 600; color: #374151; }
+  .vis-sub { font-size: 12px; color: #9ca3af; margin-top: 1px; }
+  .toggle {
+    width: 44px;
+    height: 26px;
+    border-radius: 13px;
+    background: #1b5c58;
+    position: relative;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .toggle-knob {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: white;
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+
+  /* ─── AI suggestion banner ─── */
+  .ai-banner {
+    background: linear-gradient(135deg, #e8f4f3 0%, #f0f9f8 100%);
+    border: 1.5px solid #a8d5d1;
+    border-radius: 14px;
+    padding: 12px 14px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .ai-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+  .ai-text { flex: 1; }
+  .ai-title { font-size: 13px; font-weight: 700; color: #1b5c58; }
+  .ai-body { font-size: 12px; color: #374151; margin-top: 3px; line-height: 1.4; }
+  .ai-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .ai-chip {
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: white;
+    border: 1.5px solid #a8d5d1;
+    font-size: 11px;
+    font-weight: 600;
+    color: #1b5c58;
+    cursor: pointer;
+  }
+
+  /* ─── Bottom action bar ─── */
+  .action-bar {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 390px;
+    background: white;
+    border-top: 1px solid #f0f0f0;
+    padding: 12px 16px 28px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+  }
+  .btn-draft {
+    flex: 0 0 auto;
+    padding: 14px 18px;
+    border-radius: 14px;
+    background: #f0f4f4;
+    border: none;
+    font-size: 14px;
+    font-weight: 700;
+    color: #374151;
+    cursor: pointer;
+  }
+  .btn-submit {
+    flex: 1;
+    padding: 14px 20px;
+    border-radius: 14px;
+    background: #1b5c58;
+    border: none;
+    font-size: 15px;
+    font-weight: 700;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .btn-submit svg { width: 18px; height: 18px; stroke: white; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* ─── Inline note ─── */
+  .inline-note {
+    font-size: 12px;
+    color: #9ca3af;
+    padding: 0 4px;
+    line-height: 1.5;
+  }
+
+  /* ─── Separator ─── */
+  .sep { height: 1px; background: #f0f0f0; }
+
+</style>
+</head>
+<body>
+<div class="phone">
+
+  <!-- Status bar -->
+  <div class="status-bar">
+    <span>9:41</span>
+    <span>●●●●● 100%</span>
+  </div>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-back">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </div>
+    <div>
+      <div class="header-title">Ausflug vorschlagen</div>
+      <div class="header-subtitle">Toskana 2025 · 9 Personen</div>
+    </div>
+  </div>
+
+  <!-- Progress steps -->
+  <div class="progress-bar-wrap">
+    <div class="progress-steps">
+      <div class="progress-step done"></div>
+      <div class="progress-step active"></div>
+      <div class="progress-step"></div>
+    </div>
+  </div>
+
+  <div class="form-scroll">
+
+    <!-- ─── AI Suggestion banner ─── -->
+    <div class="ai-banner">
+      <div class="ai-icon">✨</div>
+      <div class="ai-text">
+        <div class="ai-title">KI-Vorschläge für eure Region</div>
+        <div class="ai-body">Basierend auf eurer Route in der Toskana könnten diese Ausflüge interessant sein:</div>
+        <div class="ai-chips">
+          <div class="ai-chip">🏺 Chianti-Weinprobe</div>
+          <div class="ai-chip">🛶 Kajak Arno-Delta</div>
+          <div class="ai-chip">🏰 Siena Altstadt</div>
+          <div class="ai-chip">+ weitere anzeigen</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── Grundlagen ─── -->
+    <div class="section-header">
+      <div class="section-icon">📝</div>
+      <div class="section-label">Grundlagen</div>
+    </div>
+
+    <div class="card">
+      <!-- Titel -->
+      <div class="field-row">
+        <div class="field-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+        </div>
+        <div class="field-content">
+          <div class="field-label">Titel *</div>
+          <input class="field-input filled" type="text" value="Bootstour nach Capri" placeholder="z. B. Weinprobe im Chianti">
+        </div>
+      </div>
+
+      <!-- Typ -->
+      <div class="sep"></div>
+      <div style="padding: 12px 16px 8px;">
+        <div class="field-label" style="margin-bottom: 8px;">Art des Ausflugs</div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <div class="dur-chip">🚶 Aktivität</div>
+          <div class="dur-chip selected">⛵ Bootsfahrt</div>
+          <div class="dur-chip">🍷 Essen & Trinken</div>
+          <div class="dur-chip">🏛️ Kultur</div>
+          <div class="dur-chip">🏖️ Baden</div>
+          <div class="dur-chip">🛍️ Shopping</div>
+        </div>
+      </div>
+
+      <!-- Beschreibung -->
+      <div class="sep" style="margin-top:8px;"></div>
+      <div class="textarea-field">
+        <div class="textarea-label">Beschreibung</div>
+        <div class="fake-textarea">Ganztagesausflug zur Insel Capri mit der Fähre ab Sorrent. Blaue Grotte, Augustus-Gärten und Mittagessen in Anacapri.</div>
+      </div>
+    </div>
+
+    <!-- ─── Wann ─── -->
+    <div class="section-header">
+      <div class="section-icon">📅</div>
+      <div class="section-label">Wann</div>
+    </div>
+
+    <div class="card">
+      <!-- Date strip -->
+      <div class="date-strip">
+        <div class="date-chip tbd">
+          <div class="date-weekday">Noch</div>
+          <div class="date-day">offen</div>
+        </div>
+        <div class="date-chip">
+          <div class="date-weekday">Mo</div>
+          <div class="date-day">14</div>
+        </div>
+        <div class="date-chip">
+          <div class="date-weekday">Di</div>
+          <div class="date-day">15</div>
+        </div>
+        <div class="date-chip">
+          <div class="date-weekday">Mi</div>
+          <div class="date-day">16</div>
+        </div>
+        <div class="date-chip selected">
+          <div class="date-weekday">Do</div>
+          <div class="date-day">17</div>
+        </div>
+        <div class="date-chip">
+          <div class="date-weekday">Fr</div>
+          <div class="date-day">18</div>
+        </div>
+        <div class="date-chip">
+          <div class="date-weekday">Sa</div>
+          <div class="date-day">19</div>
+        </div>
+        <div class="date-chip">
+          <div class="date-weekday">So</div>
+          <div class="date-day">20</div>
+        </div>
+        <div class="date-chip">
+          <div class="date-weekday">Mo</div>
+          <div class="date-day">21</div>
+        </div>
+      </div>
+
+      <!-- Time -->
+      <div class="time-row">
+        <div class="field-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div class="field-label" style="margin-right:8px;">Abfahrt</div>
+        <div class="time-pill selected">09:00</div>
+        <div class="time-divider" style="margin:0 4px;">–</div>
+        <div class="field-label" style="margin-right:8px;">ca. Ende</div>
+        <div class="time-pill">17:30</div>
+      </div>
+
+      <!-- Duration -->
+      <div class="duration-chips">
+        <div class="dur-chip-label">oder Dauer</div>
+        <div class="dur-chip">1h</div>
+        <div class="dur-chip">2h</div>
+        <div class="dur-chip">3h</div>
+        <div class="dur-chip selected">Ganztag</div>
+        <div class="dur-chip">Mehrtägig</div>
+      </div>
+    </div>
+
+    <!-- ─── Treffpunkt & Details ─── -->
+    <div class="section-header">
+      <div class="section-icon">📍</div>
+      <div class="section-label">Treffpunkt & Details</div>
+    </div>
+
+    <div class="card">
+      <!-- Treffpunkt -->
+      <div class="field-row">
+        <div class="field-icon">
+          <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <div class="field-content">
+          <div class="field-label">Treffpunkt</div>
+          <div class="field-value">Hafen Sorrent, Pier 3</div>
+        </div>
+        <div class="field-chevron">›</div>
+      </div>
+
+      <!-- Kosten -->
+      <div class="cost-row">
+        <div class="field-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+        </div>
+        <div class="cost-input-wrap">
+          <div class="field-label" style="margin-right:6px;">Kosten (ca.)</div>
+          <div class="cost-currency">€</div>
+          <input class="cost-input" type="number" value="35">
+          <div class="cost-per">/ Person</div>
+        </div>
+      </div>
+
+      <!-- Hinweis -->
+      <div style="padding: 0 16px 12px;">
+        <div class="inline-note">💡 Kosten dienen nur als Richtwert für die Abstimmung. Abgerechnet wird später über Ausgaben.</div>
+      </div>
+    </div>
+
+    <!-- ─── Links & Medien ─── -->
+    <div class="section-header">
+      <div class="section-icon">🔗</div>
+      <div class="section-label">Links & Bilder</div>
+    </div>
+
+    <div class="card">
+      <!-- Existing links -->
+      <div class="link-list">
+        <div class="link-item">
+          <div class="link-preview-icon">⛵</div>
+          <div>
+            <div class="link-domain">bookaway.com</div>
+            <div class="link-url">bookaway.com/de/boat-tours/capri-tour-from-sorrento</div>
+          </div>
+          <div class="link-remove">×</div>
+        </div>
+        <div class="link-item">
+          <div class="link-preview-icon">⭐</div>
+          <div>
+            <div class="link-domain">tripadvisor.de</div>
+            <div class="link-url">tripadvisor.de/Attraction-g187742-d5...</div>
+          </div>
+          <div class="link-remove">×</div>
+        </div>
+      </div>
+
+      <!-- Add link -->
+      <div class="add-link-row">
+        <div class="add-link-icon">+</div>
+        <div class="add-link-text">Link hinzufügen</div>
+      </div>
+    </div>
+
+    <!-- Image upload card -->
+    <div class="card">
+      <div class="image-add-area">
+        <div class="image-thumb-wrap">
+          <div class="image-thumb-img">🏝️</div>
+          <div class="image-thumb-remove">×</div>
+        </div>
+        <div class="image-placeholder">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <div class="image-placeholder-label">Bild</div>
+        </div>
+        <div class="image-hint">Fotos oder Screenshots hinzufügen.<br>Aus Galerie oder URL.</div>
+      </div>
+    </div>
+
+    <!-- ─── Sichtbarkeit ─── -->
+    <div class="section-header">
+      <div class="section-icon">👁️</div>
+      <div class="section-label">Sichtbarkeit</div>
+    </div>
+
+    <div class="card">
+      <div class="visibility-row">
+        <div class="vis-icon">🔔</div>
+        <div class="vis-text">
+          <div class="vis-title">Gruppe benachrichtigen</div>
+          <div class="vis-sub">Alle erhalten eine Push-Benachrichtigung</div>
+        </div>
+        <div class="toggle"><div class="toggle-knob"></div></div>
+      </div>
+      <div class="sep"></div>
+      <div class="visibility-row">
+        <div class="vis-icon" style="background:#f0f4f4;">📋</div>
+        <div class="vis-text">
+          <div class="vis-title">Als Entwurf speichern</div>
+          <div class="vis-sub">Nur du kannst den Vorschlag sehen</div>
+        </div>
+        <div class="toggle" style="background:#e5e7eb; ">
+          <div class="toggle-knob" style="left:3px; right:auto;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="inline-note" style="padding: 0 4px;">
+      Dein Vorschlag erscheint sofort in der Ausflüge-Liste. Alle Mitreisenden können abstimmen und kommentieren.
+    </div>
+
+  </div><!-- /form-scroll -->
+
+  <!-- Bottom action bar -->
+  <div class="action-bar">
+    <button class="btn-draft">Entwurf</button>
+    <button class="btn-submit">
+      <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      Vorschlag teilen
+    </button>
+  </div>
+
+</div><!-- /phone -->
+</body>
+</html>

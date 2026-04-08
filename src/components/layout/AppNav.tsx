@@ -19,10 +19,13 @@ const navItems = [
 export default function AppNav({ needsOnboarding }: AppNavProps) {
   const pathname = usePathname()
 
+  // Trip pages have their own bottom nav
+  const isOnTripPage = pathname.startsWith('/trips/')
+
   return (
     <>
       {/* ── Mobile bottom bar ── */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-card/95 backdrop-blur-md border-t border-border">
+      <nav className={`fixed bottom-0 left-0 right-0 z-50 md:hidden bg-card/95 backdrop-blur-md border-t border-border${isOnTripPage ? ' hidden' : ''}`}>
         <div className="flex items-center justify-around h-16 px-2 max-w-md mx-auto">
           {navItems.map(({ href, label, icon: Icon }) => {
             const active = pathname === href || pathname.startsWith(`${href}/`)
