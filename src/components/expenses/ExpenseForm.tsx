@@ -242,14 +242,44 @@ export default function ExpenseForm({
       }
     }
 
-    const activeSplits = splitMode === 'all'
-      ? splits.map(s => ({ participantId: s.participantId, shares: s.shares }))
-      : splits.filter(s => s.included).map(s => ({ participantId: s.participantId, shares: s.shares }))
+    // Aktive Splits bestimmen
+    const rawSplits = splitMode === 'all'
+      ? splits
+      : splits.filter(s => s.included)
 
-    if (activeSplits.length === 0) {
+    if (rawSplits.length === 0) {
       toast.error('Mindestens ein Teilnehmer muss beteiligt sein')
       return
     }
+
+    // Feste Beträge validieren
+    const fixedSplits = rawSplits.filter(s => s.overrideAmountCents != null)
+    const shareBasedSplits = rawSplits.filter(s => s.overrideAmountCents == null)
+    const fixedTotal = fixedSplits.reduce((s, sp) => s + (sp.overrideAmountCents ?? 0), 0)
+    const remainingCents = amountCents - fixedTotal
+
+    if (fixedTotal > amountCents) {
+      toast.error(`Fixe Beträge (${formatCurrency(fixedTotal)}) überschreiten den Gesamtbetrag`)
+      return
+    }
+
+    // Konvertiere in cent-basierte shares für die API:
+    // Fixer Betrag → shares = overrideAmountCents (in Cent)
+    // Anteil-basiert → shares = Anteil am verbleibenden Betrag (skaliert auf Cent)
+    const totalSharesBase = shareBasedSplits.reduce((s, sp) => s + sp.shares, 0)
+    const activeSplits = rawSplits.map(s => {
+      if (s.overrideAmountCents != null) {
+        return { participantId: s.participantId, shares: s.overrideAmountCents }
+      }
+      // Wenn alle Splits fix sind (kein share-basierter übrig), fallback auf gleiche Teile
+      if (totalSharesBase === 0 || remainingCents <= 0) {
+        return { participantId: s.participantId, shares: s.shares }
+      }
+      return {
+        participantId: s.participantId,
+        shares: Math.round(remainingCents * s.shares / totalSharesBase),
+      }
+    })
 
     // Build co-payers (all except the first/primary)
     const coPayers = payerIds.length > 1

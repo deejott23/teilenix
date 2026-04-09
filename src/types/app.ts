@@ -110,6 +110,7 @@ export type ExpenseSplitInput = {
   participantName: string
   shares: number
   included: boolean
+  overrideAmountCents?: number   // wenn gesetzt: fixer Betrag statt shares-basiert
 }
 
 // ── Packlist ──
