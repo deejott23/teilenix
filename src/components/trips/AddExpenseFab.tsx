@@ -8,12 +8,20 @@ interface AddExpenseFabProps {
   tripId: string
 }
 
-const HIDDEN_ON = ['/expenses/new', '/expenses', '/stats', '/settlement', '/packlist']
-
 export default function AddExpenseFab({ tripId }: AddExpenseFabProps) {
   const pathname = usePathname()
+  const base = `/trips/${tripId}`
+  const rel = pathname.slice(base.length) // e.g. '' | '/expenses' | '/planen' | …
 
-  if (HIDDEN_ON.some(suffix => pathname.endsWith(suffix))) return null
+  // Show ONLY on: Home ('') and Geld-section (/expenses, /stats, /settlement)
+  // but never on the "new expense" form itself
+  const show =
+    rel === '' ||
+    (rel.startsWith('/expenses') && rel !== '/expenses/new') ||
+    rel.startsWith('/stats') ||
+    rel.startsWith('/settlement')
+
+  if (!show) return null
 
   return (
     <Link
