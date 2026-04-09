@@ -13,6 +13,7 @@ import { categoryLabels, categoryEmoji, parseToCents, formatCurrency, todayISO }
 import type { TripParticipant, ExpenseSplitInput, ExpenseFormData } from '@/types/app'
 import type { ExpenseCategory } from '@/types/app'
 import type { CustomCategory } from '@/components/trips/TripCategorySettings'
+import { enqueueRequest, registerOnlineQueueProcessor } from '@/lib/offline-queue'
 
 const ALL_STANDARD_CATEGORIES: ExpenseCategory[] = [
   'food', 'transport', 'accommodation', 'activities', 'shopping', 'health', 'other'
@@ -288,7 +289,30 @@ export default function ExpenseForm({
       router.push(`/trips/${tripId}/expenses`)
       router.refresh()
     } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : 'Fehler beim Speichern')
+      const isNetworkError = e instanceof TypeError && e.message.toLowerCase().includes('fetch')
+      if (isNetworkError && !isEdit) {
+        // Offline: queue the expense for later sync
+        enqueueRequest('/api/expenses', {
+          tripId,
+          paidByParticipantId: payerIds[0],
+          coPayers: coPayers.length > 0 ? coPayers : [],
+          title:       data.title,
+          amountCents,
+          category:    selectedCategory,
+          expenseDate: data.expenseDate,
+          splitMode:   splitMode === 'all' ? 'proportional' : 'custom',
+          splits:      activeSplits,
+          currency:    'EUR',
+        })
+        registerOnlineQueueProcessor((count) => {
+          toast.success(`${count} Ausgabe${count > 1 ? 'n' : ''} synchronisiert`)
+          router.refresh()
+        })
+        toast.warning('Offline gespeichert – wird automatisch synchronisiert sobald du wieder online bist')
+        router.push(`/trips/${tripId}/expenses`)
+      } else {
+        toast.error(e instanceof Error ? e.message : 'Fehler beim Speichern')
+      }
     }
   }
 

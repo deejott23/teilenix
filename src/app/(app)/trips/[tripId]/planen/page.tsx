@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import ActivityFeed from '@/components/activities/ActivityFeed'
 import TripSubNav from '@/components/layout/TripSubNav'
+import RealtimePageRefresher from '@/components/realtime/RealtimePageRefresher'
 import type { ActivityWithVotes, TripParticipant } from '@/types/app'
 
 export default async function PlanenPage({ params }: { params: Promise<{ tripId: string }> }) {
@@ -40,6 +41,7 @@ export default async function PlanenPage({ params }: { params: Promise<{ tripId:
 
   return (
     <>
+      <RealtimePageRefresher tripId={tripId} tables={['trip_activities', 'trip_activity_votes']} />
       <TripSubNav tripId={tripId} tabs={[
         { href: '/planen', label: '✈️ Ausflüge' },
         { href: '/essen',  label: '🍽️ Essen' },

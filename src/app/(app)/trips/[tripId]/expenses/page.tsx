@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Plus } from 'lucide-react'
 import ExpenseList from '@/components/expenses/ExpenseList'
 import GeldSubNav from '@/components/layout/GeldSubNav'
+import RealtimePageRefresher from '@/components/realtime/RealtimePageRefresher'
 import type { ExpenseWithSplits, TripParticipant } from '@/types/app'
 
 export default async function ExpensesPage({
@@ -55,6 +56,7 @@ export default async function ExpensesPage({
 
   return (
     <div className="space-y-4">
+      <RealtimePageRefresher tripId={tripId} tables={['expenses', 'expense_splits']} />
       <GeldSubNav tripId={tripId} />
       {trip?.status === 'active' && (
         <Link

@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import ShoppingListClient from '@/components/shopping/ShoppingListClient'
 import TripSubNav from '@/components/layout/TripSubNav'
+import RealtimePageRefresher from '@/components/realtime/RealtimePageRefresher'
 
 export default async function EinkaufPage({ params }: { params: Promise<{ tripId: string }> }) {
   const { tripId } = await params
@@ -19,6 +20,7 @@ export default async function EinkaufPage({ params }: { params: Promise<{ tripId
 
   return (
     <>
+      <RealtimePageRefresher tripId={tripId} tables={['shopping_items']} />
       <TripSubNav tripId={tripId} tabs={[
         { href: '/packlist', label: '🎒 Packliste' },
         { href: '/einkauf',  label: '🛒 Einkaufszettel' },

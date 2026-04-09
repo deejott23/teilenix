@@ -3,6 +3,8 @@ import { Plus_Jakarta_Sans } from 'next/font/google'
 import './globals.css'
 import { Toaster } from '@/components/ui/sonner'
 import ServiceWorkerRegister from '@/components/pwa/ServiceWorkerRegister'
+import InstallBanner from '@/components/pwa/InstallBanner'
+import OfflineIndicator from '@/components/pwa/OfflineIndicator'
 
 const jakartaSans = Plus_Jakarta_Sans({
   variable: '--font-sans',
@@ -52,6 +54,8 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         {children}
         <Toaster position="top-center" richColors />
         <ServiceWorkerRegister />
+        <OfflineIndicator />
+        <InstallBanner />
       </body>
     </html>
   )
