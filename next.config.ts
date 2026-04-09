@@ -50,6 +50,9 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   compress: true,
+  experimental: {
+    viewTransition: true,
+  },
   async headers() {
     return [
       {
