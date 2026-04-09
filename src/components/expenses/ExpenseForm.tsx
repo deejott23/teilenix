@@ -6,7 +6,6 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { z } from 'zod'
-import { Minus, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import SplitOverrideEditor from './SplitOverrideEditor'
@@ -470,40 +469,16 @@ export default function ExpenseForm({
                         <span className="text-[11px] text-muted-foreground w-8 text-right tabular-nums flex-shrink-0">
                           {pct > 0 ? `${pct}%` : ''}
                         </span>
-                        <div className="flex items-center gap-1 flex-shrink-0">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const cur = parseToCents(payerAmounts[id] ?? '0')
-                              const next = Math.max(0, cur - 50)
-                              setPayerAmounts(prev => ({ ...prev, [id]: (next / 100).toFixed(2).replace('.', ',') }))
-                            }}
-                            className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center active:scale-90 transition-transform flex-shrink-0"
-                          >
-                            <Minus className="w-3 h-3 text-foreground" strokeWidth={2.5} />
-                          </button>
-                          <div className="relative flex-shrink-0">
-                            <input
-                              type="text"
-                              inputMode="decimal"
-                              placeholder="0,00"
-                              value={payerAmounts[id] ?? ''}
-                              onChange={e => setPayerAmounts(prev => ({ ...prev, [id]: e.target.value }))}
-                              className="h-8 w-20 text-sm text-right pr-5 font-semibold bg-muted rounded-lg border border-transparent focus:outline-none focus:border-primary/40 text-foreground"
-                            />
-                            <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">€</span>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const cur = parseToCents(payerAmounts[id] ?? '0')
-                              const next = Math.min(totalCents, cur + 50)
-                              setPayerAmounts(prev => ({ ...prev, [id]: (next / 100).toFixed(2).replace('.', ',') }))
-                            }}
-                            className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center active:scale-90 transition-transform flex-shrink-0"
-                          >
-                            <Plus className="w-3 h-3 text-foreground" strokeWidth={2.5} />
-                          </button>
+                        <div className="relative flex-shrink-0">
+                          <input
+                            type="text"
+                            inputMode="decimal"
+                            placeholder="0,00"
+                            value={payerAmounts[id] ?? ''}
+                            onChange={e => setPayerAmounts(prev => ({ ...prev, [id]: e.target.value }))}
+                            className="h-8 w-24 text-sm text-right pr-6 font-semibold bg-background border border-border rounded-lg focus:outline-none focus:border-primary/60 text-foreground"
+                          />
+                          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">€</span>
                         </div>
                       </div>
                     )
