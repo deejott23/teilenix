@@ -149,3 +149,39 @@ export type ExpenseFormData = {
   splitMode: 'proportional' | 'custom'
   splits: ExpenseSplitInput[]
 }
+
+// ── Activities (Ausflüge) ──
+export type ActivityType = 'activity' | 'boat' | 'food' | 'culture' | 'swimming' | 'shopping' | 'other'
+export type ActivityStatus = 'idea' | 'confirmed' | 'cancelled'
+export type VoteValue = 'yes' | 'maybe' | 'no'
+
+export type Activity = {
+  id: string
+  trip_id: string
+  created_by_participant_id: string
+  title: string
+  activity_type: ActivityType
+  description: string | null
+  activity_date: string | null
+  departure_time: string | null
+  duration_label: string | null
+  meeting_point: string | null
+  cost_per_person_cents: number | null
+  status: ActivityStatus
+  cover_emoji: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type ActivityVote = {
+  id: string
+  activity_id: string
+  participant_id: string
+  vote: VoteValue
+  created_at: string
+}
+
+export type ActivityWithVotes = Activity & {
+  votes: ActivityVote[]
+  creator_name: string
+}

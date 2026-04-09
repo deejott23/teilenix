@@ -1,63 +1,51 @@
-export default function PlanenPage() {
+import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
+import ActivityFeed from '@/components/activities/ActivityFeed'
+import type { ActivityWithVotes, TripParticipant } from '@/types/app'
+
+export default async function PlanenPage({ params }: { params: Promise<{ tripId: string }> }) {
+  const { tripId } = await params
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const db = supabase as any
+
+  const [{ data: trip }, { data: participantsRaw }, { data: activitiesRaw }] = await Promise.all([
+    supabase.from('trips').select('*').eq('id', tripId).single(),
+    supabase.from('trip_participants').select('*').eq('trip_id', tripId),
+    db.from('trip_activities').select('*').eq('trip_id', tripId)
+      .order('activity_date', { ascending: true, nullsFirst: false })
+      .order('created_at', { ascending: true }),
+  ])
+
+  const participants = (participantsRaw ?? []) as TripParticipant[]
+  const participantMap = new Map(participants.map(p => [p.id, p]))
+
+  const activityIds = (activitiesRaw ?? []).map((a: { id: string }) => a.id)
+  const { data: votesRaw } = activityIds.length > 0
+    ? await db.from('trip_activity_votes').select('*').in('activity_id', activityIds)
+    : { data: [] }
+
+  const me = participants.find(p => p.user_id === user.id && !p.is_group)
+  const myParticipantId = me?.id ?? ''
+
+  const activities: ActivityWithVotes[] = (activitiesRaw ?? []).map((raw: Record<string, unknown>) => ({
+    ...raw,
+    votes: (votesRaw ?? []).filter((v: { activity_id: string }) => v.activity_id === raw.id),
+    creator_name: participantMap.get(raw.created_by_participant_id as string)?.name ?? 'Unbekannt',
+  })) as ActivityWithVotes[]
+
   return (
-    <div className="space-y-4">
-      <div className="text-center py-2">
-        <span className="inline-block px-3 py-1 rounded-full text-[11px] font-bold bg-amber-100 text-amber-700">
-          Bald verfügbar ✨
-        </span>
-      </div>
-
-      {/* Ausflüge */}
-      <div className="bg-card rounded-[20px] card-shadow overflow-hidden">
-        <div className="h-28 flex items-center justify-center relative"
-          style={{ background: 'linear-gradient(135deg, #fde68a 0%, #f59e0b 100%)' }}>
-          <span className="text-[56px]">🗺️</span>
-          <span className="absolute top-3 right-3 px-2.5 py-1 rounded-full text-[10px] font-bold bg-white/30 text-white backdrop-blur-sm">
-            Coming Soon
-          </span>
-        </div>
-        <div className="p-4">
-          <h2 className="text-[16px] font-bold text-foreground mb-1">Ausflüge planen</h2>
-          <p className="text-[13px] text-muted-foreground leading-relaxed mb-3">
-            Macht gemeinsam Vorschläge, stimmt ab wo ihr hinwollt und plant alle Details: Abfahrt, Treffpunkt, Kosten und wer mitkommt.
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {['🗳️ Abstimmung', '📍 Treffpunkt', '⛵ Details', '👥 Wer kommt'].map(tag => (
-              <span key={tag} className="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
-                {tag}
-              </span>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Essenplanung */}
-      <div className="bg-card rounded-[20px] card-shadow overflow-hidden">
-        <div className="h-28 flex items-center justify-center relative"
-          style={{ background: 'linear-gradient(135deg, #fce7f3 0%, #ec4899 100%)' }}>
-          <span className="text-[56px]">🍽️</span>
-          <span className="absolute top-3 right-3 px-2.5 py-1 rounded-full text-[10px] font-bold bg-white/30 text-white backdrop-blur-sm">
-            Coming Soon
-          </span>
-        </div>
-        <div className="p-4">
-          <h2 className="text-[16px] font-bold text-foreground mb-1">Essenplanung</h2>
-          <p className="text-[13px] text-muted-foreground leading-relaxed mb-3">
-            Plant gemeinsam wer wann kocht, welches Restaurant ihr besucht oder wer was mitbringt. Für jeden Reisetag ein Plan.
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {['📅 Tagesplan', '🍳 Kochplan', '🍕 Restaurant', '🛒 Einkauf'].map(tag => (
-              <span key={tag} className="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-pink-50 text-pink-700 border border-pink-200">
-                {tag}
-              </span>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <p className="text-center text-[12px] text-muted-foreground/60 pb-2">
-        Wir arbeiten daran — sei gespannt! 🚀
-      </p>
-    </div>
+    <ActivityFeed
+      tripId={tripId}
+      initialActivities={activities}
+      participants={participants}
+      myParticipantId={myParticipantId}
+      tripStartDate={(trip?.start_date as string | null) ?? null}
+      tripEndDate={(trip?.end_date as string | null) ?? null}
+      isActive={trip?.status === 'active'}
+    />
   )
 }
