@@ -40,6 +40,7 @@ export async function POST(
 
   await db.from('message_reactions').insert({
     message_id: messageId,
+    trip_id: tripId,
     participant_id: participant.id,
     emoji,
   })
