@@ -5,6 +5,7 @@ import type { GroupThread, TripParticipant } from '@/types/app'
 import { formatCurrency } from '@/lib/formatting'
 import { activityTypeEmoji } from '@/lib/activities'
 import type { ActivityType } from '@/types/app'
+import RealtimePageRefresher from '@/components/realtime/RealtimePageRefresher'
 
 export default async function GruppePage({
   params,
@@ -93,15 +94,18 @@ export default async function GruppePage({
     }))
 
   return (
-    <ThreadList
-      tripId={tripId}
-      initialThreads={threads}
-      participants={participants}
-      myParticipantId={myParticipantId}
-      activities={activities}
-      expenses={expenses}
-      packlistItems={packlistItems}
-      shoppingItems={shoppingItems}
-    />
+    <>
+      <RealtimePageRefresher tripId={tripId} tables={['group_threads', 'group_messages']} />
+      <ThreadList
+        tripId={tripId}
+        initialThreads={threads}
+        participants={participants}
+        myParticipantId={myParticipantId}
+        activities={activities}
+        expenses={expenses}
+        packlistItems={packlistItems}
+        shoppingItems={shoppingItems}
+      />
+    </>
   )
 }

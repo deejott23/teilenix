@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { X } from 'lucide-react'
+import { X, ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { ActivityType } from '@/types/app'
 import { activityTypeEmoji, activityTypeLabel } from '@/lib/activities'
@@ -50,6 +50,7 @@ export default function AddActivitySheet({
   const [costEuros, setCostEuros] = useState('')
   const [description, setDescription] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [showDetails, setShowDetails] = useState(false)
 
   const tripDates = generateDateRange(tripStartDate, tripEndDate)
 
@@ -99,7 +100,7 @@ export default function AddActivitySheet({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="px-5 pb-8 space-y-5">
+        <form onSubmit={handleSubmit} className="px-5 pb-28 space-y-5">
           {/* Title */}
           <div>
             <label className="block text-[12px] font-bold text-muted-foreground mb-1.5 uppercase tracking-wide">
@@ -185,90 +186,104 @@ export default function AddActivitySheet({
             </div>
           )}
 
-          {/* Departure time */}
-          <div>
-            <label className="block text-[12px] font-bold text-muted-foreground mb-1.5 uppercase tracking-wide">
-              Abfahrtszeit (optional)
-            </label>
-            <input
-              type="time"
-              value={departureTime}
-              onChange={e => setDepartureTime(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-[12px] bg-muted border border-transparent focus:outline-none focus:ring-2 focus:ring-primary text-[14px]"
-            />
-          </div>
+          {/* Optional fields toggle */}
+          <button
+            type="button"
+            onClick={() => setShowDetails(v => !v)}
+            className="flex items-center gap-2 text-[12px] font-bold text-muted-foreground uppercase tracking-wide"
+          >
+            <ChevronDown className={cn('w-3.5 h-3.5 transition-transform', showDetails && 'rotate-180')} strokeWidth={2.5} />
+            Weitere Details
+          </button>
 
-          {/* Duration chips */}
-          <div>
-            <label className="block text-[12px] font-bold text-muted-foreground mb-1.5 uppercase tracking-wide">
-              Dauer (optional)
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {DURATION_OPTIONS.map(d => (
-                <button
-                  key={d}
-                  type="button"
-                  onClick={() => setDurationLabel(durationLabel === d ? null : d)}
-                  className={cn(
-                    'px-3 py-1.5 rounded-xl text-[12px] font-semibold border-[1.5px] transition-all',
-                    durationLabel === d
-                      ? 'bg-primary/10 border-primary text-primary'
-                      : 'bg-muted border-transparent text-muted-foreground hover:bg-muted/80'
-                  )}
-                >
-                  {d}
-                </button>
-              ))}
+          {showDetails && (
+            <div className="space-y-5">
+              {/* Departure time */}
+              <div>
+                <label className="block text-[12px] font-bold text-muted-foreground mb-1.5 uppercase tracking-wide">
+                  Abfahrtszeit
+                </label>
+                <input
+                  type="time"
+                  value={departureTime}
+                  onChange={e => setDepartureTime(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-[12px] bg-muted border border-transparent focus:outline-none focus:ring-2 focus:ring-primary text-[14px]"
+                />
+              </div>
+
+              {/* Duration chips */}
+              <div>
+                <label className="block text-[12px] font-bold text-muted-foreground mb-1.5 uppercase tracking-wide">
+                  Dauer
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {DURATION_OPTIONS.map(d => (
+                    <button
+                      key={d}
+                      type="button"
+                      onClick={() => setDurationLabel(durationLabel === d ? null : d)}
+                      className={cn(
+                        'px-3 py-1.5 rounded-xl text-[12px] font-semibold border-[1.5px] transition-all',
+                        durationLabel === d
+                          ? 'bg-primary/10 border-primary text-primary'
+                          : 'bg-muted border-transparent text-muted-foreground hover:bg-muted/80'
+                      )}
+                    >
+                      {d}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Meeting point */}
+              <div>
+                <label className="block text-[12px] font-bold text-muted-foreground mb-1.5 uppercase tracking-wide">
+                  Treffpunkt
+                </label>
+                <input
+                  type="text"
+                  value={meetingPoint}
+                  onChange={e => setMeetingPoint(e.target.value)}
+                  placeholder="z.B. Hafen, Eingang Nord"
+                  maxLength={120}
+                  className="w-full px-3.5 py-2.5 rounded-[12px] bg-muted border border-transparent focus:outline-none focus:ring-2 focus:ring-primary text-[14px] placeholder:text-muted-foreground/60"
+                />
+              </div>
+
+              {/* Cost */}
+              <div>
+                <label className="block text-[12px] font-bold text-muted-foreground mb-1.5 uppercase tracking-wide">
+                  Kosten/Person ca.
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[14px] text-muted-foreground">€</span>
+                  <input
+                    type="number"
+                    value={costEuros}
+                    onChange={e => setCostEuros(e.target.value)}
+                    placeholder="0.00"
+                    min="0"
+                    step="0.01"
+                    className="w-full pl-8 pr-3.5 py-2.5 rounded-[12px] bg-muted border border-transparent focus:outline-none focus:ring-2 focus:ring-primary text-[14px] placeholder:text-muted-foreground/60"
+                  />
+                </div>
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="block text-[12px] font-bold text-muted-foreground mb-1.5 uppercase tracking-wide">
+                  Beschreibung
+                </label>
+                <textarea
+                  value={description}
+                  onChange={e => setDescription(e.target.value)}
+                  placeholder="Was ist geplant? Warum sollten alle mitmachen? 😄"
+                  rows={3}
+                  className="w-full px-3.5 py-2.5 rounded-[12px] bg-muted border border-transparent focus:outline-none focus:ring-2 focus:ring-primary text-[14px] placeholder:text-muted-foreground/60 resize-none"
+                />
+              </div>
             </div>
-          </div>
-
-          {/* Meeting point */}
-          <div>
-            <label className="block text-[12px] font-bold text-muted-foreground mb-1.5 uppercase tracking-wide">
-              Treffpunkt (optional)
-            </label>
-            <input
-              type="text"
-              value={meetingPoint}
-              onChange={e => setMeetingPoint(e.target.value)}
-              placeholder="z.B. Hafen, Eingang Nord"
-              maxLength={120}
-              className="w-full px-3.5 py-2.5 rounded-[12px] bg-muted border border-transparent focus:outline-none focus:ring-2 focus:ring-primary text-[14px] placeholder:text-muted-foreground/60"
-            />
-          </div>
-
-          {/* Cost */}
-          <div>
-            <label className="block text-[12px] font-bold text-muted-foreground mb-1.5 uppercase tracking-wide">
-              Kosten/Person ca. (optional)
-            </label>
-            <div className="relative">
-              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[14px] text-muted-foreground">€</span>
-              <input
-                type="number"
-                value={costEuros}
-                onChange={e => setCostEuros(e.target.value)}
-                placeholder="0.00"
-                min="0"
-                step="0.01"
-                className="w-full pl-8 pr-3.5 py-2.5 rounded-[12px] bg-muted border border-transparent focus:outline-none focus:ring-2 focus:ring-primary text-[14px] placeholder:text-muted-foreground/60"
-              />
-            </div>
-          </div>
-
-          {/* Description */}
-          <div>
-            <label className="block text-[12px] font-bold text-muted-foreground mb-1.5 uppercase tracking-wide">
-              Beschreibung (optional)
-            </label>
-            <textarea
-              value={description}
-              onChange={e => setDescription(e.target.value)}
-              placeholder="Was ist geplant? Warum sollten alle mitmachen? 😄"
-              rows={3}
-              className="w-full px-3.5 py-2.5 rounded-[12px] bg-muted border border-transparent focus:outline-none focus:ring-2 focus:ring-primary text-[14px] placeholder:text-muted-foreground/60 resize-none"
-            />
-          </div>
+          )}
 
           {/* Submit */}
           <button

@@ -371,7 +371,7 @@ function AddItemSheet({
   return (
     <>
       <div className="fixed inset-0 bg-black/40 z-40" onClick={onClose} />
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-card rounded-t-3xl p-5 pb-10 shadow-2xl animate-in slide-in-from-bottom-4 duration-200">
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-card rounded-t-3xl p-5 pb-28 shadow-2xl animate-in slide-in-from-bottom-4 duration-200">
         <div className="w-9 h-1 bg-muted rounded-full mx-auto mb-5" />
         <h3 className="text-[15px] font-bold text-foreground mb-4">Zur Packliste hinzufügen</h3>
 
