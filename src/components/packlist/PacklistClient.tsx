@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import TripSubNav from '@/components/layout/TripSubNav'
 import { toast } from 'sonner'
 import { Plus, ChevronRight, Trash2, Pencil, Check, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -418,7 +419,6 @@ export default function PacklistClient({
   const [items, setItems] = useState<PacklistItem[]>(initialItems)
   useEffect(() => { setItems(initialItems) }, [initialItems])
 
-  const [activeList, setActiveList] = useState<'packliste' | 'einkauf'>('packliste')
   const [filter, setFilter] = useState<FilterKey>('all')
   const [showSheet, setShowSheet] = useState(false)
 
@@ -462,63 +462,13 @@ export default function PacklistClient({
 
   return (
     <div>
-      {/* List sub-tab: Packliste | Einkaufszettel */}
-      <div className="flex gap-1.5 mb-4 bg-muted p-1 rounded-[14px]">
-        {([
-          { key: 'packliste' as const, label: '🎒 Packliste' },
-          { key: 'einkauf'   as const, label: '🛒 Einkaufszettel' },
-        ]).map(({ key, label }) => (
-          <button
-            key={key}
-            type="button"
-            onClick={() => setActiveList(key)}
-            className={cn(
-              'flex-1 py-2 text-center text-[12px] font-bold rounded-[10px] transition-all',
-              activeList === key
-                ? 'bg-card text-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
-            )}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-
-      {/* Einkaufszettel — coming soon */}
-      {activeList === 'einkauf' && (
-        <div className="space-y-4">
-          <div className="text-center py-2">
-            <span className="inline-block px-3 py-1 rounded-full text-[11px] font-bold bg-violet-100 text-violet-700">
-              Bald verfügbar ✨
-            </span>
-          </div>
-          <div className="bg-card rounded-[20px] card-shadow overflow-hidden">
-            <div className="h-28 flex items-center justify-center relative"
-              style={{ background: 'linear-gradient(135deg, #ede9fe 0%, #8b5cf6 100%)' }}>
-              <span className="text-[56px]">🛒</span>
-            </div>
-            <div className="p-4">
-              <h2 className="text-[16px] font-bold text-foreground mb-1">Gemeinsamer Einkaufszettel</h2>
-              <p className="text-[13px] text-muted-foreground leading-relaxed mb-3">
-                Erstellt einen geteilten Einkaufszettel für die Gruppe. Wer kauft was? Kategorien, Mengen und wer es in den Einkaufswagen legt.
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {['📋 Artikel', '✅ Abhaken', '👥 Aufteilen', '🏪 Kategorien'].map(tag => (
-                  <span key={tag} className="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-violet-50 text-violet-700 border border-violet-200">
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-          <p className="text-center text-[12px] text-muted-foreground/60 pb-2">
-            Wir arbeiten daran — sei gespannt! 🚀
-          </p>
-        </div>
-      )}
+      <TripSubNav tripId={tripId} tabs={[
+        { href: '/packlist', label: '🎒 Packliste' },
+        { href: '/einkauf',  label: '🛒 Einkaufszettel' },
+      ]} />
 
       {/* Packliste content */}
-      {activeList === 'packliste' && <>
+      <>
 
       {/* Filter chips */}
       <div className="flex gap-2 overflow-x-auto scrollbar-none pb-1 mb-3">
@@ -603,7 +553,7 @@ export default function PacklistClient({
           myGroupName={myGroupName} isGroup={isGroup} />
       )}
 
-      </> /* end activeList === 'packliste' */}
+      </>
     </div>
   )
 }

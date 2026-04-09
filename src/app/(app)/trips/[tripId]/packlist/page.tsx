@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import PacklistClient from '@/components/packlist/PacklistClient'
-import ListenSubNav from '@/components/layout/ListenSubNav'
 import type { PacklistItem, TripParticipant } from '@/types/app'
 
 export default async function PacklistPage({
@@ -70,9 +69,7 @@ export default async function PacklistPage({
   }))
 
   return (
-    <>
-      <ListenSubNav tripId={tripId} />
-      <PacklistClient
+    <PacklistClient
         tripId={tripId}
         items={items}
         participants={participants}
@@ -81,6 +78,5 @@ export default async function PacklistPage({
         myGroupName={myGroupName}
         isActive={trip?.status === 'active'}
       />
-    </>
   )
 }

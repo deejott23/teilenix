@@ -23,9 +23,9 @@ export default function TripBottomNav({ tripId, isEnded }: TripBottomNavProps) {
     },
     {
       href: `${base}/planen`,
-      label: 'Ausflüge',
+      label: 'Planen',
       icon: Calendar,
-      isActive: pathname.startsWith(`${base}/planen`),
+      isActive: pathname.startsWith(`${base}/planen`) || pathname.startsWith(`${base}/essen`),
     },
     {
       href: `${base}/packlist`,

@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import ActivityFeed from '@/components/activities/ActivityFeed'
+import TripSubNav from '@/components/layout/TripSubNav'
 import type { ActivityWithVotes, TripParticipant } from '@/types/app'
 
 export default async function PlanenPage({ params }: { params: Promise<{ tripId: string }> }) {
@@ -38,7 +39,12 @@ export default async function PlanenPage({ params }: { params: Promise<{ tripId:
   })) as ActivityWithVotes[]
 
   return (
-    <ActivityFeed
+    <>
+      <TripSubNav tripId={tripId} tabs={[
+        { href: '/planen', label: '✈️ Ausflüge' },
+        { href: '/essen',  label: '🍽️ Essen' },
+      ]} />
+      <ActivityFeed
       tripId={tripId}
       initialActivities={activities}
       participants={participants}
@@ -47,5 +53,6 @@ export default async function PlanenPage({ params }: { params: Promise<{ tripId:
       tripEndDate={(trip?.end_date as string | null) ?? null}
       isActive={trip?.status === 'active'}
     />
+    </>
   )
 }

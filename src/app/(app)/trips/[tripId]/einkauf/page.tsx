@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import ShoppingListClient from '@/components/shopping/ShoppingListClient'
-import ListenSubNav from '@/components/layout/ListenSubNav'
+import TripSubNav from '@/components/layout/TripSubNav'
 
 export default async function EinkaufPage({ params }: { params: Promise<{ tripId: string }> }) {
   const { tripId } = await params
@@ -19,7 +19,10 @@ export default async function EinkaufPage({ params }: { params: Promise<{ tripId
 
   return (
     <>
-      <ListenSubNav tripId={tripId} />
+      <TripSubNav tripId={tripId} tabs={[
+        { href: '/packlist', label: '🎒 Packliste' },
+        { href: '/einkauf',  label: '🛒 Einkaufszettel' },
+      ]} />
       <ShoppingListClient
         tripId={tripId}
         initialItems={itemsRaw ?? []}
