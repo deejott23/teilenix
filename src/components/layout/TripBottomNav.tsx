@@ -31,7 +31,7 @@ export default function TripBottomNav({ tripId, isEnded }: TripBottomNavProps) {
       href: `${base}/packlist`,
       label: 'Listen',
       icon: ClipboardList,
-      isActive: pathname.startsWith(`${base}/packlist`) || pathname.startsWith(`${base}/listen`),
+      isActive: pathname.startsWith(`${base}/packlist`) || pathname.startsWith(`${base}/einkauf`) || pathname.startsWith(`${base}/listen`),
     },
     {
       href: `${base}/gruppe`,
