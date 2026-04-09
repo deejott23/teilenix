@@ -59,9 +59,19 @@ export default function SplitOverrideEditor({ splits, onChange, totalCents = 0 }
               >
                 <Minus className="w-3 h-3 text-foreground" strokeWidth={2.5} />
               </button>
-              <span className="text-[13px] font-bold text-foreground tabular-nums w-6 text-center">
-                {split.shares}
-              </span>
+              <input
+                type="number"
+                inputMode="numeric"
+                min={1}
+                max={50}
+                disabled={!split.included}
+                value={split.shares}
+                onChange={e => {
+                  const v = parseInt(e.target.value, 10)
+                  if (!isNaN(v) && v >= 1 && v <= 50) updateSplit(index, { shares: v })
+                }}
+                className="text-[13px] font-bold text-foreground tabular-nums w-8 text-center bg-muted rounded-md border border-transparent focus:outline-none focus:border-primary/40 disabled:opacity-40 h-7 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              />
               <button
                 type="button"
                 disabled={!split.included || split.shares >= 50}

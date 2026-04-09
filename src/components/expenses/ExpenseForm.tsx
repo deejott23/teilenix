@@ -478,13 +478,21 @@ export default function ExpenseForm({
                               const next = Math.max(0, cur - 50)
                               setPayerAmounts(prev => ({ ...prev, [id]: (next / 100).toFixed(2).replace('.', ',') }))
                             }}
-                            className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center active:scale-90 transition-transform"
+                            className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center active:scale-90 transition-transform flex-shrink-0"
                           >
                             <Minus className="w-3 h-3 text-foreground" strokeWidth={2.5} />
                           </button>
-                          <span className="text-[13px] font-bold tabular-nums w-16 text-center text-foreground">
-                            {formatCurrency(parseToCents(payerAmounts[id] ?? '0'))}
-                          </span>
+                          <div className="relative flex-shrink-0">
+                            <input
+                              type="text"
+                              inputMode="decimal"
+                              placeholder="0,00"
+                              value={payerAmounts[id] ?? ''}
+                              onChange={e => setPayerAmounts(prev => ({ ...prev, [id]: e.target.value }))}
+                              className="h-8 w-20 text-sm text-right pr-5 font-semibold bg-muted rounded-lg border border-transparent focus:outline-none focus:border-primary/40 text-foreground"
+                            />
+                            <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">€</span>
+                          </div>
                           <button
                             type="button"
                             onClick={() => {
@@ -492,7 +500,7 @@ export default function ExpenseForm({
                               const next = Math.min(totalCents, cur + 50)
                               setPayerAmounts(prev => ({ ...prev, [id]: (next / 100).toFixed(2).replace('.', ',') }))
                             }}
-                            className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center active:scale-90 transition-transform"
+                            className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center active:scale-90 transition-transform flex-shrink-0"
                           >
                             <Plus className="w-3 h-3 text-foreground" strokeWidth={2.5} />
                           </button>

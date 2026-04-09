@@ -1,0 +1,1561 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TeileniX – Collaboration-Konzept: Claude Code mit Tobi</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=DM+Mono:wght@400;500&display=swap');
+
+:root {
+  --bg:        #080b12;
+  --surface:   #0f1420;
+  --surface2:  #161d2e;
+  --border:    rgba(255,255,255,0.07);
+  --border2:   rgba(255,255,255,0.12);
+  --text:      #e8ecf5;
+  --muted:     #6b7a99;
+  --gold:      #f0a500;
+  --gold-dim:  rgba(240,165,0,0.12);
+  --green:     #22c55e;
+  --green-dim: rgba(34,197,94,0.10);
+  --blue:      #60a5fa;
+  --blue-dim:  rgba(96,165,250,0.10);
+  --red:       #f87171;
+  --red-dim:   rgba(248,113,113,0.10);
+  --amber:     #fb923c;
+  --r:         12px;
+  --r-sm:      8px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── NOISE OVERLAY ─────────────────────────────────────── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.4;
+}
+
+/* ─── SCROLLBAR ─────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 2px; }
+
+/* ─── NAV ────────────────────────────────────────────────── */
+nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(8,11,18,0.88);
+  backdrop-filter: blur(20px) saturate(1.4);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  height: 52px;
+  overflow-x: auto;
+}
+
+nav a {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  text-decoration: none;
+  text-transform: uppercase;
+  padding: 0 1rem;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  transition: color .2s, border-color .2s;
+}
+nav a:hover { color: var(--text); border-color: var(--gold); }
+nav .nav-brand {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--gold);
+  margin-right: 1rem;
+  border: none;
+  letter-spacing: 0;
+}
+
+/* ─── HERO ───────────────────────────────────────────────── */
+.hero {
+  position: relative;
+  padding: 5rem 2rem 4rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+.hero-bg {
+  position: absolute;
+  top: -60px; right: -80px;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle at center, rgba(240,165,0,0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.hero-eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+.hero-eyebrow::before {
+  content: '';
+  width: 24px; height: 1px;
+  background: var(--gold);
+}
+
+h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(2.4rem, 5vw, 3.8rem);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin-bottom: 1.25rem;
+  background: linear-gradient(135deg, #fff 30%, #8899bb 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-sub {
+  font-size: 17px;
+  font-weight: 300;
+  color: var(--muted);
+  max-width: 580px;
+  line-height: 1.7;
+  margin-bottom: 2.5rem;
+}
+
+.hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+}
+
+/* ─── BADGES ─────────────────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  padding: .3rem .7rem;
+  border-radius: 4px;
+  border: 1px solid;
+}
+.badge-gold { background: var(--gold-dim); border-color: rgba(240,165,0,0.3); color: var(--gold); }
+.badge-green { background: var(--green-dim); border-color: rgba(34,197,94,0.3); color: var(--green); }
+.badge-blue { background: var(--blue-dim); border-color: rgba(96,165,250,0.3); color: var(--blue); }
+.badge-red { background: var(--red-dim); border-color: rgba(248,113,113,0.3); color: var(--red); }
+.badge-muted { background: rgba(255,255,255,0.04); border-color: var(--border2); color: var(--muted); }
+
+/* ─── SECTIONS ───────────────────────────────────────────── */
+section {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 4rem 2rem;
+  border-top: 1px solid var(--border);
+}
+
+.section-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: .6rem;
+}
+
+h2 {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin-bottom: .75rem;
+}
+
+h3 {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: .5rem;
+}
+
+p { color: #a0aec5; line-height: 1.75; margin-bottom: .75rem; }
+p:last-child { margin-bottom: 0; }
+
+/* ─── CONTEXT CARDS ──────────────────────────────────────── */
+.context-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--gold), transparent);
+}
+
+.stat-num {
+  font-family: 'Syne', sans-serif;
+  font-size: 2.5rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--gold);
+  margin-bottom: .3rem;
+}
+.stat-label { font-size: 13px; color: var(--muted); }
+
+/* ─── VARIANT CARDS ──────────────────────────────────────── */
+.variants-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.25rem;
+  margin-top: 2.5rem;
+}
+
+.variant-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 1.75rem;
+  position: relative;
+  transition: border-color .25s, transform .25s;
+  cursor: default;
+}
+.variant-card:hover {
+  border-color: var(--border2);
+  transform: translateY(-2px);
+}
+.variant-card.recommended {
+  border-color: rgba(240,165,0,0.35);
+  background: linear-gradient(135deg, var(--surface) 0%, rgba(240,165,0,0.04) 100%);
+}
+.variant-card.recommended::after {
+  content: 'EMPFOHLEN';
+  position: absolute;
+  top: 1rem; right: 1rem;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  background: var(--gold);
+  color: #000;
+  padding: .2rem .5rem;
+  border-radius: 3px;
+  font-weight: 500;
+}
+
+.variant-letter {
+  font-family: 'Syne', sans-serif;
+  font-size: 3rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--surface2);
+  position: absolute;
+  top: 1rem; right: 1.5rem;
+  user-select: none;
+}
+.variant-card.recommended .variant-letter { color: rgba(240,165,0,0.08); }
+
+.variant-tag {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: .5rem;
+}
+
+.variant-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: .35rem;
+  color: var(--text);
+}
+
+.variant-desc { font-size: 13px; color: var(--muted); margin-bottom: 1.25rem; line-height: 1.6; }
+
+.metric-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: .4rem 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.metric-row:last-child { border-bottom: none; }
+.metric-key { color: var(--muted); }
+.metric-val { font-weight: 500; }
+
+/* ─── COMPARISON TABLE ───────────────────────────────────── */
+.table-wrap {
+  overflow-x: auto;
+  margin-top: 2rem;
+  border-radius: var(--r);
+  border: 1px solid var(--border);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 680px;
+}
+
+th {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 1rem 1.25rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border2);
+  background: var(--surface);
+  white-space: nowrap;
+}
+th:first-child { color: var(--text); width: 200px; }
+
+td {
+  padding: .9rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 13.5px;
+  vertical-align: middle;
+}
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(255,255,255,0.015); }
+
+td:first-child {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  color: var(--text);
+  font-size: 13px;
+}
+
+.col-rec {
+  background: rgba(240,165,0,0.04) !important;
+}
+th.col-rec { color: var(--gold) !important; }
+
+/* ─── DETAIL SECTIONS ────────────────────────────────────── */
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin-top: 1.75rem;
+}
+@media (max-width: 680px) {
+  .detail-grid { grid-template-columns: 1fr; }
+}
+
+.detail-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 1.5rem;
+}
+
+.detail-card h4 {
+  font-family: 'Syne', sans-serif;
+  font-size: .9rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+
+ul.pro-con {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+}
+ul.pro-con li {
+  font-size: 13px;
+  color: #8a9bb8;
+  display: flex;
+  align-items: flex-start;
+  gap: .5rem;
+  line-height: 1.5;
+}
+ul.pro-con li::before {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 700;
+  margin-top: 1px;
+}
+ul.pro-con.pros li::before { content: '+'; background: var(--green-dim); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+ul.pro-con.cons li::before { content: '−'; background: var(--red-dim); color: var(--red); border: 1px solid rgba(248,113,113,0.3); }
+
+/* ─── TECH DEEP DIVES ────────────────────────────────────── */
+.tech-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.25rem;
+  margin-top: 2rem;
+}
+
+.tech-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 1.75rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.tech-card::before {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  opacity: 0;
+  transition: opacity .3s;
+}
+.tech-card:hover::before { opacity: 1; }
+
+.tech-icon {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.tech-card h3 { margin-bottom: .5rem; }
+
+.code-block {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 1rem 1.25rem;
+  margin-top: 1rem;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: #7dd3fc;
+  line-height: 1.7;
+  overflow-x: auto;
+}
+.code-block .comment { color: var(--muted); }
+.code-block .keyword { color: #c084fc; }
+.code-block .string { color: #86efac; }
+
+/* ─── ROADMAP ────────────────────────────────────────────── */
+.roadmap {
+  margin-top: 2rem;
+  position: relative;
+}
+
+.roadmap::before {
+  content: '';
+  position: absolute;
+  left: 20px;
+  top: 0; bottom: 0;
+  width: 1px;
+  background: linear-gradient(to bottom, var(--gold), rgba(240,165,0,0.1));
+}
+
+.roadmap-step {
+  display: flex;
+  gap: 1.5rem;
+  padding-bottom: 2.5rem;
+  position: relative;
+}
+.roadmap-step:last-child { padding-bottom: 0; }
+
+.step-dot {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 2px solid var(--gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--gold);
+  position: relative;
+  z-index: 1;
+}
+
+.step-content {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 1.25rem 1.5rem;
+  flex: 1;
+}
+
+.step-content h4 {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: .95rem;
+  margin-bottom: .35rem;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+}
+
+.step-content p { font-size: 13px; margin-bottom: 0; }
+
+/* ─── RECOMMENDATION BOX ─────────────────────────────────── */
+.rec-box {
+  background: linear-gradient(135deg, rgba(240,165,0,0.08) 0%, rgba(240,165,0,0.03) 100%);
+  border: 1px solid rgba(240,165,0,0.3);
+  border-radius: var(--r);
+  padding: 2.5rem;
+  margin-top: 2.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.rec-box::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--gold), var(--amber));
+}
+
+.rec-box h3 {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--gold);
+  margin-bottom: .5rem;
+}
+
+.rec-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin: 1rem 0;
+}
+
+/* ─── DECISION MATRIX ────────────────────────────────────── */
+.matrix-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border-radius: var(--r);
+  overflow: hidden;
+  margin-top: 2rem;
+}
+@media (max-width: 600px) { .matrix-grid { grid-template-columns: 1fr; } }
+
+.matrix-cell {
+  background: var(--surface);
+  padding: 1.5rem;
+}
+.matrix-cell h4 {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: .75rem;
+}
+.matrix-cell p { font-size: 13px; margin-bottom: 0; }
+.matrix-highlight { background: rgba(240,165,0,0.04) !important; }
+.matrix-highlight h4 { color: var(--gold) !important; }
+
+/* ─── FOOTER ─────────────────────────────────────────────── */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 2rem;
+  text-align: center;
+  color: var(--muted);
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+}
+
+/* ─── ANIMATIONS ─────────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.hero > * {
+  animation: fadeUp .6s ease both;
+}
+.hero-eyebrow { animation-delay: .05s; }
+h1 { animation-delay: .15s; }
+.hero-sub { animation-delay: .25s; }
+.hero-meta { animation-delay: .35s; }
+
+.variant-card, .tech-card, .stat-card {
+  animation: fadeUp .5s ease both;
+}
+
+/* ─── DIVIDER ────────────────────────────────────────────── */
+.divider {
+  border: none;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border2), transparent);
+  margin: 2rem 0;
+}
+
+/* ─── EFFORT PILL ────────────────────────────────────────── */
+.effort {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  font-size: 12px;
+  font-family: 'DM Mono', monospace;
+  padding: .2rem .6rem;
+  border-radius: 4px;
+}
+.effort-low    { background: var(--green-dim); color: var(--green); border: 1px solid rgba(34,197,94,0.2); }
+.effort-medium { background: rgba(251,146,60,0.1); color: var(--amber); border: 1px solid rgba(251,146,60,0.2); }
+.effort-high   { background: var(--red-dim); color: var(--red); border: 1px solid rgba(248,113,113,0.2); }
+
+/* ─── CHECK LIST ─────────────────────────────────────────── */
+ul.checklist { list-style: none; display: flex; flex-direction: column; gap: .4rem; margin-top: .75rem; }
+ul.checklist li { font-size: 13px; color: #8a9bb8; display: flex; align-items: flex-start; gap: .5rem; line-height: 1.5; }
+ul.checklist li::before { content: '✓'; color: var(--green); flex-shrink: 0; font-weight: 700; }
+
+/* ─── PERSON CARDS ───────────────────────────────────────── */
+.person-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin-top: 2rem;
+}
+@media (max-width: 600px) { .person-grid { grid-template-columns: 1fr; } }
+
+.person-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 1.75rem;
+  position: relative;
+  overflow: hidden;
+}
+.person-card.you {
+  border-color: rgba(240,165,0,0.3);
+  background: linear-gradient(135deg, var(--surface) 0%, rgba(240,165,0,0.03) 100%);
+}
+.person-card.tobi {
+  border-color: rgba(96,165,250,0.3);
+  background: linear-gradient(135deg, var(--surface) 0%, rgba(96,165,250,0.03) 100%);
+}
+.person-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+}
+.person-card.you::before { background: linear-gradient(90deg, var(--gold), transparent); }
+.person-card.tobi::before { background: linear-gradient(90deg, var(--blue), transparent); }
+
+.person-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: .4rem;
+}
+.person-card.you .person-label { color: var(--gold); }
+.person-card.tobi .person-label { color: var(--blue); }
+
+.person-name {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+}
+
+/* ─── SUBSCRIPTION CARDS ─────────────────────────────────── */
+.sub-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+  margin-top: 2rem;
+}
+
+.sub-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 1.5rem;
+  position: relative;
+  transition: border-color .25s, transform .25s;
+}
+.sub-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+.sub-card.best {
+  border-color: rgba(240,165,0,0.35);
+  background: linear-gradient(135deg, var(--surface) 0%, rgba(240,165,0,0.04) 100%);
+}
+.sub-card.best::after {
+  content: 'EMPFOHLEN';
+  position: absolute;
+  top: 1rem; right: 1rem;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  background: var(--gold);
+  color: #000;
+  padding: .2rem .5rem;
+  border-radius: 3px;
+  font-weight: 500;
+}
+
+.sub-price {
+  font-family: 'Syne', sans-serif;
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--gold);
+  margin-bottom: .2rem;
+}
+.sub-period { font-size: 12px; color: var(--muted); margin-bottom: 1rem; }
+.sub-name {
+  font-family: 'Syne', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: .4rem;
+}
+.sub-desc { font-size: 13px; color: var(--muted); line-height: 1.55; margin-bottom: 1rem; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-brand">TeileniX</a>
+  <a href="#kontext">Kontext</a>
+  <a href="#lokal">Lokal</a>
+  <a href="#geteilt">Online</a>
+  <a href="#abonnement">Abonnement</a>
+  <a href="#git">Git-Workflow</a>
+  <a href="#claude-md">CLAUDE.md</a>
+  <a href="#memory">Memory</a>
+  <a href="#roadmap">Roadmap</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-eyebrow">Technisches Konzept — April 2026</div>
+  <h1>Zwei Personen,<br>ein Projekt mit Claude</h1>
+  <p class="hero-sub">
+    Wie du und Tobi gemeinsam an TeileniX entwickeln können — mit Claude Code, geteiltem GitHub-Repo, sauberen Git-Workflows und der richtigen Subscription-Strategie.
+  </p>
+  <div class="hero-meta">
+    <span class="badge badge-gold">2 Entwickler</span>
+    <span class="badge badge-muted">1 Codebase</span>
+    <span class="badge badge-blue">Claude Code CLI</span>
+    <span class="badge badge-green">GitHub privat</span>
+    <span class="badge badge-muted">Supabase shared</span>
+  </div>
+</div>
+
+<!-- KONTEXT -->
+<section id="kontext">
+  <div class="section-label">Ausgangslage</div>
+  <h2>Das Ziel: Gemeinsam entwickeln</h2>
+  <p>TeileniX soll zu zweit weiterentwickelt werden. Du hast deine Umgebung bereits aufgesetzt — Claude Code läuft, das Repo existiert, Supabase ist verbunden. Tobi steigt neu ein und braucht eine identische Entwicklungsumgebung. Dieses Konzept beschreibt den schnellsten Weg, wie beide produktiv zusammenarbeiten können.</p>
+
+  <div class="context-grid">
+    <div class="stat-card">
+      <div class="stat-num">2</div>
+      <div class="stat-label">Entwickler mit eigenem Claude-Konto</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">1</div>
+      <div class="stat-label">Gemeinsames GitHub-Repository</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">1</div>
+      <div class="stat-label">Gemeinsames Supabase-Projekt</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">∞</div>
+      <div class="stat-label">Feature-Branches, PRs, Reviews</div>
+    </div>
+  </div>
+
+  <div class="person-grid">
+    <div class="person-card you">
+      <div class="person-label">Entwickler 1 — Bereits eingerichtet</div>
+      <div class="person-name">Du</div>
+      <ul class="checklist">
+        <li>Claude Code CLI installiert und konfiguriert</li>
+        <li>GitHub-Account mit Repo-Zugriff</li>
+        <li>Supabase-Projekt aktiv</li>
+        <li><code style="font-family:DM Mono,monospace;font-size:11px;color:var(--gold)">.env.local</code> vorhanden und befüllt</li>
+        <li>Node.js, VS Code / Cursor, Git lokal installiert</li>
+      </ul>
+    </div>
+    <div class="person-card tobi">
+      <div class="person-label">Entwickler 2 — Neu einzurichten</div>
+      <div class="person-name">Tobi</div>
+      <ul class="checklist">
+        <li>Benötigt eigenes Claude-Konto + Subscription</li>
+        <li>GitHub-Account anlegen (falls nicht vorhanden)</li>
+        <li>Als Collaborator im Repo einladen</li>
+        <li><code style="font-family:DM Mono,monospace;font-size:11px;color:var(--blue)">.env.local</code> sicher übermitteln</li>
+        <li>Lokales Setup einrichten (Node, Git, CLI)</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- LOKALE VORAUSSETZUNGEN -->
+<section id="lokal">
+  <div class="section-label">Entwicklungsumgebung</div>
+  <h2>Was lokal nötig ist — für jeden</h2>
+  <p>Beide Entwickler brauchen eine identische lokale Umgebung. Das sind die Mindestvoraussetzungen für eine produktive Claude-Code-Session mit TeileniX.</p>
+
+  <div class="tech-grid">
+    <div class="tech-card">
+      <span class="tech-icon">🟩</span>
+      <h3>Node.js + npm</h3>
+      <p style="font-size:13px;">TeileniX läuft auf Next.js und benötigt Node.js in Version 20 oder neuer. npm ist standardmäßig dabei. nvm (Node Version Manager) empfohlen für einfaches Versionsmanagement.</p>
+      <div class="code-block">
+<span class="comment"># Node Version Manager installieren</span>
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+
+<span class="comment"># Node.js LTS installieren</span>
+nvm install --lts
+nvm use --lts
+
+<span class="comment"># Version prüfen</span>
+node --version  <span class="comment"># → v20.x.x oder höher</span>
+      </div>
+      <div style="margin-top:1rem; display:flex; gap:.5rem; flex-wrap:wrap;">
+        <span class="badge badge-green">Node v20+</span>
+        <span class="badge badge-muted">npm 10+</span>
+      </div>
+    </div>
+
+    <div class="tech-card">
+      <span class="tech-icon">🖊</span>
+      <h3>VS Code oder Cursor</h3>
+      <p style="font-size:13px;">Beide Editoren funktionieren hervorragend mit Claude Code. Cursor (basiert auf VS Code) hat eine tiefere KI-Integration eingebaut — empfohlen für intensivere Claude-Nutzung. Beide arbeiten mit demselben Repo.</p>
+      <div class="code-block">
+<span class="comment"># VS Code Erweiterungen installieren</span>
+code --install-extension esbenp.prettier-vscode
+code --install-extension bradlc.vscode-tailwindcss
+code --install-extension ms-vscode.vscode-typescript-next
+
+<span class="comment"># oder Cursor herunterladen:</span>
+<span class="comment"># https://cursor.sh</span>
+      </div>
+      <div style="margin-top:1rem; display:flex; gap:.5rem; flex-wrap:wrap;">
+        <span class="badge badge-blue">VS Code</span>
+        <span class="badge badge-gold">Cursor (empfohlen)</span>
+      </div>
+    </div>
+
+    <div class="tech-card">
+      <span class="tech-icon">⚡</span>
+      <h3>Claude Code CLI</h3>
+      <p style="font-size:13px;">Das Claude Code CLI ist ein npm-Paket, das global installiert wird. Jeder Entwickler meldet sich mit seinem eigenen Anthropic-Konto an. Die Nutzungslimits sind damit personenbezogen — kein Teilen von API-Keys nötig.</p>
+      <div class="code-block">
+<span class="comment"># Global installieren</span>
+npm install -g @anthropic-ai/claude-code
+
+<span class="comment"># Anmelden (Browser öffnet sich)</span>
+claude
+
+<span class="comment"># Im Projektverzeichnis starten</span>
+cd teilenix
+claude
+      </div>
+      <div style="margin-top:1rem; display:flex; gap:.5rem; flex-wrap:wrap;">
+        <span class="badge badge-gold">Eigenes Konto pro Person</span>
+        <span class="badge badge-green">Keine geteilten Keys</span>
+      </div>
+    </div>
+
+    <div class="tech-card">
+      <span class="tech-icon">🔒</span>
+      <h3>.env.local — sicher teilen</h3>
+      <p style="font-size:13px;">Die <code style="font-family:DM Mono;font-size:11px;color:var(--blue)">.env.local</code>-Datei enthält Supabase-Keys und andere Geheimnisse. Sie darf <strong style="color:var(--red)">nie ins Git-Repository</strong> committed werden (<code style="font-family:DM Mono;font-size:11px;color:var(--muted)">.gitignore</code> sorgt dafür). Tobi bekommt eine Kopie über einen sicheren Kanal.</p>
+      <div class="code-block">
+<span class="comment"># .gitignore — diese Zeile muss drin sein</span>
+.env.local
+.env*.local
+
+<span class="comment"># Sicher übermitteln via:</span>
+<span class="comment"># - 1Password (Shared Vault)</span>
+<span class="comment"># - Bitwarden (Secure Send)</span>
+<span class="comment"># - Signal (verschlüsselt)</span>
+<span class="comment"># NICHT: E-Mail, WhatsApp, Slack</span>
+      </div>
+      <div style="margin-top:1rem; display:flex; gap:.5rem; flex-wrap:wrap;">
+        <span class="badge badge-red">Nie ins Git!</span>
+        <span class="badge badge-muted">1Password / Bitwarden</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vollständige Checkliste -->
+  <div class="detail-card" style="margin-top:1.5rem; background:var(--surface2);">
+    <h4 style="font-size:1rem; margin-bottom:.75rem;">Vollständige Setup-Checkliste für Tobi</h4>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:1.5rem;">
+      <div>
+        <div style="font-family:DM Mono,monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.6rem;">Software installieren</div>
+        <ul class="checklist">
+          <li>Node.js v20+ via nvm</li>
+          <li>Git (git --version prüfen)</li>
+          <li>VS Code oder Cursor</li>
+          <li>Claude Code CLI (npm install -g)</li>
+        </ul>
+      </div>
+      <div>
+        <div style="font-family:DM Mono,monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.6rem;">Accounts & Zugriff</div>
+        <ul class="checklist">
+          <li>GitHub-Account erstellen / prüfen</li>
+          <li>Anthropic-Account anlegen</li>
+          <li>Claude Pro oder Max abonnieren</li>
+          <li>Als Repo-Collaborator einladen (du sendest)</li>
+        </ul>
+      </div>
+      <div>
+        <div style="font-family:DM Mono,monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.6rem;">Projekt einrichten</div>
+        <ul class="checklist">
+          <li>Repository klonen</li>
+          <li>.env.local sicher empfangen und anlegen</li>
+          <li>npm install ausführen</li>
+          <li>npm run dev — App läuft lokal</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WAS ONLINE GETEILT WIRD -->
+<section id="geteilt">
+  <div class="section-label">Gemeinsame Infrastruktur</div>
+  <h2>Was online geteilt wird</h2>
+  <p>Die eigentliche Collaboration passiert über drei geteilte Ressourcen: das GitHub-Repository, das Supabase-Projekt und die im Repo lebenden Kontext-Dateien für Claude.</p>
+
+  <div class="variants-grid">
+    <div class="variant-card recommended">
+      <div class="variant-letter">1</div>
+      <div class="variant-tag">Versionskontrolle</div>
+      <div class="variant-title">GitHub Repository (privat)</div>
+      <p class="variant-desc">Das Herzstück der Collaboration. Beide Entwickler sind als Collaborator eingeladen und haben vollen Push-Zugriff auf alle Branches.</p>
+      <hr class="divider">
+      <div class="metric-row">
+        <span class="metric-key">Sichtbarkeit</span>
+        <span class="metric-val" style="color:var(--green)">Privat</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">Tobi einladen</span>
+        <span class="metric-val">Settings → Collaborators</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">Branches</span>
+        <span class="metric-val">main + Feature-Branches</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">Push auf main</span>
+        <span class="metric-val" style="color:var(--red)">Nur via PR</span>
+      </div>
+    </div>
+
+    <div class="variant-card">
+      <div class="variant-letter">2</div>
+      <div class="variant-tag">Datenbank & Backend</div>
+      <div class="variant-title">Supabase Projekt</div>
+      <p class="variant-desc">Das gemeinsame Supabase-Projekt teilen beide Entwickler. Tobi wird in die Supabase Organization eingeladen und hat Zugriff auf Dashboard, Migrations und Logs.</p>
+      <hr class="divider">
+      <div class="metric-row">
+        <span class="metric-key">Zugang</span>
+        <span class="metric-val">Organization einladen</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">Migrations</span>
+        <span class="metric-val">Im Git-Repo</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">Lokal testen</span>
+        <span class="metric-val">Gegen gemeinsame DB</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">.env.local</span>
+        <span class="metric-val" style="color:var(--red)">Nie ins Repo!</span>
+      </div>
+    </div>
+
+    <div class="variant-card">
+      <div class="variant-letter">3</div>
+      <div class="variant-tag">Claude-Kontext</div>
+      <div class="variant-title">CLAUDE.md im Repo</div>
+      <p class="variant-desc">Die zentrale Kontext-Datei für Claude Code. Sie liegt im Repository-Root und gibt Claude bei jedem Start Kontext über das Projekt, Conventions und Einschränkungen.</p>
+      <hr class="divider">
+      <div class="metric-row">
+        <span class="metric-key">Ort</span>
+        <span class="metric-val">/CLAUDE.md (Root)</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">Für beide sichtbar</span>
+        <span class="metric-val" style="color:var(--green)">Ja, im Git</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">Automatisch gelesen</span>
+        <span class="metric-val" style="color:var(--green)">Ja, bei claude-Start</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">Pflegen</span>
+        <span class="metric-val">Beide gemeinsam</span>
+      </div>
+    </div>
+
+    <div class="variant-card">
+      <div class="variant-letter">4</div>
+      <div class="variant-tag">Projektgedächtnis</div>
+      <div class="variant-title">Memory-Ordner (selektiv)</div>
+      <p class="variant-desc">Project memories (technische Entscheidungen, Architektur) liegen im Repo. Persönliche Memories (Feedback, User-Preferences) bleiben lokal und werden per .gitignore ausgeschlossen.</p>
+      <hr class="divider">
+      <div class="metric-row">
+        <span class="metric-key">Projekt-Memory</span>
+        <span class="metric-val" style="color:var(--green)">Im Git</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">User-Memory</span>
+        <span class="metric-val" style="color:var(--muted)">Lokal, .gitignore</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">Ordner</span>
+        <span class="metric-val">memory/</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">Format</span>
+        <span class="metric-val">.md Dateien</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ABONNEMENT -->
+<section id="abonnement">
+  <div class="section-label">Claude-Subscription</div>
+  <h2>Welches Abo für wen?</h2>
+  <p>Claude Code ist personenbezogen — jeder Entwickler nutzt sein eigenes Konto und seine eigene Subscription. Es gibt keine Team-Accounts. Die richtige Wahl hängt davon ab, wie intensiv jeder Claude Code nutzen möchte.</p>
+
+  <div class="sub-grid">
+    <div class="sub-card">
+      <div class="sub-price">$20</div>
+      <div class="sub-period">pro Monat</div>
+      <div class="sub-name">Claude Pro</div>
+      <div class="sub-desc">Claude Code mit Nutzungslimits. Gut für gelegentliche Entwicklungssessions, aber bei intensiver Nutzung schnell ausgeschöpft.</div>
+      <ul class="checklist">
+        <li>Claude Code inklusive</li>
+        <li>Nutzungslimits pro Monat</li>
+        <li>Gut für: 1–2h täglich</li>
+      </ul>
+      <div style="margin-top:1rem;">
+        <span class="badge badge-muted">Einstieg</span>
+      </div>
+    </div>
+
+    <div class="sub-card best">
+      <div class="sub-price">$100</div>
+      <div class="sub-period">pro Monat</div>
+      <div class="sub-name">Claude Max</div>
+      <div class="sub-desc">Unlimitiertes Claude Code. Für intensive Entwicklung über mehrere Stunden täglich — kein Gedanke ans Limit, volle Konzentration aufs Bauen.</div>
+      <ul class="checklist">
+        <li>Claude Code unlimitiert</li>
+        <li>Kein Limit-Stress</li>
+        <li>Gut für: intensive Phasen</li>
+      </ul>
+      <div style="margin-top:1rem;">
+        <span class="badge badge-gold">Empfohlen</span>
+      </div>
+    </div>
+
+    <div class="sub-card">
+      <div class="sub-price">Pay</div>
+      <div class="sub-period">per Use — API Key</div>
+      <div class="sub-name">API Key (direkt)</div>
+      <div class="sub-desc">Flexibel und kostenbasiert. Claude Code nutzt dabei den eigenen API-Key direkt. Gut für Teams oder wenn die Nutzung sehr variabel ist.</div>
+      <ul class="checklist">
+        <li>Keine monatlichen Fixkosten</li>
+        <li>Kosten pro Token</li>
+        <li>Gut für: variable Nutzung</li>
+      </ul>
+      <div style="margin-top:1rem;">
+        <span class="badge badge-blue">Flexibel</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="rec-box" style="margin-top:2rem;">
+    <h3>Empfehlung für Tobi</h3>
+    <p style="color:#c8d5e8; font-size:15px; margin-bottom:1rem;">
+      Zum Einstieg reicht <strong>Claude Pro ($20/Monat)</strong> vollkommen aus — Tobi kann den Workflow kennenlernen und sehen, wie intensiv er Claude Code nutzt. Wer merkt, dass er täglich mehrere Stunden entwickelt, wechselt zu <strong>Claude Max ($100/Monat)</strong>.
+    </p>
+    <div class="rec-tags">
+      <span class="badge badge-gold">Jeder hat sein eigenes Abo</span>
+      <span class="badge badge-green">Keine Team-Accounts</span>
+      <span class="badge badge-muted">Keine geteilten API-Keys</span>
+    </div>
+  </div>
+
+  <div class="table-wrap" style="margin-top:1.5rem;">
+    <table>
+      <thead>
+        <tr>
+          <th>Merkmal</th>
+          <th>Claude Pro ($20)</th>
+          <th class="col-rec">Claude Max ($100)</th>
+          <th>API Key (Pay-per-use)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Claude Code</td>
+          <td>Ja, mit Limits</td>
+          <td class="col-rec"><strong style="color:var(--green)">Unlimitiert</strong></td>
+          <td>Ja, direkt</td>
+        </tr>
+        <tr>
+          <td>Monatliche Kosten</td>
+          <td>$20 fix</td>
+          <td class="col-rec">$100 fix</td>
+          <td>Variabel (typisch $20–80)</td>
+        </tr>
+        <tr>
+          <td>Nutzungslimit</td>
+          <td><span class="badge badge-muted">Limitiert</span></td>
+          <td class="col-rec"><span class="badge badge-green">Kein Limit</span></td>
+          <td><span class="badge badge-blue">Budget-basiert</span></td>
+        </tr>
+        <tr>
+          <td>Ideal für</td>
+          <td>Gelegentlich, Einstieg</td>
+          <td class="col-rec">Intensive Entwicklung</td>
+          <td>Variable Nutzung</td>
+        </tr>
+        <tr>
+          <td>Setup-Aufwand</td>
+          <td><span class="effort effort-low">Minimal</span></td>
+          <td class="col-rec"><span class="effort effort-low">Minimal</span></td>
+          <td><span class="effort effort-medium">API-Key konfigurieren</span></td>
+        </tr>
+        <tr>
+          <td>Empfehlung</td>
+          <td>Einstieg für Tobi</td>
+          <td class="col-rec"><strong style="color:var(--gold)">Wer täglich baut</strong></td>
+          <td>Teams / Firmen</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- GIT WORKFLOW -->
+<section id="git">
+  <div class="section-label">Versionskontrolle</div>
+  <h2>Git-Workflow für zwei Personen</h2>
+  <p>Mit zwei aktiven Entwicklern ist ein klarer Branch-Workflow wichtig. Direkte Pushes auf <code style="font-family:DM Mono;font-size:12px;color:var(--blue)">main</code> sind verboten — alles läuft über Feature-Branches und Pull Requests.</p>
+
+  <div class="detail-grid">
+    <div class="detail-card">
+      <h4 style="color:var(--green)">Die goldene Regel</h4>
+      <ul class="pro-con pros">
+        <li>Jedes Feature / jeder Bugfix bekommt einen eigenen Branch</li>
+        <li>Branch-Namen: <code style="font-family:DM Mono;font-size:11px;color:var(--blue)">feature/xyz</code>, <code style="font-family:DM Mono;font-size:11px;color:var(--blue)">fix/abc</code></li>
+        <li>Fertige Branches werden als Pull Request geöffnet</li>
+        <li>Der jeweils andere Entwickler reviewed und mergt</li>
+        <li>Nach dem Merge: Branch löschen, von main pullen</li>
+        <li>Regelmäßig von main rebeasen, um Konflikte klein zu halten</li>
+      </ul>
+    </div>
+    <div class="detail-card">
+      <h4 style="color:var(--red)">Was vermieden werden sollte</h4>
+      <ul class="pro-con cons">
+        <li>Direkte Commits auf main (auch nicht durch force-push)</li>
+        <li>Lange lebende Feature-Branches (&gt;2–3 Tage)</li>
+        <li>Merge-Commits ohne PR (direkte git merge)</li>
+        <li>.env.local oder andere Secrets committen</li>
+        <li>git push --force auf main</li>
+      </ul>
+    </div>
+  </div>
+
+  <div style="margin-top:1.75rem;">
+    <div style="background:var(--surface2); border:1px solid var(--border); border-radius:var(--r); padding:1.75rem;">
+      <h4 style="font-family:Syne,sans-serif; font-weight:700; font-size:1rem; margin-bottom:1rem;">Typischer Arbeitsablauf</h4>
+      <div class="code-block">
+<span class="comment"># 1. Immer von aktuellem main starten</span>
+git checkout main
+git pull origin main
+
+<span class="comment"># 2. Neuen Feature-Branch erstellen</span>
+git checkout -b feature/ausgabe-bearbeiten
+
+<span class="comment"># 3. Claude Code starten und entwickeln</span>
+claude
+
+<span class="comment"># 4. Änderungen committen (Claude macht das oft automatisch)</span>
+git add src/components/expenses/EditExpense.tsx
+git commit -m "feat: Ausgaben direkt bearbeitbar machen"
+
+<span class="comment"># 5. Branch pushen und PR öffnen</span>
+git push -u origin feature/ausgabe-bearbeiten
+gh pr create --title "feat: Ausgaben bearbeiten" --body "..."
+
+<span class="comment"># 6. Nach Merge: aufräumen</span>
+git checkout main && git pull && git branch -d feature/ausgabe-bearbeiten
+      </div>
+    </div>
+  </div>
+
+  <div class="matrix-grid" style="margin-top:1.75rem;">
+    <div class="matrix-cell matrix-highlight">
+      <h4>Branch benennen</h4>
+      <p><code style="font-family:DM Mono;font-size:11px;color:var(--gold)">feature/</code> für neue Features, <code style="font-family:DM Mono;font-size:11px;color:var(--gold)">fix/</code> für Bugfixes, <code style="font-family:DM Mono;font-size:11px;color:var(--gold)">refactor/</code> für Umstrukturierungen, <code style="font-family:DM Mono;font-size:11px;color:var(--gold)">chore/</code> für Wartungsarbeiten.</p>
+    </div>
+    <div class="matrix-cell">
+      <h4>Commit-Nachrichten</h4>
+      <p>Conventional Commits: <code style="font-family:DM Mono;font-size:11px;color:var(--blue)">feat:</code>, <code style="font-family:DM Mono;font-size:11px;color:var(--blue)">fix:</code>, <code style="font-family:DM Mono;font-size:11px;color:var(--blue)">refactor:</code>. Claude Code hält sich standardmäßig daran — einfach die bestehende Konvention fortführen.</p>
+    </div>
+    <div class="matrix-cell">
+      <h4>Merge-Strategie</h4>
+      <p>Squash-Merge oder Rebase-Merge auf main — so bleibt der Verlauf sauber. Kein regulärer Merge-Commit (vermeidet das "Merged feature-xyz into main"-Rauschen).</p>
+    </div>
+    <div class="matrix-cell matrix-highlight">
+      <h4>Branch-Schutz auf main</h4>
+      <p>Im GitHub-Repository unter Settings → Branches: <strong style="color:var(--gold)">Branch Protection Rule für main</strong> aktivieren. Kein direktes Pushen, mindestens 1 Reviewer für PRs.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CLAUDE.MD -->
+<section id="claude-md">
+  <div class="section-label">Kontext für Claude</div>
+  <h2>CLAUDE.md — das Projektgedächtnis</h2>
+  <p>Die <code style="font-family:DM Mono;font-size:13px;color:var(--gold)">CLAUDE.md</code>-Datei im Repository-Root wird von Claude Code bei jedem Start automatisch eingelesen. Sie gibt Claude den notwendigen Kontext, damit jede Session nahtlos fortgesetzt werden kann — für beide Entwickler identisch.</p>
+
+  <div class="tech-grid">
+    <div class="tech-card">
+      <span class="tech-icon">📋</span>
+      <h3>Projektbeschreibung</h3>
+      <p style="font-size:13px;">Was ist TeileniX? Für wen? Was ist der aktuelle Stand? Eine präzise Beschreibung in 3–5 Sätzen erspart Claude langes Einlesen und verhindert falsche Annahmen.</p>
+      <div class="code-block">
+<span class="comment"># TeileniX — CLAUDE.md</span>
+
+<span class="comment">## Was ist TeileniX?</span>
+TeileniX ist eine mobile-first Reisekostenapp
+für Familien und Freundesgruppen. Nutzer können
+Ausgaben erfassen, aufteilen und ausgleichen.
+Stack: Next.js App Router, Supabase, TypeScript,
+Tailwind CSS. Aktuell in aktivem Beta-Test.
+      </div>
+    </div>
+
+    <div class="tech-card">
+      <span class="tech-icon">🏗</span>
+      <h3>Tech Stack & Architektur</h3>
+      <p style="font-size:13px;">Welche Technologien, welche Ordnerstruktur, welche Patterns werden verwendet. So trifft Claude automatisch die richtigen Entscheidungen ohne extra Anweisungen.</p>
+      <div class="code-block">
+<span class="comment">## Tech Stack</span>
+- Next.js 15 App Router (nicht Pages Router!)
+- Supabase (Auth, PostgreSQL, Realtime, Storage)
+- TypeScript strict mode
+- Tailwind CSS v4
+- shadcn/ui Komponenten
+- Zod für Validierung
+- Supabase SSR für Server Components
+      </div>
+    </div>
+
+    <div class="tech-card">
+      <span class="tech-icon">📏</span>
+      <h3>Conventions & Regeln</h3>
+      <p style="font-size:13px;">Naming Conventions, Code-Style, Dateistruktur-Regeln. Claude hält sich daran und produziert konsistenten Code, der zu dem passt, was schon existiert.</p>
+      <div class="code-block">
+<span class="comment">## Conventions</span>
+- Komponenten: PascalCase, Dateien: kebab-case
+- API-Routes: /app/api/[ressource]/route.ts
+- DB-Typen aus /src/types/database.types.ts
+- Keine any-Types, immer strikte Typen
+- Server Actions bevorzugen für Mutationen
+- Fehlerbehandlung immer mit try/catch + Toast
+      </div>
+    </div>
+
+    <div class="tech-card">
+      <span class="tech-icon">🚫</span>
+      <h3>Was Claude NICHT tun soll</h3>
+      <p style="font-size:13px;">Explizite Verbote verhindern, dass Claude unerwünschte Änderungen macht. Besonders wichtig für sensible Bereiche wie Auth, Datenbank-Migrationen oder externe Schnittstellen.</p>
+      <div class="code-block">
+<span class="comment">## Nicht tun</span>
+- Keine Supabase-Migrations ohne explizite Anfrage
+- Keine Änderungen an supabase/migrations/ ohne Absprache
+- Nicht die Navigation-Struktur ändern (ist festgelegt)
+- Keine npm-Pakete hinzufügen ohne Rückfrage
+- CLAUDE.md und Memory-Dateien nicht selbst ändern
+      </div>
+    </div>
+  </div>
+
+  <div class="rec-box">
+    <h3>Minimale CLAUDE.md — Vorlage für TeileniX</h3>
+    <p style="color:#c8d5e8; font-size:14px; margin-bottom:1.25rem;">Diese Datei existiert schon oder sollte sofort angelegt werden. Tobi profitiert sofort von einem gut befüllten CLAUDE.md — Claude braucht weniger Erklärung und macht weniger falsche Annahmen.</p>
+    <div class="code-block" style="font-size:11.5px; margin-top:0;">
+<span class="comment"># TeileniX</span>
+
+<span class="comment">## Projektübersicht</span>
+Mobile-first Reisekostenapp für Gruppen. Next.js 15 App Router, Supabase (Auth + DB + Realtime),
+TypeScript strict, Tailwind v4, shadcn/ui.
+
+<span class="comment">## Ordnerstruktur</span>
+src/app/(app)/trips/[tripId]/ → Trip-bezogene Seiten
+src/components/              → Wiederverwendbare Komponenten
+src/lib/                     → Utilities und Supabase-Clients
+supabase/migrations/         → SQL-Migrations (nicht ohne Absprache ändern!)
+
+<span class="comment">## Aktuelle Entwicklung</span>
+[Hier: Was gerade gebaut wird, offene TODOs, bekannte Bugs]
+
+<span class="comment">## Nicht tun</span>
+- Supabase Migrations ohne explizite Anfrage erstellen
+- any-Types verwenden
+- npm-Pakete ohne Rückfrage installieren
+    </div>
+    <div class="rec-tags" style="margin-top:1.25rem;">
+      <span class="badge badge-gold">Im Git-Repo</span>
+      <span class="badge badge-green">Für beide sichtbar</span>
+      <span class="badge badge-blue">Automatisch geladen</span>
+    </div>
+  </div>
+</section>
+
+<!-- MEMORY -->
+<section id="memory">
+  <div class="section-label">Projektgedächtnis</div>
+  <h2>Memory-Strategie — was wohin gehört</h2>
+  <p>Claude Code kann sich Informationen in Memory-Dateien merken. Die Faustregel: Alles, was für das Projekt nützlich ist, gehört ins Git-Repo. Alles, was persönlich oder user-spezifisch ist, bleibt lokal.</p>
+
+  <div class="detail-grid">
+    <div class="detail-card">
+      <h4 style="color:var(--green)">Ins Git-Repo (für beide)</h4>
+      <ul class="pro-con pros">
+        <li>Technische Architektur-Entscheidungen (warum wurde X gewählt?)</li>
+        <li>Projektübersicht und Tech-Stack (project_overview.md)</li>
+        <li>Bekannte Bugs und offene TODOs</li>
+        <li>Datenbank-Schema-Beschreibungen</li>
+        <li>Deployment-Infos und Server-Konfiguration</li>
+        <li>Wichtige Code-Patterns die im Projekt verwendet werden</li>
+      </ul>
+    </div>
+    <div class="detail-card">
+      <h4 style="color:var(--muted)">Lokal bleiben (nicht ins Git)</h4>
+      <ul class="pro-con cons">
+        <li>Persönliches Feedback und Präferenzen</li>
+        <li>User-Memories mit persönlichen Vorlieben</li>
+        <li>Sensible Zugangsdaten oder Keys (nie ins Git!)</li>
+        <li>Lokale Entwicklungsnotizen die nur einen betreffen</li>
+        <li>Temporäre Debugging-Notizen</li>
+      </ul>
+    </div>
+  </div>
+
+  <div style="margin-top:1.75rem; background:var(--surface2); border:1px solid var(--border); border-radius:var(--r); padding:1.75rem;">
+    <h4 style="font-family:Syne,sans-serif;font-weight:700;font-size:1rem;margin-bottom:1rem;">.gitignore — Memory-Strategie</h4>
+    <div class="code-block">
+<span class="comment"># .gitignore Ergänzung für Claude Memory</span>
+
+<span class="comment"># Persönliche Memories lokal halten</span>
+.claude/memory/user_*.md
+.claude/memory/feedback_*.md
+.claude/settings.json
+
+<span class="comment"># Projekt-Memories ins Git (kein Ignore)</span>
+<span class="comment"># memory/project_overview.md  ← ins Git</span>
+<span class="comment"># memory/architecture.md      ← ins Git</span>
+<span class="comment"># memory/decisions.md         ← ins Git</span>
+
+<span class="comment"># Niemals ins Git</span>
+.env.local
+.env*.local
+    </div>
+    <p style="font-size:13px; margin-top:1rem; margin-bottom:0;">Der <code style="font-family:DM Mono;font-size:11px;color:var(--blue)">memory/</code>-Ordner im Projekt-Root enthält die geteilten Projektinformationen. Tobis Claude-Installation liest sie genauso wie deine — beide haben identischen Kontext.</p>
+  </div>
+</section>
+
+<!-- ROADMAP -->
+<section id="roadmap">
+  <div class="section-label">Umsetzungsplan</div>
+  <h2>Roadmap: Tobi zum ersten Commit</h2>
+  <p>Schritt für Schritt von null zur ersten gemeinsamen Pull Request — so schnell wie möglich, ohne etwas zu vergessen.</p>
+
+  <div class="roadmap">
+    <div class="roadmap-step">
+      <div class="step-dot">1</div>
+      <div class="step-content">
+        <h4>GitHub Repository vorbereiten <span class="effort effort-low">~10 Min</span></h4>
+        <p>Repository auf privat stellen (falls noch nicht). Unter Settings → Collaborators Tobis GitHub-Account einladen. Branch-Protection für main aktivieren: kein direktes Pushen, mindestens 1 Review für PRs. Tobi nimmt die Einladung an.</p>
+      </div>
+    </div>
+
+    <div class="roadmap-step">
+      <div class="step-dot">2</div>
+      <div class="step-content">
+        <h4>Supabase-Zugriff für Tobi <span class="effort effort-low">~5 Min</span></h4>
+        <p>Im Supabase Dashboard unter Organization → Members Tobis E-Mail-Adresse einladen. Rolle: Developer (kann alles lesen und migrieren, aber keine Billing-Änderungen). Tobi nimmt die Einladung an und hat vollen Dashboard-Zugriff.</p>
+      </div>
+    </div>
+
+    <div class="roadmap-step">
+      <div class="step-dot">3</div>
+      <div class="step-content">
+        <h4>.env.local sicher übermitteln <span class="effort effort-low">~5 Min</span></h4>
+        <p>Die aktuelle .env.local-Datei (mit NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY etc.) über einen sicheren Kanal teilen: 1Password Secure Share, Bitwarden Send oder Signal. Tobi legt die Datei im geklonten Repo-Root ab.</p>
+      </div>
+    </div>
+
+    <div class="roadmap-step">
+      <div class="step-dot">4</div>
+      <div class="step-content">
+        <h4>Tobis lokale Umgebung einrichten <span class="effort effort-medium">~30 Min</span></h4>
+        <p>Node.js v20+ via nvm, Git, VS Code oder Cursor installieren. Repo klonen. Claude Code CLI installieren: <code style="font-family:DM Mono;font-size:11px;color:var(--blue)">npm install -g @anthropic-ai/claude-code</code>. Mit eigenem Anthropic-Konto anmelden. <code style="font-family:DM Mono;font-size:11px;color:var(--blue)">npm install</code> und <code style="font-family:DM Mono;font-size:11px;color:var(--blue)">npm run dev</code> ausführen.</p>
+      </div>
+    </div>
+
+    <div class="roadmap-step">
+      <div class="step-dot">5</div>
+      <div class="step-content">
+        <h4>CLAUDE.md anlegen / optimieren <span class="effort effort-low">~20 Min</span></h4>
+        <p>CLAUDE.md im Repo-Root anlegen oder prüfen, ob sie vollständig ist. Projektbeschreibung, Tech Stack, Conventions und Verbote eintragen. Committen und pushen — damit liest Tobis Claude sofort denselben Kontext bei der ersten Session.</p>
+      </div>
+    </div>
+
+    <div class="roadmap-step">
+      <div class="step-dot">6</div>
+      <div class="step-content">
+        <h4>Erster gemeinsamer Commit (Test-PR) <span class="effort effort-low">~15 Min</span></h4>
+        <p>Tobi erstellt einen Feature-Branch (<code style="font-family:DM Mono;font-size:11px;color:var(--blue)">feature/tobi-hello-world</code>), macht eine kleine Änderung (z.B. einen Kommentar oder eine README-Zeile), pusht den Branch und öffnet einen Pull Request. Du reviewst und mergst — der Workflow ist damit einmal vollständig durchgelaufen.</p>
+      </div>
+    </div>
+
+    <div class="roadmap-step">
+      <div class="step-dot">7</div>
+      <div class="step-content">
+        <h4>Erste echte Aufgabe assignen <span class="effort effort-low">~10 Min</span></h4>
+        <p>Ein konkretes, abgegrenztes Feature oder einen Bugfix aus dem Backlog für Tobi aussuchen. GitHub Issues als Aufgaben-Tracker nutzen. Tobi startet seine erste echte Claude-Code-Session mit dem Projekt-Kontext aus CLAUDE.md und den Memory-Dateien.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="matrix-grid" style="margin-top:3rem;">
+    <div class="matrix-cell matrix-highlight">
+      <h4>Tobi macht seinen ersten Commit</h4>
+      <p>Branch anlegen → Claude starten → Feature bauen → PR öffnen → Review → Merge. Dieser Ablauf ist das Herz der Zusammenarbeit.</p>
+    </div>
+    <div class="matrix-cell">
+      <h4>Wer mergt PRs?</h4>
+      <p>Grundsatz: Nie den eigenen PR mergen. Der jeweils andere Entwickler reviewed und mergt — sorgt für vier Augen und bessere Codequalität.</p>
+    </div>
+    <div class="matrix-cell">
+      <h4>Konflikte auflösen</h4>
+      <p>Bei Merge-Konflikten: lokal von main rebeasen (<code style="font-family:DM Mono;font-size:11px;color:var(--blue)">git rebase main</code>), Konflikte manuell lösen, dann neu pushen. Claude Code kann dabei helfen.</p>
+    </div>
+    <div class="matrix-cell matrix-highlight">
+      <h4>Kommunikation</h4>
+      <p>PR-Beschreibungen ausführlich halten — was wurde geändert, warum, was wurde getestet. Das schafft Transparenz und hilft Claude beim nächsten Mal.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  TeileniX Collaboration-Konzept · Erstellt April 2026 · Claude Code + GitHub + Supabase
+</footer>
+
+<script>
+// Staggered animation for cards
+const cards = document.querySelectorAll('.variant-card, .stat-card, .tech-card, .sub-card, .person-card');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) {
+      entry.target.style.animationDelay = (i * 0.08) + 's';
+      entry.target.style.opacity = '1';
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.1 });
+
+cards.forEach(card => {
+  card.style.opacity = '0';
+  observer.observe(card);
+});
+
+// Active nav highlight on scroll
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('nav a[href^="#"]');
+
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => {
+    if (window.scrollY >= s.offsetTop - 80) current = s.id;
+  });
+  navLinks.forEach(a => {
+    a.style.color = a.getAttribute('href') === '#' + current ? 'var(--text)' : '';
+    a.style.borderBottomColor = a.getAttribute('href') === '#' + current ? 'var(--gold)' : 'transparent';
+  });
+});
+</script>
+</body>
+</html>
