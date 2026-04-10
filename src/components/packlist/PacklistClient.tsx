@@ -494,7 +494,8 @@ export default function PacklistClient({
 
   const bringItems = items.filter(i => i.item_type === 'bringing')
   const needItems  = items.filter(i => i.item_type === 'group_need')
-  const currentItems = tab === 'bringing' ? bringItems : needItems
+  // Group_need items where the current user has made a claim
+  const myClaimedNeedItems = needItems.filter(i => i.claims.some(c => c.participant_id === myParticipantId))
 
   return (
     <div>
@@ -514,9 +515,9 @@ export default function PacklistClient({
           )}
         >
           🎒 {isGroup ? 'Wir bringen mit' : 'Ich bringe mit'}
-          {bringItems.length > 0 && (
+          {(bringItems.length + myClaimedNeedItems.length) > 0 && (
             <span className={cn('text-[10px] font-bold px-1.5 py-0.5 rounded-full', tab === 'bringing' ? 'bg-primary/10 text-primary' : 'bg-muted-foreground/10 text-muted-foreground')}>
-              {bringItems.length}
+              {bringItems.length + myClaimedNeedItems.length}
             </span>
           )}
         </button>
@@ -554,29 +555,59 @@ export default function PacklistClient({
 
       {/* List */}
       <div className="bg-card rounded-[18px] card-shadow border border-border overflow-hidden mb-4">
-        {currentItems.length === 0 ? (
+        {tab === 'bringing' && bringItems.length === 0 && myClaimedNeedItems.length === 0 ? (
           <div className="py-10 text-center">
-            <span className="text-[40px] block mb-2">{tab === 'bringing' ? '🎒' : '🛍️'}</span>
-            <p className="text-[13px] font-semibold text-foreground mb-1">
-              {tab === 'bringing' ? 'Noch nichts auf der Liste' : 'Noch keine Gruppenbedarfe'}
-            </p>
-            <p className="text-[12px] text-muted-foreground">
-              {tab === 'bringing'
-                ? 'Füge hinzu, was du mitbringst.'
-                : 'Füge hinzu, was die Gruppe braucht.'}
-            </p>
+            <span className="text-[40px] block mb-2">🎒</span>
+            <p className="text-[13px] font-semibold text-foreground mb-1">Noch nichts auf der Liste</p>
+            <p className="text-[12px] text-muted-foreground">Füge hinzu, was du mitbringst.</p>
+          </div>
+        ) : tab === 'group_need' && needItems.length === 0 ? (
+          <div className="py-10 text-center">
+            <span className="text-[40px] block mb-2">🛍️</span>
+            <p className="text-[13px] font-semibold text-foreground mb-1">Noch keine Gruppenbedarfe</p>
+            <p className="text-[12px] text-muted-foreground">Füge hinzu, was die Gruppe braucht.</p>
           </div>
         ) : tab === 'bringing' ? (
-          bringItems.map(item => (
-            <BringingRow
-              key={item.id}
-              item={item}
-              myParticipantId={myParticipantId}
-              tripId={tripId}
-              onRefresh={refresh}
-              isActive={isActive}
-            />
-          ))
+          <>
+            {bringItems.map(item => (
+              <BringingRow
+                key={item.id}
+                item={item}
+                myParticipantId={myParticipantId}
+                tripId={tripId}
+                onRefresh={refresh}
+                isActive={isActive}
+              />
+            ))}
+            {/* Separator + claimed group_need items */}
+            {myClaimedNeedItems.length > 0 && (
+              <>
+                {bringItems.length > 0 && (
+                  <div className="flex items-center gap-2 px-3.5 py-1.5 bg-muted/40">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">
+                      Zugesagt aus Gruppenbedarfen
+                    </span>
+                  </div>
+                )}
+                {myClaimedNeedItems.map(item => {
+                  const myClaim = item.claims.find(c => c.participant_id === myParticipantId)!
+                  return (
+                    <div key={item.id} className="flex items-center gap-2.5 px-3.5 py-2.5 border-b border-border last:border-0">
+                      <span className="text-[16px] flex-shrink-0">🛍️</span>
+                      <div className="flex-1 min-w-0">
+                        <span className="text-[13px] font-semibold text-foreground">{item.title}</span>
+                        <span className="text-[10px] text-muted-foreground/60 block leading-none mt-0.5">
+                          {myClaim.quantity_claimed > 1 ? `${myClaim.quantity_claimed}× zugesagt` : 'Zugesagt'}
+                          {myGroupName ? ` · ${myGroupName}` : ''}
+                        </span>
+                      </div>
+                      <span className="text-[11px] font-bold text-green-700 flex-shrink-0">✓</span>
+                    </div>
+                  )
+                })}
+              </>
+            )}
+          </>
         ) : (
           needItems.map(item => (
             <GroupNeedRow
