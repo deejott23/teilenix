@@ -470,7 +470,7 @@ export default function PacklistClient({
   const invalidate = usePacklistInvalidate(tripId)
   const { data: items = initialItems } = usePacklist(tripId, initialItems)
 
-  const [tab, setTab] = useState<TabKey>('bringing')
+  const [tab, setTab] = useState<TabKey>('group_need')
   const [showSheet, setShowSheet] = useState(false)
 
   const refresh = useCallback(() => invalidate(), [invalidate])
@@ -508,21 +508,6 @@ export default function PacklistClient({
       <div className="flex gap-1 mb-4 p-1 bg-muted rounded-[14px]">
         <button
           type="button"
-          onClick={() => setTab('bringing')}
-          className={cn(
-            'flex-1 flex items-center justify-center gap-1.5 py-2 rounded-[11px] text-[13px] font-bold transition-all',
-            tab === 'bringing' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'
-          )}
-        >
-          🎒 {isGroup ? 'Wir bringen mit' : 'Ich bringe mit'}
-          {(bringItems.length + myClaimedNeedItems.length) > 0 && (
-            <span className={cn('text-[10px] font-bold px-1.5 py-0.5 rounded-full', tab === 'bringing' ? 'bg-primary/10 text-primary' : 'bg-muted-foreground/10 text-muted-foreground')}>
-              {bringItems.length + myClaimedNeedItems.length}
-            </span>
-          )}
-        </button>
-        <button
-          type="button"
           onClick={() => setTab('group_need')}
           className={cn(
             'flex-1 flex items-center justify-center gap-1.5 py-2 rounded-[11px] text-[13px] font-bold transition-all',
@@ -534,6 +519,21 @@ export default function PacklistClient({
           {needItems.length > 0 && (
             <span className={cn('text-[10px] font-bold px-1.5 py-0.5 rounded-full', tab === 'group_need' ? 'bg-amber-100 text-amber-700' : 'bg-muted-foreground/10 text-muted-foreground')}>
               {needItems.length}
+            </span>
+          )}
+        </button>
+        <button
+          type="button"
+          onClick={() => setTab('bringing')}
+          className={cn(
+            'flex-1 flex items-center justify-center gap-1.5 py-2 rounded-[11px] text-[13px] font-bold transition-all',
+            tab === 'bringing' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'
+          )}
+        >
+          🎒 {isGroup ? 'Wir bringen mit' : 'Ich bringe mit'}
+          {(bringItems.length + myClaimedNeedItems.length) > 0 && (
+            <span className={cn('text-[10px] font-bold px-1.5 py-0.5 rounded-full', tab === 'bringing' ? 'bg-primary/10 text-primary' : 'bg-muted-foreground/10 text-muted-foreground')}>
+              {bringItems.length + myClaimedNeedItems.length}
             </span>
           )}
         </button>
@@ -631,8 +631,8 @@ export default function PacklistClient({
         </p>
       )}
 
-      {/* FAB */}
-      {isActive && (
+      {/* FAB — nur bei Gruppenbedarfe-Tab */}
+      {isActive && tab === 'group_need' && (
         <button
           type="button"
           onClick={() => setShowSheet(true)}
