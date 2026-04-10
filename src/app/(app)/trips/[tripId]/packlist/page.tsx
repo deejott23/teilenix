@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import PacklistClient from '@/components/packlist/PacklistClient'
-import RealtimePageRefresher from '@/components/realtime/RealtimePageRefresher'
+import RealtimeQueryRefresher from '@/components/realtime/RealtimeQueryRefresher'
 import type { PacklistItem, TripParticipant } from '@/types/app'
 
 export default async function PacklistPage({
@@ -71,7 +71,7 @@ export default async function PacklistPage({
 
   return (
     <>
-      <RealtimePageRefresher tripId={tripId} tables={['packlist_items', 'packlist_checks', 'packlist_claims']} />
+      <RealtimeQueryRefresher tripId={tripId} tables={['packlist_items', 'packlist_checks', 'packlist_claims']} />
       <PacklistClient
         tripId={tripId}
         items={items}

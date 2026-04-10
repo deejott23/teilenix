@@ -1,8 +1,15 @@
 'use client'
 import { useState, useRef } from 'react'
-import { toast } from 'sonner'
 import { Plus, Minus, Trash2, ChevronDown, ChevronUp, ShoppingCart } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import {
+  useShopping,
+  useAddShoppingItem,
+  useToggleShoppingBought,
+  useUpdateShoppingQty,
+  useDeleteShoppingItem,
+  useClearBoughtItems,
+} from '@/hooks/useShopping'
 
 // ── Types ──────────────────────────────────────────────
 type ShoppingItem = {
@@ -52,10 +59,17 @@ export default function ShoppingListClient({
   tripId: string
   initialItems: ShoppingItem[]
 }) {
-  const [items, setItems] = useState<ShoppingItem[]>(initialItems)
+  // TanStack Query — liefert immer den aktuellen Stand (inkl. Realtime-Updates)
+  const { data: items = initialItems } = useShopping(tripId, initialItems)
+
+  const addItem       = useAddShoppingItem(tripId)
+  const toggleBought  = useToggleShoppingBought(tripId)
+  const updateQty     = useUpdateShoppingQty(tripId)
+  const deleteItem    = useDeleteShoppingItem(tripId)
+  const clearBought   = useClearBoughtItems(tripId)
+
   const [newTitle, setNewTitle] = useState('')
   const [newQty, setNewQty] = useState(1)
-  const [adding, setAdding] = useState(false)
   const [showBought, setShowBought] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -80,91 +94,23 @@ export default function ShoppingListClient({
     return ai - bi
   })
 
-  const handleAdd = async () => {
+  const handleAdd = () => {
     const title = newTitle.trim()
     if (!title) return
-    setAdding(true)
-    const category = detectCategory(title)
-    try {
-      const res = await fetch(`/api/trips/${tripId}/shopping`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, category, quantity: newQty }),
-      })
-      if (!res.ok) throw new Error()
-      const item = await res.json()
-      setItems(prev => [...prev, item])
-      setNewTitle('')
-      setNewQty(1)
-      inputRef.current?.focus()
-    } catch {
-      toast.error('Fehler beim Hinzufügen')
-    } finally {
-      setAdding(false)
-    }
+    addItem.mutate(
+      { title, category: detectCategory(title), quantity: newQty },
+      {
+        onSuccess: () => {
+          setNewTitle('')
+          setNewQty(1)
+          inputRef.current?.focus()
+        },
+      }
+    )
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') handleAdd()
-  }
-
-  const handleToggleBought = async (item: ShoppingItem) => {
-    const newBought = !item.is_bought
-    // Optimistic update
-    setItems(prev => prev.map(i => i.id === item.id ? { ...i, is_bought: newBought } : i))
-    try {
-      const res = await fetch(`/api/trips/${tripId}/shopping/${item.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ is_bought: newBought }),
-      })
-      if (!res.ok) throw new Error()
-    } catch {
-      // Revert
-      setItems(prev => prev.map(i => i.id === item.id ? { ...i, is_bought: item.is_bought } : i))
-      toast.error('Fehler')
-    }
-  }
-
-  const handleQtyChange = async (item: ShoppingItem, delta: number) => {
-    const newQty = Math.max(1, item.quantity + delta)
-    if (newQty === item.quantity) return
-    setItems(prev => prev.map(i => i.id === item.id ? { ...i, quantity: newQty } : i))
-    try {
-      const res = await fetch(`/api/trips/${tripId}/shopping/${item.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ quantity: newQty }),
-      })
-      if (!res.ok) throw new Error()
-    } catch {
-      setItems(prev => prev.map(i => i.id === item.id ? { ...i, quantity: item.quantity } : i))
-      toast.error('Fehler')
-    }
-  }
-
-  const handleDelete = async (item: ShoppingItem) => {
-    setItems(prev => prev.filter(i => i.id !== item.id))
-    try {
-      const res = await fetch(`/api/trips/${tripId}/shopping/${item.id}`, { method: 'DELETE' })
-      if (!res.ok) throw new Error()
-    } catch {
-      setItems(prev => [...prev, item])
-      toast.error('Fehler')
-    }
-  }
-
-  const handleClearBought = async () => {
-    const toDelete = boughtItems
-    setItems(prev => prev.filter(i => !i.is_bought))
-    try {
-      await Promise.all(toDelete.map(item =>
-        fetch(`/api/trips/${tripId}/shopping/${item.id}`, { method: 'DELETE' })
-      ))
-    } catch {
-      setItems(prev => [...prev, ...toDelete])
-      toast.error('Fehler')
-    }
   }
 
   return (
@@ -209,7 +155,7 @@ export default function ShoppingListClient({
           <button
             type="button"
             onClick={handleAdd}
-            disabled={!newTitle.trim() || adding}
+            disabled={!newTitle.trim() || addItem.isPending}
             className={cn(
               'flex items-center gap-1.5 px-4 py-2.5 rounded-[12px] font-bold text-[13px] transition-all active:scale-95',
               newTitle.trim() ? 'bg-primary text-white hover:bg-primary/90' : 'bg-muted text-muted-foreground'
@@ -245,7 +191,7 @@ export default function ShoppingListClient({
                 {/* Checkbox */}
                 <button
                   type="button"
-                  onClick={() => handleToggleBought(item)}
+                  onClick={() => toggleBought.mutate({ id: item.id, is_bought: !item.is_bought })}
                   className="w-5 h-5 rounded-[6px] border-2 border-border flex-shrink-0 flex items-center justify-center hover:border-primary transition-colors active:scale-90"
                 />
                 {/* Title */}
@@ -256,7 +202,7 @@ export default function ShoppingListClient({
                 <div className="flex items-center gap-1">
                   <button
                     type="button"
-                    onClick={() => handleQtyChange(item, -1)}
+                    onClick={() => updateQty.mutate({ id: item.id, quantity: Math.max(1, item.quantity - 1) })}
                     className="w-6 h-6 rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:bg-muted/80 active:scale-90 transition-all"
                   >
                     <Minus className="w-2.5 h-2.5" strokeWidth={2.5} />
@@ -264,7 +210,7 @@ export default function ShoppingListClient({
                   <span className="w-5 text-center text-[13px] font-bold text-foreground">{item.quantity}</span>
                   <button
                     type="button"
-                    onClick={() => handleQtyChange(item, +1)}
+                    onClick={() => updateQty.mutate({ id: item.id, quantity: Math.min(99, item.quantity + 1) })}
                     className="w-6 h-6 rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:bg-muted/80 active:scale-90 transition-all"
                   >
                     <Plus className="w-2.5 h-2.5" strokeWidth={2.5} />
@@ -273,7 +219,7 @@ export default function ShoppingListClient({
                 {/* Delete */}
                 <button
                   type="button"
-                  onClick={() => handleDelete(item)}
+                  onClick={() => deleteItem.mutate(item.id)}
                   className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground/50 hover:text-destructive hover:bg-destructive/10 active:scale-90 transition-all flex-shrink-0"
                 >
                   <Trash2 className="w-3.5 h-3.5" strokeWidth={2} />
@@ -311,7 +257,7 @@ export default function ShoppingListClient({
                     {/* Checked checkbox */}
                     <button
                       type="button"
-                      onClick={() => handleToggleBought(item)}
+                      onClick={() => toggleBought.mutate({ id: item.id, is_bought: false })}
                       className="w-5 h-5 rounded-[6px] bg-green-500 border-2 border-green-500 flex-shrink-0 flex items-center justify-center active:scale-90 transition-all"
                     >
                       <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 12 12" stroke="currentColor" strokeWidth={2.5}>
@@ -324,7 +270,7 @@ export default function ShoppingListClient({
                     <span className="text-[12px] text-muted-foreground">×{item.quantity}</span>
                     <button
                       type="button"
-                      onClick={() => handleDelete(item)}
+                      onClick={() => deleteItem.mutate(item.id)}
                       className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground/40 hover:text-destructive hover:bg-destructive/10 active:scale-90 transition-all flex-shrink-0"
                     >
                       <Trash2 className="w-3.5 h-3.5" strokeWidth={2} />
@@ -334,7 +280,7 @@ export default function ShoppingListClient({
               </div>
               <button
                 type="button"
-                onClick={handleClearBought}
+                onClick={() => clearBought.mutate(boughtItems.map(i => i.id))}
                 className="w-full py-2 text-[12px] font-semibold text-destructive hover:bg-destructive/10 rounded-[12px] transition-colors"
               >
                 Alle eingekauften Artikel löschen

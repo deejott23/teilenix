@@ -4,7 +4,9 @@ import Link from 'next/link'
 import { Plus } from 'lucide-react'
 import ExpenseList from '@/components/expenses/ExpenseList'
 import GeldSubNav from '@/components/layout/GeldSubNav'
-import RealtimePageRefresher from '@/components/realtime/RealtimePageRefresher'
+import RealtimeQueryRefresher from '@/components/realtime/RealtimeQueryRefresher'
+import { HydrationBoundary, QueryClient, dehydrate } from '@tanstack/react-query'
+import { queryKeys } from '@/lib/query/queryKeys'
 import type { ExpenseWithSplits, TripParticipant } from '@/types/app'
 
 export default async function ExpensesPage({
@@ -54,26 +56,33 @@ export default async function ExpensesPage({
       participant: participantMap.get(e.paid_by_participant_id) ?? { id: e.paid_by_participant_id, name: 'Unbekannt', shares: 1 },
     })) as unknown as ExpenseWithSplits[]
 
+  // TanStack Query Cache mit Server-Daten vorbeladen
+  const queryClient = new QueryClient()
+  queryClient.setQueryData(queryKeys.expenses.withSplits(tripId), expenses)
+  const dehydratedState = dehydrate(queryClient)
+
   return (
-    <div className="space-y-4">
-      <RealtimePageRefresher tripId={tripId} tables={['expenses', 'expense_splits']} />
-      <GeldSubNav tripId={tripId} />
-      {trip?.status === 'active' && (
-        <Link
-          href={`/trips/${tripId}/expenses/new`}
-          className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl bg-primary text-primary-foreground font-semibold text-[14px] hover:bg-primary/90 active:scale-[0.98] transition-all"
-        >
-          <Plus className="w-4.5 h-4.5" strokeWidth={2.5} />
-          Neue Ausgabe
-        </Link>
-      )}
-      <ExpenseList
-        expenses={expenses}
-        myParticipantId={myParticipantId}
-        tripId={tripId}
-        canEdit={trip?.status === 'active'}
-        participantMap={participantMap}
-      />
-    </div>
+    <HydrationBoundary state={dehydratedState}>
+      <div className="space-y-4">
+        <RealtimeQueryRefresher tripId={tripId} tables={['expenses', 'expense_splits']} />
+        <GeldSubNav tripId={tripId} />
+        {trip?.status === 'active' && (
+          <Link
+            href={`/trips/${tripId}/expenses/new`}
+            className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl bg-primary text-primary-foreground font-semibold text-[14px] hover:bg-primary/90 active:scale-[0.98] transition-all"
+          >
+            <Plus className="w-4.5 h-4.5" strokeWidth={2.5} />
+            Neue Ausgabe
+          </Link>
+        )}
+        <ExpenseList
+          expenses={expenses}
+          myParticipantId={myParticipantId}
+          tripId={tripId}
+          canEdit={trip?.status === 'active'}
+          participantMap={participantMap}
+        />
+      </div>
+    </HydrationBoundary>
   )
 }

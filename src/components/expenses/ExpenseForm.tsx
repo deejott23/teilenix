@@ -4,6 +4,8 @@ import { useState, useCallback, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from 'next/navigation'
+import { useQueryClient } from '@tanstack/react-query'
+import { queryKeys } from '@/lib/query/queryKeys'
 import { toast } from 'sonner'
 import { z } from 'zod'
 import { Button } from '@/components/ui/button'
@@ -111,8 +113,9 @@ export default function ExpenseForm({
   const getStandardEmoji = (key: string) =>
     standardOverrides.get(key)?.emoji ?? categoryEmoji[key as ExpenseCategory] ?? '📦'
 
-  const router  = useRouter()
-  const isEdit  = !!expenseId
+  const router       = useRouter()
+  const queryClient  = useQueryClient()
+  const isEdit       = !!expenseId
 
   // Splits: groups + standalone individuals (not individual group members)
   const billableParticipants = participants.filter(p => !p.group_id)
@@ -316,8 +319,8 @@ export default function ExpenseForm({
       }
 
       toast.success(isEdit ? 'Ausgabe aktualisiert!' : 'Ausgabe gespeichert!')
+      queryClient.invalidateQueries({ queryKey: queryKeys.expenses.withSplits(tripId) })
       router.push(`/trips/${tripId}/expenses`)
-      router.refresh()
     } catch (e: unknown) {
       const isNetworkError = e instanceof TypeError && e.message.toLowerCase().includes('fetch')
       if (isNetworkError && !isEdit) {
@@ -336,7 +339,7 @@ export default function ExpenseForm({
         })
         registerOnlineQueueProcessor((count) => {
           toast.success(`${count} Ausgabe${count > 1 ? 'n' : ''} synchronisiert`)
-          router.refresh()
+          queryClient.invalidateQueries({ queryKey: queryKeys.expenses.withSplits(tripId) })
         })
         toast.warning('Offline gespeichert – wird automatisch synchronisiert sobald du wieder online bist')
         router.push(`/trips/${tripId}/expenses`)

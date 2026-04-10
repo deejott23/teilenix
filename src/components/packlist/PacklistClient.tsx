@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { usePacklistInvalidate } from '@/hooks/usePacklist'
 import TripSubNav from '@/components/layout/TripSubNav'
 import { toast } from 'sonner'
 import { Plus, ChevronRight, Trash2, Pencil, Check, X } from 'lucide-react'
@@ -415,14 +415,14 @@ function AddItemSheet({
 export default function PacklistClient({
   tripId, items: initialItems, participants, myParticipantId, myGroupId, myGroupName, isActive,
 }: PacklistClientProps) {
-  const router = useRouter()
+  const invalidate = usePacklistInvalidate(tripId)
   const [items, setItems] = useState<PacklistItem[]>(initialItems)
   useEffect(() => { setItems(initialItems) }, [initialItems])
 
   const [filter, setFilter] = useState<FilterKey>('all')
   const [showSheet, setShowSheet] = useState(false)
 
-  const refresh = useCallback(() => router.refresh(), [router])
+  const refresh = useCallback(() => invalidate(), [invalidate])
 
   const handleAdd = async (item_type: PacklistItemType, title: string) => {
     try {

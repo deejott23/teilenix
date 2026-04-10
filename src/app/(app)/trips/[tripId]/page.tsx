@@ -7,7 +7,7 @@ import { formatCurrency, formatDate } from '@/lib/formatting'
 import { cn } from '@/lib/utils'
 import { activityTypeEmoji } from '@/lib/activities'
 import type { ExpenseWithSplits, TripParticipant, ActivityType } from '@/types/app'
-import RealtimePageRefresher from '@/components/realtime/RealtimePageRefresher'
+import RealtimeQueryRefresher from '@/components/realtime/RealtimeQueryRefresher'
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -290,7 +290,7 @@ export default async function TripOverviewPage({
 
   return (
     <div className="space-y-3">
-      <RealtimePageRefresher tripId={tripId} tables={['expenses', 'packlist_items', 'activities']} />
+      <RealtimeQueryRefresher tripId={tripId} tables={['expenses', 'packlist_items', 'activities']} />
 
       {/* ── Balance Card ── */}
       <Link

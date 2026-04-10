@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TeileniX — E2E-Testing Konzept</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #22263a;
+    --border: #2e3347;
+    --accent: #6c63ff;
+    --accent2: #00d4aa;
+    --accent3: #ff6b6b;
+    --accent4: #ffd166;
+    --text: #e2e8f0;
+    --muted: #8892a4;
+    --code-bg: #141720;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    font-size: 15px;
+  }
+  .hero {
+    background: linear-gradient(135deg, #1a1d27 0%, #0f1117 60%, #1a1427 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 60px 40px 50px;
+    text-align: center;
+  }
+  .hero .badge {
+    display: inline-block;
+    background: rgba(108,99,255,0.15);
+    border: 1px solid rgba(108,99,255,0.35);
+    color: #a99fff;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 100px;
+    margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-size: 42px;
+    font-weight: 800;
+    letter-spacing: -.02em;
+    margin-bottom: 12px;
+    background: linear-gradient(135deg, #fff 0%, #a99fff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero p {
+    color: var(--muted);
+    font-size: 17px;
+    max-width: 620px;
+    margin: 0 auto;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 32px; }
+  .section { padding: 56px 0 40px; border-bottom: 1px solid var(--border); }
+  .section:last-child { border-bottom: none; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+  .section-num {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  h2 {
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -.01em;
+  }
+  h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 10px;
+  }
+  .grid { display: grid; gap: 16px; }
+  .grid-2 { grid-template-columns: repeat(2, 1fr); }
+  .grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px 24px;
+  }
+  .card.accent-purple { border-color: rgba(108,99,255,0.4); background: rgba(108,99,255,0.06); }
+  .card.accent-green  { border-color: rgba(0,212,170,0.4);  background: rgba(0,212,170,0.06);  }
+  .card.accent-red    { border-color: rgba(255,107,107,0.4); background: rgba(255,107,107,0.06);}
+  .card.accent-yellow { border-color: rgba(255,209,102,0.4); background: rgba(255,209,102,0.06);}
+  .card-icon { font-size: 28px; margin-bottom: 10px; }
+  .card h3 { margin-bottom: 6px; }
+  .card p { color: var(--muted); font-size: 14px; }
+  .tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    padding: 3px 9px;
+    border-radius: 6px;
+    margin-right: 4px;
+    margin-bottom: 4px;
+  }
+  .tag-purple { background: rgba(108,99,255,0.2); color: #a99fff; }
+  .tag-green  { background: rgba(0,212,170,0.2);  color: #00d4aa; }
+  .tag-red    { background: rgba(255,107,107,0.2); color: #ff9b9b; }
+  .tag-yellow { background: rgba(255,209,102,0.2); color: #ffd166; }
+  .tag-blue   { background: rgba(59,130,246,0.2);  color: #93c5fd; }
+  .tool-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    position: relative;
+  }
+  .tool-card .recommended {
+    position: absolute;
+    top: -10px; right: 16px;
+    background: var(--accent2);
+    color: #000;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 10px;
+    border-radius: 20px;
+  }
+  .tool-name { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .tool-desc { color: var(--muted); font-size: 14px; margin-bottom: 14px; }
+  .pros-cons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+  .pros, .cons {
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 13px;
+  }
+  .pros { border-left: 3px solid var(--accent2); }
+  .cons { border-left: 3px solid var(--accent3); }
+  .pros li, .cons li { list-style: none; color: var(--muted); margin-bottom: 4px; }
+  .pros li::before { content: "✓ "; color: var(--accent2); font-weight: 700; }
+  .cons li::before { content: "– "; color: var(--accent3); }
+  pre, code {
+    font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+    font-size: 13px;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 24px;
+    overflow-x: auto;
+    line-height: 1.7;
+    margin: 16px 0;
+  }
+  .kw { color: #c792ea; }
+  .str { color: #c3e88d; }
+  .fn  { color: #82aaff; }
+  .cm  { color: #546e7a; font-style: italic; }
+  .num { color: #f78c6c; }
+  .const { color: #ffcb6b; }
+  .flow-list { counter-reset: flow; }
+  .flow-item {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+    align-items: flex-start;
+  }
+  .flow-num {
+    counter-increment: flow;
+    min-width: 28px; height: 28px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .flow-body h4 { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+  .flow-body p { color: var(--muted); font-size: 14px; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    margin: 16px 0;
+  }
+  th {
+    background: var(--surface2);
+    padding: 10px 16px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 11px 16px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  .prio-high   { color: #ff6b6b; font-weight: 600; }
+  .prio-medium { color: #ffd166; font-weight: 600; }
+  .prio-low    { color: #6bcb77; font-weight: 600; }
+  .highlight-box {
+    background: linear-gradient(135deg, rgba(108,99,255,0.1) 0%, rgba(0,212,170,0.05) 100%);
+    border: 1px solid rgba(108,99,255,0.3);
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin: 24px 0;
+  }
+  .highlight-box h3 { color: #a99fff; margin-bottom: 10px; }
+  .pipeline {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin: 20px 0;
+    flex-wrap: wrap;
+  }
+  .pipe-step {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 18px;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+    min-width: 130px;
+  }
+  .pipe-arrow {
+    color: var(--accent);
+    font-size: 20px;
+    padding: 0 8px;
+  }
+  .matrix {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin: 20px 0;
+  }
+  .matrix-cell {
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 14px;
+    text-align: center;
+    border: 1px solid var(--border);
+  }
+  .matrix-cell .big { font-size: 28px; font-weight: 800; }
+  .matrix-cell .label { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  @media (max-width: 768px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .pros-cons { grid-template-columns: 1fr; }
+    .matrix { grid-template-columns: repeat(2, 1fr); }
+    .hero h1 { font-size: 28px; }
+    .pipeline { flex-direction: column; }
+    .pipe-arrow { transform: rotate(90deg); }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="badge">Konzept · Stand April 2026</div>
+  <h1>E2E-Testing Strategie</h1>
+  <p>Automatisierte End-to-End Tests für TeileniX — Fehler finden, bevor es die Nutzer tun.</p>
+</div>
+
+<div class="container">
+
+  <!-- ─── 1. WARUM E2E? ─── -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">1</div>
+      <h2>Warum E2E-Testing?</h2>
+    </div>
+
+    <div class="matrix">
+      <div class="matrix-cell">
+        <div class="big" style="color:#ff6b6b">0</div>
+        <div class="label">Bestehende Tests</div>
+      </div>
+      <div class="matrix-cell">
+        <div class="big" style="color:#ffd166">5+</div>
+        <div class="label">Kritische User Flows</div>
+      </div>
+      <div class="matrix-cell">
+        <div class="big" style="color:#6c63ff">∞</div>
+        <div class="label">Supabase RLS-Regeln</div>
+      </div>
+      <div class="matrix-cell">
+        <div class="big" style="color:#00d4aa">100%</div>
+        <div class="label">Manuell getestet</div>
+      </div>
+    </div>
+
+    <div class="grid grid-3" style="margin-top:16px">
+      <div class="card accent-red">
+        <div class="card-icon">🧨</div>
+        <h3>Komplexe Splits</h3>
+        <p>Proportional, Custom, Multi-Payer — viele Kombinationen, leichte Regressionen bei Änderungen.</p>
+      </div>
+      <div class="card accent-yellow">
+        <div class="card-icon">🔄</div>
+        <h3>Realtime + Offline</h3>
+        <p>Supabase Subscriptions und Offline-Queue — schwer manuell zu testen, ideal für Automation.</p>
+      </div>
+      <div class="card accent-green">
+        <div class="card-icon">🔐</div>
+        <h3>Auth & RLS</h3>
+        <p>Google OAuth + Row Level Security — Zugriffsfehler müssen zuverlässig erkannt werden.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── 2. TOOL-WAHL ─── -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">2</div>
+      <h2>Tool-Empfehlung</h2>
+    </div>
+
+    <div class="grid grid-2">
+
+      <div class="tool-card" style="border-color: rgba(0,212,170,0.5)">
+        <div class="recommended">✓ Empfohlen</div>
+        <div class="tool-name">Playwright</div>
+        <div class="tool-desc">Microsoft · Open Source · aktiv maintained</div>
+        <div>
+          <span class="tag tag-green">Next.js nativ</span>
+          <span class="tag tag-green">Multi-Browser</span>
+          <span class="tag tag-green">TypeScript</span>
+          <span class="tag tag-blue">Codegen</span>
+          <span class="tag tag-blue">Visual Diff</span>
+        </div>
+        <div class="pros-cons">
+          <ul class="pros">
+            <li>Perfekt für Next.js App Router</li>
+            <li>Automatischer Codegen per Klick</li>
+            <li>Chrome, Firefox, Safari parallel</li>
+            <li>Screenshot-Diffs eingebaut</li>
+            <li>Netzwerk-Mocking (MSW-ähnlich)</li>
+            <li>Trace Viewer für Debugging</li>
+          </ul>
+          <ul class="cons">
+            <li>Auth-Setup mit Supabase aufwändig</li>
+            <li>Supabase-Testdaten brauchen Strategie</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="tool-card">
+        <div class="tool-name">Cypress</div>
+        <div class="tool-desc">Cypress.io · Ausgereift · große Community</div>
+        <div>
+          <span class="tag tag-purple">Interaktiv</span>
+          <span class="tag tag-purple">Time Travel</span>
+          <span class="tag tag-blue">Dashboard</span>
+        </div>
+        <div class="pros-cons">
+          <ul class="pros">
+            <li>Sehr gutes visuelles UI</li>
+            <li>Viel Dokumentation</li>
+            <li>cy.intercept für API-Mocking</li>
+          </ul>
+          <ul class="cons">
+            <li>Nur Chrome (Electron)</li>
+            <li>Kein nativer Parallelismus (Free)</li>
+            <li>Langsamer als Playwright</li>
+            <li>Dashboard kostenpflichtig</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="highlight-box" style="margin-top: 24px">
+      <h3>Empfehlung: Playwright + Supabase Test-Datenbank</h3>
+      <p>Playwright passt am besten zu Next.js 16 App Router und TypeScript. Der eingebaute <strong>Codegen</strong> generiert Tests durch Klicken in der App — ideal für schnellen Einstieg. Für Auth einen separaten Supabase-<strong>Test-Branch</strong> oder lokale <code>supabase start</code>-Instanz verwenden.</p>
+    </div>
+  </div>
+
+  <!-- ─── 3. TESTFÄLLE ERMITTELN ─── -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">3</div>
+      <h2>Wie ermittle ich die richtigen Testfälle?</h2>
+    </div>
+
+    <p style="color:var(--muted); margin-bottom:28px">Vier Quellen kombinieren — dann sind alle kritischen Pfade abgedeckt.</p>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px">
+          <div style="width:36px;height:36px;border-radius:8px;background:rgba(108,99,255,0.2);display:flex;align-items:center;justify-content:center;font-size:18px">🗺️</div>
+          <h3 style="margin:0">A) User Journey Mapping</h3>
+        </div>
+        <p style="margin-bottom:12px;color:var(--muted)">Jeden Weg, den ein Nutzer durch die App nehmen kann, als Test abbilden.</p>
+        <ul style="color:var(--muted);font-size:14px;list-style:none">
+          <li style="padding:4px 0;border-bottom:1px solid var(--border)">→ Registrieren / Einloggen</li>
+          <li style="padding:4px 0;border-bottom:1px solid var(--border)">→ Reise erstellen, beitreten</li>
+          <li style="padding:4px 0;border-bottom:1px solid var(--border)">→ Ausgabe anlegen (alle Split-Modi)</li>
+          <li style="padding:4px 0;border-bottom:1px solid var(--border)">→ Abrechnung anzeigen & exportieren</li>
+          <li style="padding:4px 0">→ Reise beenden</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px">
+          <div style="width:36px;height:36px;border-radius:8px;background:rgba(255,107,107,0.2);display:flex;align-items:center;justify-content:center;font-size:18px">💥</div>
+          <h3 style="margin:0">B) Fehlerfälle & Edge Cases</h3>
+        </div>
+        <p style="margin-bottom:12px;color:var(--muted)">Was passiert wenn etwas schiefläuft — das sind oft die unentdeckten Bugs.</p>
+        <ul style="color:var(--muted);font-size:14px;list-style:none">
+          <li style="padding:4px 0;border-bottom:1px solid var(--border)">→ Betrag = 0 oder negativ</li>
+          <li style="padding:4px 0;border-bottom:1px solid var(--border)">→ Kein Teilnehmer ausgewählt</li>
+          <li style="padding:4px 0;border-bottom:1px solid var(--border)">→ Einladungscode ungültig</li>
+          <li style="padding:4px 0;border-bottom:1px solid var(--border)">→ Offline-Modus: Ausgabe speichern</li>
+          <li style="padding:4px 0">→ Gleichzeitiges Bearbeiten</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px">
+          <div style="width:36px;height:36px;border-radius:8px;background:rgba(0,212,170,0.2);display:flex;align-items:center;justify-content:center;font-size:18px">🔐</div>
+          <h3 style="margin:0">C) Sicherheits- & Berechtigungstests</h3>
+        </div>
+        <p style="margin-bottom:12px;color:var(--muted)">Supabase RLS muss aus Nutzerperspektive geprüft werden.</p>
+        <ul style="color:var(--muted);font-size:14px;list-style:none">
+          <li style="padding:4px 0;border-bottom:1px solid var(--border)">→ Nutzer sieht nur eigene Reisen</li>
+          <li style="padding:4px 0;border-bottom:1px solid var(--border)">→ Gast kann keine Reise beenden</li>
+          <li style="padding:4px 0;border-bottom:1px solid var(--border)">→ Unauthentifiziert → Redirect /login</li>
+          <li style="padding:4px 0">→ Fremde Ausgabe nicht editierbar</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px">
+          <div style="width:36px;height:36px;border-radius:8px;background:rgba(255,209,102,0.2);display:flex;align-items:center;justify-content:center;font-size:18px">📊</div>
+          <h3 style="margin:0">D) Regressionsbasiert (Bug-History)</h3>
+        </div>
+        <p style="margin-bottom:12px;color:var(--muted)">Jeden gefixten Bug als Test festhalten, damit er nicht wiederkommt.</p>
+        <ul style="color:var(--muted);font-size:14px;list-style:none">
+          <li style="padding:4px 0;border-bottom:1px solid var(--border)">→ Gesperrtes Eingabefeld (SplitOverrideEditor)</li>
+          <li style="padding:4px 0;border-bottom:1px solid var(--border)">→ Falsche Aufteilung bei Multi-Payer</li>
+          <li style="padding:4px 0">→ Ausgaben-Summen-Diskrepanz</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Priorisierungs-Matrix -->
+    <h3 style="margin: 32px 0 16px; font-size:18px">Priorisierungs-Matrix</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Testfall</th>
+          <th>Wahrscheinlichkeit Fehler</th>
+          <th>Auswirkung</th>
+          <th>Priorität</th>
+          <th>Automatisch?</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Login via Google OAuth</td>
+          <td>Mittel</td>
+          <td>Kritisch — kein Login, keine App</td>
+          <td class="prio-high">Hoch</td>
+          <td><span class="tag tag-yellow">Teilweise*</span></td>
+        </tr>
+        <tr>
+          <td>Ausgabe erstellen (proportional Split)</td>
+          <td>Hoch</td>
+          <td>Kern-Feature</td>
+          <td class="prio-high">Hoch</td>
+          <td><span class="tag tag-green">Ja</span></td>
+        </tr>
+        <tr>
+          <td>Ausgabe erstellen (Custom Split)</td>
+          <td>Hoch</td>
+          <td>Häufig genutzt, komplex</td>
+          <td class="prio-high">Hoch</td>
+          <td><span class="tag tag-green">Ja</span></td>
+        </tr>
+        <tr>
+          <td>Abrechnungsberechnung korrekt</td>
+          <td>Mittel</td>
+          <td>Vertrauensverlust bei Fehler</td>
+          <td class="prio-high">Hoch</td>
+          <td><span class="tag tag-green">Ja</span></td>
+        </tr>
+        <tr>
+          <td>Reise via Code beitreten</td>
+          <td>Niedrig</td>
+          <td>Onboarding-Blocker</td>
+          <td class="prio-high">Hoch</td>
+          <td><span class="tag tag-green">Ja</span></td>
+        </tr>
+        <tr>
+          <td>Unauthentifiziert → Redirect</td>
+          <td>Niedrig</td>
+          <td>Sicherheitslücke</td>
+          <td class="prio-medium">Mittel</td>
+          <td><span class="tag tag-green">Ja</span></td>
+        </tr>
+        <tr>
+          <td>Packliste abhaken</td>
+          <td>Niedrig</td>
+          <td>Komfortfunktion</td>
+          <td class="prio-low">Niedrig</td>
+          <td><span class="tag tag-green">Ja</span></td>
+        </tr>
+        <tr>
+          <td>PDF Export</td>
+          <td>Mittel</td>
+          <td>Mittel</td>
+          <td class="prio-medium">Mittel</td>
+          <td><span class="tag tag-yellow">Teilweise</span></td>
+        </tr>
+        <tr>
+          <td>Offline-Queue</td>
+          <td>Hoch</td>
+          <td>Datenverlust möglich</td>
+          <td class="prio-high">Hoch</td>
+          <td><span class="tag tag-yellow">Komplex</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size:13px;color:var(--muted)">* Google OAuth in Tests: mit Service Account Token oder Mock-Auth umgehen (siehe Abschnitt 5).</p>
+  </div>
+
+  <!-- ─── 4. AUTOMATISCHE TESTGENERIERUNG ─── -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">4</div>
+      <h2>Automatische Testgenerierung</h2>
+    </div>
+
+    <p style="color:var(--muted); margin-bottom:24px">Drei Wege, Testcode ohne manuelles Schreiben zu erzeugen — von einfach bis fortgeschritten.</p>
+
+    <div class="grid grid-3" style="margin-bottom:28px">
+      <div class="card accent-green">
+        <h3>🎥 Playwright Codegen</h3>
+        <p>App im Browser bedienen → Playwright zeichnet automatisch TypeScript-Testcode auf.</p>
+        <pre style="margin-top:12px;font-size:12px"><span class="fn">npx</span> playwright codegen
+  http://localhost:3000</pre>
+      </div>
+      <div class="card accent-purple">
+        <h3>🤖 Claude Code AI</h3>
+        <p>Claude analysiert Routen, Komponenten und Zod-Schemas und generiert vollständige Testsuiten.</p>
+        <pre style="margin-top:12px;font-size:12px"><span class="cm"># Prompt-Beispiel:</span>
+<span class="str">"Generiere Playwright-Tests
+für ExpenseForm.tsx"</span></pre>
+      </div>
+      <div class="card accent-yellow">
+        <h3>📸 Visual Snapshots</h3>
+        <p>Playwright macht Screenshots — bei Render-Änderungen schlägt der Test automatisch an.</p>
+        <pre style="margin-top:12px;font-size:12px"><span class="fn">expect</span>(page)
+  .<span class="fn">toHaveScreenshot</span>(
+    <span class="str">'expense-form.png'</span>);</pre>
+      </div>
+    </div>
+
+    <h3 style="font-size:18px; margin-bottom:16px">Claude Code als Testgenerator — Workflow</h3>
+
+    <div class="flow-list">
+      <div class="flow-item">
+        <div class="flow-num">1</div>
+        <div class="flow-body">
+          <h4>Komponente zeigen</h4>
+          <p>Claude öffnet die relevante Komponente (z.B. <code>ExpenseForm.tsx</code>) und liest den Zod-Schema für Validierungsregeln.</p>
+        </div>
+      </div>
+      <div class="flow-item">
+        <div class="flow-num">2</div>
+        <div class="flow-body">
+          <h4>Prompt formulieren</h4>
+          <p>Beispiel: <em>"Erstelle Playwright-Tests für alle Split-Modi in ExpenseForm. Happy Path + ungültige Eingaben. Nutze die bestehende auth-fixture."</em></p>
+        </div>
+      </div>
+      <div class="flow-item">
+        <div class="flow-num">3</div>
+        <div class="flow-body">
+          <h4>Generierter Test → Review</h4>
+          <p>Claude generiert die <code>.spec.ts</code>-Datei. Kurzes Review: Selektoren korrekt? Assertions sinnvoll? Dann direkt committen.</p>
+        </div>
+      </div>
+      <div class="flow-item">
+        <div class="flow-num">4</div>
+        <div class="flow-body">
+          <h4>Test ausführen &amp; verfeinern</h4>
+          <p><code>npx playwright test --ui</code> — fehlschlagende Tests an Claude zurückgeben: <em>"Test X schlägt fehl, hier der Fehler."</em></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="highlight-box">
+      <h3>💡 Claude Code Prompt-Vorlagen für TeileniX</h3>
+      <pre><span class="cm">// Ausgaben-Tests generieren</span>
+<span class="str">"Lies src/components/expenses/ExpenseForm.tsx und
+src/types/app.ts. Erstelle Playwright-Tests für:
+1) Ausgabe mit proportionalem Split (2 Nutzer)
+2) Ausgabe mit Custom Split (3 Nutzer, manuell)
+3) Multi-Payer-Ausgabe
+4) Validierung: Betrag leer → Fehlermeldung
+Nutze die Fixture auth-as-alice.ts für den Login."</span>
+
+<span class="cm">// Settlement-Berechnung testen</span>
+<span class="str">"Lies src/lib/settlement.ts und erstelle Unit-Tests
+mit Vitest für den greedy-Algorithmus. Teste:
+- Ausgeglichenes Saldo (keine Transfers)
+- Einfache Überweisung (A→B)
+- Minimierung auf 2 Transfers statt 3"</span></pre>
+    </div>
+  </div>
+
+  <!-- ─── 5. INFRASTRUKTUR ─── -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">5</div>
+      <h2>Was braucht es dafür?</h2>
+    </div>
+
+    <div class="grid grid-2" style="margin-bottom:28px">
+      <div class="card">
+        <h3>📦 Pakete installieren</h3>
+        <pre><span class="fn">npm</span> install -D @playwright/test
+<span class="fn">npx</span> playwright install  <span class="cm"># Browser</span>
+
+<span class="cm"># Optional: Unit-Tests für settlement.ts</span>
+<span class="fn">npm</span> install -D vitest @vitest/ui</pre>
+      </div>
+      <div class="card">
+        <h3>⚙️ playwright.config.ts</h3>
+        <pre><span class="kw">export default</span> <span class="fn">defineConfig</span>({
+  testDir: <span class="str">'./e2e'</span>,
+  use: {
+    baseURL: <span class="str">'http://localhost:3000'</span>,
+    storageState: <span class="str">'e2e/.auth/user.json'</span>,
+  },
+  webServer: {
+    command: <span class="str">'npm run dev'</span>,
+    url: <span class="str">'http://localhost:3000'</span>,
+  }
+});</pre>
+      </div>
+    </div>
+
+    <h3 style="font-size:18px; margin-bottom:16px">Auth-Problem lösen: Supabase in Tests</h3>
+    <p style="color:var(--muted);margin-bottom:16px">Google OAuth lässt sich nicht automatisieren. Zwei bewährte Lösungen:</p>
+
+    <div class="grid grid-2">
+      <div class="card accent-green">
+        <h3>Option A: Supabase Magic Link (empfohlen)</h3>
+        <p style="color:var(--muted);font-size:14px;margin-bottom:12px">Einen Test-User anlegen, der per E-Mail-Magic-Link einloggt — kein OAuth-Provider nötig.</p>
+        <pre style="font-size:12px"><span class="cm">// e2e/fixtures/auth.ts</span>
+<span class="kw">export async function</span> <span class="fn">loginAsTestUser</span>(page) {
+  <span class="kw">const</span> { data } = <span class="kw">await</span> supabaseAdmin
+    .<span class="fn">auth</span>.<span class="fn">signInWithPassword</span>({
+      email: <span class="str">'test@teilenix.dev'</span>,
+      password: process.env.<span class="const">TEST_USER_PW</span>
+    });
+  <span class="cm">// Cookie in Playwright setzen</span>
+  <span class="kw">await</span> page.context().<span class="fn">addCookies</span>([...]);
+}</pre>
+      </div>
+      <div class="card">
+        <h3>Option B: Lokale Supabase-Instanz</h3>
+        <p style="color:var(--muted);font-size:14px;margin-bottom:12px">Supabase lokal starten — komplett isoliert, Auth ohne echten Provider möglich.</p>
+        <pre style="font-size:12px"><span class="fn">npx</span> supabase start    <span class="cm"># Docker nötig</span>
+<span class="cm"># → lokale DB mit Seed-Daten</span>
+<span class="cm"># → auth.users direkt befüllbar</span>
+<span class="cm"># → RLS testbar ohne Cloud-Kosten</span>
+
+<span class="cm"># Seed-Script:</span>
+<span class="fn">npx</span> supabase db seed</pre>
+      </div>
+    </div>
+
+    <h3 style="font-size:18px; margin-top:32px; margin-bottom:16px">Testdaten-Strategie</h3>
+    <div class="grid grid-3">
+      <div class="card">
+        <h3>🌱 Seed-Fixtures</h3>
+        <p style="color:var(--muted);font-size:14px">Eine fixe Testumgebung: 2 User, 1 Reise, 3 Ausgaben → immer gleicher Ausgangszustand.</p>
+      </div>
+      <div class="card">
+        <h3>🏭 Factory Functions</h3>
+        <p style="color:var(--muted);font-size:14px">Hilfsfunktionen die Testdaten programmatisch erzeugen und nach dem Test aufräumen (<code>afterEach</code>).</p>
+      </div>
+      <div class="card">
+        <h3>🧹 Cleanup</h3>
+        <p style="color:var(--muted);font-size:14px">Nach jedem Test alle erzeugten Datenbankeinträge löschen — Tests bleiben unabhängig voneinander.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── 6. TESTFÄLLE (KONKRET) ─── -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">6</div>
+      <h2>Konkrete Testfälle für TeileniX</h2>
+    </div>
+
+    <h3 style="margin-bottom:16px;font-size:18px">Dateistruktur</h3>
+    <pre><span class="cm">teilenix/</span>
+<span class="str">├── e2e/</span>
+<span class="str">│   ├── fixtures/</span>
+<span class="str">│   │   ├── auth.ts          </span><span class="cm"># Login-Helfer</span>
+<span class="str">│   │   └── seed.ts          </span><span class="cm"># Testdaten</span>
+<span class="str">│   ├── auth/</span>
+<span class="str">│   │   └── login.spec.ts</span>
+<span class="str">│   ├── trips/</span>
+<span class="str">│   │   ├── create-trip.spec.ts</span>
+<span class="str">│   │   └── join-trip.spec.ts</span>
+<span class="str">│   ├── expenses/</span>
+<span class="str">│   │   ├── create-proportional.spec.ts</span>
+<span class="str">│   │   ├── create-custom.spec.ts</span>
+<span class="str">│   │   └── multi-payer.spec.ts</span>
+<span class="str">│   ├── settlement/</span>
+<span class="str">│   │   ├── balance-table.spec.ts</span>
+<span class="str">│   │   └── pdf-export.spec.ts</span>
+<span class="str">│   └── security/</span>
+<span class="str">│       └── unauthorized.spec.ts</span>
+<span class="str">├── src/lib/settlement.test.ts  </span><span class="cm"># Vitest Unit-Tests</span>
+<span class="str">└── playwright.config.ts</span></pre>
+
+    <h3 style="margin:28px 0 16px;font-size:18px">Beispiel-Test: Ausgabe erstellen</h3>
+    <pre><span class="cm">// e2e/expenses/create-proportional.spec.ts</span>
+<span class="kw">import</span> { test, expect } <span class="kw">from</span> <span class="str">'@playwright/test'</span>;
+<span class="kw">import</span> { loginAsTestUser, seedTrip } <span class="kw">from</span> <span class="str">'../fixtures'</span>;
+
+test.<span class="fn">describe</span>(<span class="str">'Ausgabe erstellen – proportionaler Split'</span>, () => {
+  <span class="kw">let</span> tripId: string;
+
+  test.<span class="fn">beforeEach</span>(<span class="kw">async</span> ({ page }) => {
+    <span class="kw">await</span> <span class="fn">loginAsTestUser</span>(page);
+    tripId = <span class="kw">await</span> <span class="fn">seedTrip</span>({ participants: [<span class="str">'alice'</span>, <span class="str">'bob'</span>, <span class="str">'charlie'</span>] });
+    <span class="kw">await</span> page.<span class="fn">goto</span>(<span class="str">`/trips/${tripId}/expenses/new`</span>);
+  });
+
+  <span class="fn">test</span>(<span class="str">'Happy Path: Ausgabe mit 3 Teilnehmern'</span>, <span class="kw">async</span> ({ page }) => {
+    <span class="kw">await</span> page.<span class="fn">getByLabel</span>(<span class="str">'Titel'</span>).<span class="fn">fill</span>(<span class="str">'Abendessen'</span>);
+    <span class="kw">await</span> page.<span class="fn">getByLabel</span>(<span class="str">'Betrag'</span>).<span class="fn">fill</span>(<span class="str">'90'</span>);
+    <span class="kw">await</span> page.<span class="fn">getByRole</span>(<span class="str">'button'</span>, { name: <span class="str">'Speichern'</span> }).<span class="fn">click</span>();
+
+    <span class="kw">await</span> expect(page.<span class="fn">getByText</span>(<span class="str">'Abendessen'</span>)).<span class="fn">toBeVisible</span>();
+    <span class="kw">await</span> expect(page.<span class="fn">getByText</span>(<span class="str">'90,00 €'</span>)).<span class="fn">toBeVisible</span>();
+  });
+
+  <span class="fn">test</span>(<span class="str">'Validierung: leerer Titel → Fehler'</span>, <span class="kw">async</span> ({ page }) => {
+    <span class="kw">await</span> page.<span class="fn">getByLabel</span>(<span class="str">'Betrag'</span>).<span class="fn">fill</span>(<span class="str">'50'</span>);
+    <span class="kw">await</span> page.<span class="fn">getByRole</span>(<span class="str">'button'</span>, { name: <span class="str">'Speichern'</span> }).<span class="fn">click</span>();
+
+    <span class="kw">await</span> expect(page.<span class="fn">getByText</span>(<span class="str">/Pflichtfeld|required/i</span>)).<span class="fn">toBeVisible</span>();
+  });
+
+  <span class="fn">test</span>(<span class="str">'Abrechnungssumme stimmt nach Speichern'</span>, <span class="kw">async</span> ({ page }) => {
+    <span class="cm">// Ausgabe €90, 3 Teilnehmer gleiche Anteile → je 30€</span>
+    <span class="kw">await</span> page.<span class="fn">goto</span>(<span class="str">`/trips/${tripId}/settlement`</span>);
+    <span class="kw">await</span> expect(page.<span class="fn">getByText</span>(<span class="str">'30,00 €'</span>)).<span class="fn">toBeVisible</span>();
+  });
+});</pre>
+  </div>
+
+  <!-- ─── 7. CI/CD ─── -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">7</div>
+      <h2>CI/CD Integration</h2>
+    </div>
+
+    <p style="color:var(--muted);margin-bottom:20px">Tests automatisch bei jedem Push ausführen — Fehler vor dem Deployment entdecken.</p>
+
+    <div class="pipeline">
+      <div class="pipe-step">git push</div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step">GitHub Action</div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step">npm run dev + supabase start</div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step">playwright test</div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step">Report + Vercel Deploy</div>
+    </div>
+
+    <pre><span class="cm"># .github/workflows/e2e.yml</span>
+<span class="const">name:</span> E2E Tests
+<span class="const">on:</span> [push, pull_request]
+
+<span class="const">jobs:</span>
+  <span class="const">test:</span>
+    <span class="const">runs-on:</span> ubuntu-latest
+    <span class="const">steps:</span>
+      - <span class="const">uses:</span> actions/checkout@v4
+      - <span class="const">uses:</span> supabase/setup-cli@v1
+      - <span class="const">run:</span> supabase start --ignore-health-check
+      - <span class="const">run:</span> npm ci
+      - <span class="const">run:</span> npx playwright install --with-deps
+      - <span class="const">run:</span> npx playwright test
+        <span class="const">env:</span>
+          <span class="const">NEXT_PUBLIC_SUPABASE_URL:</span> http://localhost:54321
+          <span class="const">TEST_USER_PW:</span> ${{ secrets.TEST_USER_PW }}
+      - <span class="const">uses:</span> actions/upload-artifact@v4
+        <span class="const">if:</span> failure()
+        <span class="const">with:</span>
+          <span class="const">name:</span> playwright-report
+          <span class="const">path:</span> playwright-report/</pre>
+
+    <div class="grid grid-2" style="margin-top:20px">
+      <div class="card accent-green">
+        <h3>✅ Bei Erfolg</h3>
+        <p style="color:var(--muted);font-size:14px">Vercel-Deployment läuft durch. Grüner Check im PR.</p>
+      </div>
+      <div class="card accent-red">
+        <h3>❌ Bei Fehler</h3>
+        <p style="color:var(--muted);font-size:14px">PR wird geblockt. Playwright-Report mit Screenshots und Video als Artifact verfügbar.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── 8. CLAUDE CODE WORKFLOW ─── -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">8</div>
+      <h2>Claude Code im Test-Workflow</h2>
+    </div>
+
+    <p style="color:var(--muted);margin-bottom:24px">Claude Code kann in jeder Phase des Testprozesses unterstützen — nicht nur beim Schreiben.</p>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <h3>📝 Tests schreiben</h3>
+        <p style="color:var(--muted);font-size:14px;margin-bottom:10px">Komponenten-Datei zeigen → Claude generiert vollständige Spec-Datei mit Happy Path + Edge Cases.</p>
+        <pre style="font-size:12px"><span class="str">"Erstelle e2e/trips/create-trip.spec.ts
+basierend auf /app/trips/new/page.tsx
+und dem TripForm-Schema in types/app.ts"</span></pre>
+      </div>
+      <div class="card">
+        <h3>🔍 Fehler debuggen</h3>
+        <p style="color:var(--muted);font-size:14px;margin-bottom:10px">Failing Test + Fehlermeldung an Claude → erklärt warum und liefert Fix.</p>
+        <pre style="font-size:12px"><span class="str">"Test schlägt fehl: Element
+getByLabel('Betrag') not found.
+Hier die Seite: ExpenseForm.tsx"</span></pre>
+      </div>
+      <div class="card">
+        <h3>♻️ Tests refactoren</h3>
+        <p style="color:var(--muted);font-size:14px;margin-bottom:10px">Nach UI-Änderungen: veraltete Selektoren automatisch aktualisieren lassen.</p>
+        <pre style="font-size:12px"><span class="str">"Button-Label hat sich von 'Speichern'
+zu 'Ausgabe erfassen' geändert.
+Aktualisiere alle Specs."</span></pre>
+      </div>
+      <div class="card">
+        <h3>🗺️ Coverage-Analyse</h3>
+        <p style="color:var(--muted);font-size:14px;margin-bottom:10px">Claude analysiert bestehende Tests und findet ungetestetenRouten/Komponenten.</p>
+        <pre style="font-size:12px"><span class="str">"Welche Routen aus /app haben noch
+keinen Test in /e2e? Priorisiere nach
+Kritikalität für den Nutzer."</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── 9. QUICK START ─── -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">9</div>
+      <h2>Quick Start — In 3 Schritten loslegen</h2>
+    </div>
+
+    <div class="flow-list">
+      <div class="flow-item">
+        <div class="flow-num">1</div>
+        <div class="flow-body">
+          <h4>Playwright einrichten (30 Min.)</h4>
+          <p>Playwright installieren, Config anlegen, lokale Supabase starten, einen ersten Smoke-Test schreiben der nur prüft: Startseite lädt, Login-Button sichtbar.</p>
+          <pre style="margin-top:10px;font-size:12px"><span class="fn">npm</span> init playwright@latest
+<span class="fn">npx</span> supabase init  <span class="cm"># falls noch nicht</span>
+<span class="fn">npx</span> supabase start</pre>
+        </div>
+      </div>
+      <div class="flow-item">
+        <div class="flow-num">2</div>
+        <div class="flow-body">
+          <h4>Auth-Fixture + ersten echten Test (2–3 Std.)</h4>
+          <p>Test-User in Supabase anlegen. Auth-Fixture schreiben. Den wichtigsten Flow testen: Ausgabe erstellen → Abrechnung prüfen. Mit Claude Code generieren lassen.</p>
+        </div>
+      </div>
+      <div class="flow-item">
+        <div class="flow-num">3</div>
+        <div class="flow-body">
+          <h4>GitHub Actions CI aktivieren (1 Std.)</h4>
+          <p>YAML-Workflow anlegen. Supabase CLI in CI einbinden. Secrets für Test-Credentials hinterlegen. Ab jetzt läuft jeder Push durch die Tests.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="highlight-box" style="margin-top:8px">
+      <h3>Empfohlene Reihenfolge der Testfälle</h3>
+      <p style="color:var(--muted);font-size:14px">Nicht alles auf einmal — mit dem Wichtigsten anfangen:</p>
+      <ol style="margin-top:12px;color:var(--text);font-size:14px;padding-left:20px;line-height:2">
+        <li>Smoke-Test: App startet, Login-Seite erreichbar</li>
+        <li>Ausgabe erstellen (proportional, 2 Personen)</li>
+        <li>Abrechnungsbetrag korrekt nach Ausgabe</li>
+        <li>Reise erstellen &amp; via Code beitreten</li>
+        <li>Custom Split testen</li>
+        <li>Unauthorized-Redirect</li>
+        <li>PDF-Export (Datei-Download prüfen)</li>
+        <li>Offline-Queue (Netzwerk deaktivieren, Ausgabe speichern)</li>
+      </ol>
+    </div>
+  </div>
+
+</div>
+
+<div style="background:var(--surface); border-top:1px solid var(--border); padding:24px 40px; text-align:center; color:var(--muted); font-size:13px; margin-top:40px">
+  TeileniX E2E-Testing Konzept · Erstellt April 2026 · Tools: Playwright + Supabase + Claude Code
+</div>
+
+</body>
+</html>

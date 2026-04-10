@@ -5,6 +5,7 @@ import { Toaster } from '@/components/ui/sonner'
 import ServiceWorkerRegister from '@/components/pwa/ServiceWorkerRegister'
 import InstallBanner from '@/components/pwa/InstallBanner'
 import OfflineIndicator from '@/components/pwa/OfflineIndicator'
+import { QueryProvider } from '@/providers/QueryProvider'
 
 const jakartaSans = Plus_Jakarta_Sans({
   variable: '--font-sans',
@@ -51,11 +52,13 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="de" className={jakartaSans.variable}>
       <body className="antialiased min-h-screen bg-background">
-        {children}
-        <Toaster position="top-center" richColors />
-        <ServiceWorkerRegister />
-        <OfflineIndicator />
-        <InstallBanner />
+        <QueryProvider>
+          {children}
+          <Toaster position="top-center" richColors />
+          <ServiceWorkerRegister />
+          <OfflineIndicator />
+          <InstallBanner />
+        </QueryProvider>
       </body>
     </html>
   )
