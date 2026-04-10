@@ -187,36 +187,3 @@ export type ActivityWithVotes = Activity & {
   creator_name: string
 }
 
-// ── Gruppe / Threads ──────────────────────────────────────────────────────────
-
-export type LinkedType = 'activity' | 'expense' | 'packlist_item' | 'shopping_item'
-
-export type GroupThread = {
-  id: string
-  trip_id: string
-  created_by_participant_id: string | null
-  title: string
-  linked_type: LinkedType | null
-  linked_id: string | null
-  linked_title: string | null
-  linked_subtitle: string | null
-  linked_emoji: string | null
-  created_at: string
-  // enriched server-side
-  message_count: number
-  last_message: {
-    content: string
-    participant_id: string | null
-    created_at: string
-  } | null
-}
-
-export type GroupMessage = {
-  id: string
-  thread_id: string
-  trip_id: string
-  participant_id: string | null
-  content: string
-  created_at: string
-  reactions: { emoji: string; participant_id: string }[]
-}

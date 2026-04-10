@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Calendar, ClipboardList, MessageCircle, Wallet } from 'lucide-react'
+import { Home, Calendar, ClipboardList, Wallet } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface TripBottomNavProps {
@@ -30,12 +30,6 @@ export default function TripBottomNav({ tripId, isEnded }: TripBottomNavProps) {
         pathname.startsWith(`${base}/stats`) ||
         pathname.startsWith(`${base}/settlement`),
       dot: isEnded,
-    },
-    {
-      href: `${base}/gruppe`,
-      label: 'Talk',
-      icon: MessageCircle,
-      isActive: pathname.startsWith(`${base}/gruppe`),
     },
     {
       href: `${base}/planen`,
