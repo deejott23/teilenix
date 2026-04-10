@@ -7,13 +7,16 @@ import { queryKeys } from '@/lib/query/queryKeys'
 
 // Mapping: Supabase-Tabelle → betroffener Query-Key (nur gezielt invalidieren, kein full-refresh)
 const TABLE_KEYS: Record<string, (tripId: string) => readonly unknown[]> = {
-  expenses:        (t) => queryKeys.expenses.withSplits(t),
-  expense_splits:  (t) => queryKeys.expenses.withSplits(t),
-  packlist_items:  (t) => queryKeys.packlist.byTrip(t),
-  packlist_checks: (t) => queryKeys.packlist.byTrip(t),
-  packlist_claims: (t) => queryKeys.packlist.byTrip(t),
-  shopping_items:  (t) => queryKeys.shopping.byTrip(t),
-  trip_activities: (t) => queryKeys.activities.byTrip(t),
+  expenses:         (t) => queryKeys.expenses.withSplits(t),
+  expense_splits:   (t) => queryKeys.expenses.withSplits(t),
+  packlist_items:   (t) => queryKeys.packlist.byTrip(t),
+  packlist_checks:  (t) => queryKeys.packlist.byTrip(t),
+  packlist_claims:  (t) => queryKeys.packlist.byTrip(t),
+  shopping_items:   (t) => queryKeys.shopping.byTrip(t),
+  trip_activities:  (t) => queryKeys.activities.byTrip(t),
+  trip_meal_ideas:  (t) => queryKeys.meals.byTrip(t),
+  trip_meal_votes:  (t) => queryKeys.meals.byTrip(t),
+  trip_meal_slots:  (t) => queryKeys.meals.byTrip(t),
 }
 
 interface Props {

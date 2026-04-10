@@ -198,3 +198,29 @@ export type ActivityWithVotes = Activity & {
   comment_count?: number
 }
 
+// ── Meals (Essen) ──
+export type MealIdea = {
+  id: string
+  trip_id: string
+  created_by_participant_id: string
+  title: string
+  emoji: string
+  description: string | null
+  tags: string[]
+  link: string | null
+  created_at: string
+  updated_at: string
+  // resolved client-side
+  creator_name: string
+  vote_count: number
+  my_vote: boolean
+}
+
+export type MealSlot = {
+  id: string
+  trip_id: string
+  meal_idea_id: string | null
+  slot_date: string
+  slot_type: 'lunch' | 'dinner'
+  meal?: MealIdea
+}

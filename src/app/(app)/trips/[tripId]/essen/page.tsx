@@ -1,46 +1,81 @@
+import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
+import { dehydrate, HydrationBoundary, QueryClient } from '@tanstack/react-query'
 import TripSubNav from '@/components/layout/TripSubNav'
+import RealtimeQueryRefresher from '@/components/realtime/RealtimeQueryRefresher'
+import EssenClient from '@/components/essen/EssenClient'
+import { queryKeys } from '@/lib/query/queryKeys'
+import type { MealIdea, MealSlot, TripParticipant } from '@/types/app'
 
 export default async function EssenPage({ params }: { params: Promise<{ tripId: string }> }) {
   const { tripId } = await params
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const db = supabase as any
+
+  const [{ data: trip }, { data: participantsRaw }, { data: ideasRaw }, { data: slotsRaw }] = await Promise.all([
+    supabase.from('trips').select('*').eq('id', tripId).single(),
+    supabase.from('trip_participants').select('*').eq('trip_id', tripId),
+    db.from('trip_meal_ideas').select('*').eq('trip_id', tripId).order('created_at', { ascending: false }),
+    db.from('trip_meal_slots').select('*').eq('trip_id', tripId).order('slot_date', { ascending: true }),
+  ])
+
+  const participants = (participantsRaw ?? []) as TripParticipant[]
+  const participantMap = new Map(participants.map(p => [p.id, p.name]))
+
+  const me = participants.find(p => p.user_id === user.id && !p.is_group)
+  const myParticipantId = me?.id ?? ''
+
+  const ideaIds = (ideasRaw ?? []).map((i: { id: string }) => i.id)
+  const { data: votesRaw } = ideaIds.length > 0
+    ? await db.from('trip_meal_votes').select('*').in('meal_idea_id', ideaIds)
+    : { data: [] }
+
+  const ideas: MealIdea[] = (ideasRaw ?? []).map((raw: Record<string, unknown>) => {
+    const ideaVotes = (votesRaw ?? []).filter((v: { meal_idea_id: string }) => v.meal_idea_id === raw.id)
+    return {
+      ...raw,
+      creator_name: participantMap.get(raw.created_by_participant_id as string) ?? 'Unbekannt',
+      vote_count: ideaVotes.length,
+      my_vote: myParticipantId
+        ? ideaVotes.some((v: { participant_id: string }) => v.participant_id === myParticipantId)
+        : false,
+    } as MealIdea
+  })
+
+  const ideaMap = new Map(ideas.map(i => [i.id, i]))
+
+  const slots: MealSlot[] = (slotsRaw ?? []).map((raw: Record<string, unknown>) => ({
+    ...raw,
+    meal: raw.meal_idea_id ? ideaMap.get(raw.meal_idea_id as string) ?? undefined : undefined,
+  } as MealSlot))
+
+  const queryClient = new QueryClient()
+  queryClient.setQueryData(queryKeys.meals.byTrip(tripId), { ideas, slots })
 
   return (
     <>
+      <RealtimeQueryRefresher
+        tripId={tripId}
+        tables={['trip_meal_ideas', 'trip_meal_votes', 'trip_meal_slots']}
+      />
       <TripSubNav tripId={tripId} tabs={[
         { href: '/planen', label: '✈️ Ausflüge' },
         { href: '/essen',  label: '🍽️ Essen' },
       ]} />
-
-      <div className="space-y-4">
-        <div className="text-center py-2">
-          <span className="inline-block px-3 py-1 rounded-full text-[11px] font-bold bg-amber-100 text-amber-700">
-            Bald verfügbar ✨
-          </span>
-        </div>
-
-        <div className="bg-card rounded-[20px] card-shadow overflow-hidden">
-          <div className="h-28 flex items-center justify-center relative"
-            style={{ background: 'linear-gradient(135deg, #fef3e2 0%, #c47a1e 100%)' }}>
-            <span className="text-[56px]">🍽️</span>
-          </div>
-          <div className="p-4">
-            <h2 className="text-[16px] font-bold text-foreground mb-1">Restaurant & Mahlzeiten</h2>
-            <p className="text-[13px] text-muted-foreground leading-relaxed mb-3">
-              Plant gemeinsam Restaurants, Abendessen und Mahlzeiten. Sammelt Empfehlungen, stimmt ab und bucht Tische — alles an einem Ort.
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {['🍕 Restaurants', '⭐ Empfehlungen', '📅 Reservierungen', '🗳️ Abstimmen'].map(tag => (
-                <span key={tag} className="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
-                  {tag}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <p className="text-center text-[12px] text-muted-foreground/60 pb-2">
-          Wir arbeiten daran — sei gespannt! 🚀
-        </p>
-      </div>
+      <HydrationBoundary state={dehydrate(queryClient)}>
+        <EssenClient
+          tripId={tripId}
+          participants={participants}
+          myParticipantId={myParticipantId}
+          tripStartDate={(trip?.start_date as string | null) ?? null}
+          tripEndDate={(trip?.end_date as string | null) ?? null}
+          isActive={trip?.status === 'active'}
+        />
+      </HydrationBoundary>
     </>
   )
 }

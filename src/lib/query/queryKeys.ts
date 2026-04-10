@@ -27,6 +27,9 @@ export const queryKeys = {
     byTrip:  (tripId: string) => ['trips', tripId, 'activities'] as const,
     detail:  (tripId: string, activityId: string) => ['trips', tripId, 'activities', activityId] as const,
   },
+  meals: {
+    byTrip: (tripId: string) => ['trips', tripId, 'meals'] as const,
+  },
   dashboard: {
     trips: () => ['dashboard', 'trips'] as const,
   },
