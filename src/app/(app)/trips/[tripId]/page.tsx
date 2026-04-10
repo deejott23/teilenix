@@ -6,6 +6,7 @@ import BalanceCard, { BalanceCardSkeleton } from '@/components/trips/overview/Ba
 import ActivitiesCard, { ActivitiesCardSkeleton } from '@/components/trips/overview/ActivitiesCard'
 import PacklistShoppingCards, { PacklistShoppingCardsSkeleton } from '@/components/trips/overview/PacklistShoppingCards'
 import ActivityStream, { ActivityStreamSkeleton } from '@/components/trips/overview/ActivityStream'
+import EssenCard, { EssenCardSkeleton } from '@/components/trips/overview/EssenCard'
 
 export default async function TripOverviewPage({
   params,
@@ -48,6 +49,11 @@ export default async function TripOverviewPage({
       {/* Ausflüge Card — streamt nach Activities-Query */}
       <Suspense fallback={<ActivitiesCardSkeleton />}>
         <ActivitiesCard tripId={tripId} />
+      </Suspense>
+
+      {/* Essen Card — streamt nach Meal-Queries */}
+      <Suspense fallback={<EssenCardSkeleton />}>
+        <EssenCard tripId={tripId} />
       </Suspense>
 
       {/* Packliste + Einkauf — streamt parallel */}
