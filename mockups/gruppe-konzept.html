@@ -1,0 +1,1275 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TeileniX – Gruppe Chat Konzepte</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background: #0f1117;
+  color: #e8ecf5;
+  padding: 40px 24px 80px;
+  min-height: 100vh;
+}
+
+h1 {
+  text-align: center;
+  font-size: 28px;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 8px;
+}
+.subtitle {
+  text-align: center;
+  color: #6b7a99;
+  font-size: 14px;
+  margin-bottom: 60px;
+}
+
+/* ─── Layout ─────────────────────────────────────────────── */
+.konzepte {
+  display: flex;
+  flex-direction: column;
+  gap: 80px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.konzept {
+  display: flex;
+  gap: 48px;
+  align-items: flex-start;
+}
+.konzept.reverse { flex-direction: row-reverse; }
+
+.konzept-info {
+  flex: 1;
+  padding-top: 20px;
+}
+.konzept-tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 6px;
+  margin-bottom: 14px;
+}
+.tag-a { background: rgba(99,102,241,.18); color: #a5b4fc; }
+.tag-b { background: rgba(34,197,94,.15); color: #86efac; }
+.tag-c { background: rgba(249,115,22,.15); color: #fdba74; }
+
+.konzept-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 10px;
+  line-height: 1.3;
+}
+.konzept-desc {
+  font-size: 14px;
+  color: #8b97b5;
+  line-height: 1.7;
+  margin-bottom: 20px;
+}
+.pros { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+.pros li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  color: #c8d5e8;
+  line-height: 1.5;
+}
+.pros li::before {
+  content: '✓';
+  font-size: 11px;
+  font-weight: 700;
+  color: #22c55e;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* ─── Phone Frame ─────────────────────────────────────────── */
+.phone-wrap {
+  flex-shrink: 0;
+  width: 320px;
+}
+
+.phone {
+  width: 320px;
+  background: #f2efe8;
+  border-radius: 40px;
+  border: 8px solid #1a1f2e;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.07),
+    0 40px 80px rgba(0,0,0,.6),
+    inset 0 1px 0 rgba(255,255,255,.1);
+  position: relative;
+}
+
+/* ─── App Header ──────────────────────────────────────────── */
+.app-header {
+  background: linear-gradient(150deg, #1b5c58 0%, #134844 100%);
+  padding: 16px 16px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.back-btn {
+  width: 30px; height: 30px;
+  background: rgba(255,255,255,.15);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; color: #fff; flex-shrink: 0;
+}
+.trip-emoji {
+  width: 34px; height: 34px;
+  background: rgba(255,255,255,.18);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.header-info { flex: 1; min-width: 0; }
+.header-title { font-size: 14px; font-weight: 700; color: #fff; }
+.header-sub { font-size: 10px; color: rgba(255,255,255,.55); margin-top: 1px; }
+.header-icon {
+  width: 30px; height: 30px;
+  background: rgba(255,255,255,.15);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; color: #fff; flex-shrink: 0;
+}
+
+/* ─── Bottom Nav ──────────────────────────────────────────── */
+.bottom-nav {
+  background: rgba(250,248,244,.97);
+  border-top: 1px solid rgba(0,0,0,.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 8px 8px 10px;
+}
+.nav-item {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  flex: 1;
+}
+.nav-icon {
+  width: 32px; height: 32px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+}
+.nav-icon.active { background: #1b5c58; }
+.nav-label { font-size: 9px; font-weight: 700; color: #9ca3af; letter-spacing: .03em; }
+.nav-label.active { color: #1b5c58; }
+
+/* ─── Scrollable content area ────────────────────────────── */
+.content {
+  background: #f2efe8;
+  overflow: hidden;
+}
+
+/* ─── KONZEPT A: WhatsApp Chat ────────────────────────────── */
+
+.chat-area {
+  padding: 12px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: #e8e5dd;
+  min-height: 400px;
+  position: relative;
+}
+.chat-area::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%231b5c58' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+.date-badge {
+  text-align: center;
+  font-size: 10px;
+  color: rgba(0,0,0,.45);
+  background: rgba(255,255,255,.6);
+  padding: 3px 10px;
+  border-radius: 8px;
+  align-self: center;
+  margin: 4px 0;
+}
+
+/* Bubble */
+.bubble-row {
+  display: flex;
+  gap: 6px;
+  align-items: flex-end;
+  position: relative;
+  z-index: 1;
+}
+.bubble-row.me { flex-direction: row-reverse; }
+
+.avatar {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  color: #fff;
+}
+.av-k { background: #7c3aed; }
+.av-a { background: #db2777; }
+.av-t { background: #0891b2; }
+
+.bubble {
+  max-width: 200px;
+  padding: 7px 10px 5px;
+  border-radius: 14px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #1a1612;
+  position: relative;
+}
+.bubble.them {
+  background: #fff;
+  border-bottom-left-radius: 4px;
+}
+.bubble.me {
+  background: #d1f4cc;
+  border-bottom-right-radius: 4px;
+}
+.bubble-sender {
+  font-size: 10px;
+  font-weight: 700;
+  color: #7c3aed;
+  margin-bottom: 2px;
+}
+.bubble-time {
+  font-size: 9px;
+  color: rgba(0,0,0,.4);
+  text-align: right;
+  margin-top: 2px;
+}
+
+/* Link Card inside bubble */
+.link-card {
+  background: rgba(27,92,88,.08);
+  border: 1px solid rgba(27,92,88,.2);
+  border-radius: 10px;
+  padding: 8px 9px;
+  margin-top: 5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+.link-card-icon {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+  background: rgba(27,92,88,.12);
+}
+.link-card-body { flex: 1; min-width: 0; }
+.link-card-type { font-size: 9px; font-weight: 700; color: #1b5c58; text-transform: uppercase; letter-spacing: .05em; }
+.link-card-title { font-size: 11px; font-weight: 600; color: #1a1612; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.link-card-sub { font-size: 10px; color: rgba(0,0,0,.45); margin-top: 1px; }
+.link-arrow { font-size: 12px; color: rgba(27,92,88,.5); flex-shrink: 0; }
+
+/* Reaction row */
+.reactions {
+  display: flex;
+  gap: 4px;
+  margin-top: 3px;
+  margin-left: 32px;
+}
+.react-pill {
+  font-size: 11px;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,.1);
+  border-radius: 20px;
+  padding: 1px 6px;
+  display: flex; align-items: center; gap: 3px;
+}
+.react-count { font-size: 10px; color: #555; font-weight: 600; }
+
+/* Input bar */
+.chat-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: #f2efe8;
+  border-top: 1px solid rgba(0,0,0,.07);
+}
+.attach-btn {
+  width: 34px; height: 34px;
+  background: #1b5c58;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+  color: #fff;
+}
+.input-field {
+  flex: 1;
+  background: #fff;
+  border-radius: 20px;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: rgba(0,0,0,.35);
+  border: 1px solid rgba(0,0,0,.08);
+}
+.send-btn {
+  width: 34px; height: 34px;
+  background: #1b5c58;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+/* Attach picker */
+.attach-picker {
+  position: absolute;
+  bottom: 56px;
+  left: 10px;
+  right: 10px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.15);
+  z-index: 10;
+}
+.attach-picker-title {
+  font-size: 10px;
+  font-weight: 700;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin-bottom: 10px;
+}
+.attach-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.attach-item {
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+}
+.attach-icon {
+  width: 40px; height: 40px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+}
+.ai-green { background: #dcfce7; }
+.ai-blue { background: #dbeafe; }
+.ai-amber { background: #fef3c7; }
+.ai-teal { background: #ccfbf1; }
+.ai-rose { background: #ffe4e6; }
+.attach-label { font-size: 9px; font-weight: 600; color: #555; text-align: center; }
+
+/* ─── KONZEPT B: Pinnwand + Chat ──────────────────────────── */
+
+.subnav {
+  display: flex;
+  gap: 6px;
+  padding: 8px 10px;
+  background: #f2efe8;
+  border-bottom: 1px solid rgba(0,0,0,.06);
+}
+.subnav-btn {
+  flex: 1;
+  padding: 6px;
+  border-radius: 10px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: #9ca3af;
+}
+.subnav-btn.active {
+  background: #fff;
+  color: #1b5c58;
+  box-shadow: 0 1px 4px rgba(0,0,0,.08);
+}
+
+.pinboard {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #f2efe8;
+}
+
+.pin-card {
+  background: #fff;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,.07);
+}
+.pin-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px 8px;
+  border-bottom: 1px solid rgba(0,0,0,.05);
+}
+.pin-emoji {
+  width: 32px; height: 32px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px;
+  flex-shrink: 0;
+}
+.pe-teal { background: #ccfbf1; }
+.pe-blue { background: #dbeafe; }
+.pe-amber { background: #fef3c7; }
+.pin-info { flex: 1; }
+.pin-type { font-size: 9px; font-weight: 700; color: #1b5c58; text-transform: uppercase; letter-spacing: .05em; }
+.pin-title { font-size: 12px; font-weight: 700; color: #1a1612; margin-top: 1px; }
+.pin-badge {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 20px;
+}
+.pb-green { background: #dcfce7; color: #15803d; }
+.pb-amber { background: #fef3c7; color: #92400e; }
+.pb-blue { background: #dbeafe; color: #1e40af; }
+
+.pin-body {
+  padding: 8px 12px 10px;
+}
+.pin-body-text {
+  font-size: 11px;
+  color: #6b7280;
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+.pin-stats {
+  display: flex;
+  gap: 12px;
+}
+.pin-stat {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: #9ca3af;
+  font-weight: 600;
+}
+.vote-bar-row {
+  display: flex;
+  gap: 4px;
+  margin-top: 8px;
+}
+.vote-btn {
+  flex: 1;
+  padding: 5px;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 700;
+}
+.vb-yes { background: #dcfce7; color: #15803d; }
+.vb-no { background: #fee2e2; color: #dc2626; }
+.vb-maybe { background: #fef3c7; color: #92400e; }
+
+/* comments mini */
+.mini-comments {
+  padding: 8px 12px;
+  border-top: 1px solid rgba(0,0,0,.05);
+  background: rgba(0,0,0,.02);
+}
+.mini-comment {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-bottom: 5px;
+}
+.mc-avatar {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  font-size: 8px;
+  font-weight: 700;
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.mc-text { font-size: 10px; color: #4b5563; line-height: 1.4; }
+.mc-name { font-weight: 700; }
+.mc-input {
+  display: flex;
+  gap: 6px;
+  margin-top: 5px;
+}
+.mc-field {
+  flex: 1;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,.08);
+  border-radius: 10px;
+  padding: 5px 9px;
+  font-size: 10px;
+  color: rgba(0,0,0,.35);
+}
+
+/* Chat minimal */
+.mini-chat {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: #e8e5dd;
+  position: relative;
+  min-height: 220px;
+}
+.mini-chat::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%231b5c58' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+/* ─── KONZEPT C: Threads / Topics ────────────────────────── */
+
+.threads-header {
+  padding: 10px 12px 8px;
+  background: #f2efe8;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.threads-title { font-size: 13px; font-weight: 700; color: #1a1612; }
+.new-thread-btn {
+  background: #1b5c58;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 5px 10px;
+  border-radius: 8px;
+  display: flex; align-items: center; gap: 4px;
+}
+
+.thread-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  background: #f2efe8;
+}
+
+.thread-item {
+  background: #fff;
+  border-bottom: 1px solid rgba(0,0,0,.05);
+  padding: 11px 12px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  position: relative;
+}
+
+.thread-icon {
+  width: 38px; height: 38px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 19px;
+  flex-shrink: 0;
+}
+
+.thread-body { flex: 1; min-width: 0; }
+.thread-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #1a1612;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.thread-tag {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 5px;
+}
+.tt-teal { background: #ccfbf1; color: #0f766e; }
+.tt-blue { background: #dbeafe; color: #1d4ed8; }
+.tt-amber { background: #fef3c7; color: #92400e; }
+.tt-green { background: #dcfce7; color: #15803d; }
+
+.thread-preview {
+  font-size: 11px;
+  color: #6b7280;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.thread-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 5px;
+}
+.thread-avatars {
+  display: flex;
+  gap: -4px;
+}
+.thread-av {
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  font-size: 7px;
+  font-weight: 700;
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  border: 1.5px solid #fff;
+  margin-right: -4px;
+}
+.thread-count {
+  font-size: 10px;
+  color: #9ca3af;
+  font-weight: 600;
+}
+.thread-time {
+  font-size: 10px;
+  color: #9ca3af;
+  margin-left: auto;
+}
+.unread-dot {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 8px; height: 8px;
+  background: #1b5c58;
+  border-radius: 50%;
+}
+
+/* Thread detail */
+.thread-detail {
+  background: #f2efe8;
+}
+.thread-detail-header {
+  background: #fff;
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(0,0,0,.06);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tdb-back {
+  font-size: 18px;
+  color: #1b5c58;
+  flex-shrink: 0;
+}
+.tdb-title { font-size: 13px; font-weight: 700; color: #1a1612; }
+.tdb-sub { font-size: 10px; color: #9ca3af; }
+
+/* linked content banner */
+.linked-banner {
+  margin: 8px 10px;
+  background: #fff;
+  border: 1.5px solid rgba(27,92,88,.2);
+  border-radius: 12px;
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.lb-icon {
+  width: 34px; height: 34px;
+  border-radius: 10px;
+  background: #ccfbf1;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.lb-body { flex: 1; min-width: 0; }
+.lb-type { font-size: 9px; font-weight: 700; color: #1b5c58; text-transform: uppercase; letter-spacing: .05em; }
+.lb-title { font-size: 11px; font-weight: 700; color: #1a1612; margin-top: 1px; }
+.lb-detail { font-size: 10px; color: #6b7280; margin-top: 1px; }
+.lb-arrow { font-size: 12px; color: #1b5c58; }
+
+.thread-messages {
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tm-item {
+  display: flex;
+  gap: 7px;
+  align-items: flex-start;
+}
+.tm-av {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.tm-body { flex: 1; }
+.tm-header-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 3px;
+}
+.tm-name { font-size: 11px; font-weight: 700; color: #1a1612; }
+.tm-time { font-size: 10px; color: #9ca3af; }
+.tm-text {
+  font-size: 11px;
+  color: #374151;
+  line-height: 1.5;
+  background: #fff;
+  padding: 8px 10px;
+  border-radius: 0 12px 12px 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.06);
+}
+.tm-reactions {
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
+}
+.tm-react {
+  font-size: 11px;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,.1);
+  border-radius: 20px;
+  padding: 1px 6px;
+  display: flex; align-items: center; gap: 3px;
+}
+
+/* ─── Comparison table ─────────────────────────────────────── */
+.comparison {
+  max-width: 900px;
+  margin: 60px auto 0;
+  background: #161c28;
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.comp-title {
+  padding: 20px 24px 16px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+}
+.comp-grid {
+  display: grid;
+  grid-template-columns: 180px repeat(3, 1fr);
+}
+.comp-head {
+  padding: 12px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+}
+.comp-head:first-child { text-align: left; }
+.comp-row { display: contents; }
+.comp-cell {
+  padding: 10px 16px;
+  font-size: 12px;
+  color: #8b97b5;
+  border-bottom: 1px solid rgba(255,255,255,.04);
+  text-align: center;
+}
+.comp-cell:first-child { text-align: left; color: #c8d5e8; }
+.comp-cell.good { color: #86efac; }
+.comp-cell.mid { color: #fbbf24; }
+.comp-cell.bad { color: #f87171; }
+</style>
+</head>
+<body>
+
+<h1>Gruppe – Kommunikationsmodul</h1>
+<p class="subtitle">Drei Konzepte für Chat und Vernetzung mit App-Inhalten</p>
+
+<div class="konzepte">
+
+  <!-- ════════════════════════════════════════════════════
+       KONZEPT A: WhatsApp Chat + Attach
+       ════════════════════════════════════════════════════ -->
+  <div class="konzept">
+    <div class="konzept-info">
+      <div class="konzept-tag tag-a">Konzept A</div>
+      <div class="konzept-title">WhatsApp-Style Chat<br>mit App-Anhängen</div>
+      <p class="konzept-desc">
+        Vertrauter Gruppen-Chat wie WhatsApp. Nachrichten erscheinen als Sprechblasen.
+        Per &plus;-Knopf können Elemente aus der App als Rich-Card angehängt werden —
+        Ausflüge, Ausgaben, Packlisten-Einträge etc. erscheinen als klickbare Vorschau-Karte
+        in der Bubble. Reaktionen per langen Druck.
+      </p>
+      <ul class="pros">
+        <li>Sofort verständlich — alle kennen WhatsApp</li>
+        <li>App-Elemente als eingebettete Karten mit Direktlink</li>
+        <li>Minimale Lernkurve, auch für ältere Teilnehmer</li>
+        <li>Reaktionen (👍 ❤️ 😂) direkt auf Nachrichten</li>
+        <li>Attach-Picker für Ausflug / Ausgabe / Packliste / Einkauf</li>
+        <li>Fotos & Nachrichten gemischt möglich (Phase 2)</li>
+      </ul>
+    </div>
+
+    <div class="phone-wrap">
+      <div class="phone">
+        <!-- Header -->
+        <div class="app-header">
+          <div class="back-btn">‹</div>
+          <div class="trip-emoji">🏖️</div>
+          <div class="header-info">
+            <div class="header-title">Mallorca 2025</div>
+            <div class="header-sub">16 Teilnehmer · aktiv</div>
+          </div>
+          <div class="header-icon">⚙️</div>
+        </div>
+
+        <!-- Chat Area -->
+        <div style="position:relative;">
+          <div class="chat-area">
+            <div class="date-badge">Heute</div>
+
+            <!-- Them message -->
+            <div class="bubble-row">
+              <div class="avatar av-k">K</div>
+              <div class="bubble them">
+                <div class="bubble-sender">Karin</div>
+                Habe mal den Ausflug für Mittwoch vorgeschlagen! Abstimmen nicht vergessen 😊
+                <!-- Linked Activity Card -->
+                <div class="link-card">
+                  <div class="link-card-icon">🏰</div>
+                  <div class="link-card-body">
+                    <div class="link-card-type">✈️ Ausflug</div>
+                    <div class="link-card-title">Besichtigung Palma</div>
+                    <div class="link-card-sub">Mi, 23. Juli · 7 von 12 ✓</div>
+                  </div>
+                  <div class="link-arrow">›</div>
+                </div>
+                <div class="bubble-time">09:14</div>
+              </div>
+            </div>
+            <div class="reactions">
+              <div class="react-pill">👍 <span class="react-count">4</span></div>
+              <div class="react-pill">🎉 <span class="react-count">2</span></div>
+            </div>
+
+            <!-- Another message -->
+            <div class="bubble-row" style="margin-top:6px;">
+              <div class="avatar av-a">A</div>
+              <div class="bubble them">
+                <div class="bubble-sender" style="color:#db2777;">Anna</div>
+                Super! Und ich hab schon den Sundowner eingetragen:
+                <div class="link-card">
+                  <div class="link-card-icon">💶</div>
+                  <div class="link-card-body">
+                    <div class="link-card-type">💰 Ausgabe</div>
+                    <div class="link-card-title">Cocktails Beach Bar</div>
+                    <div class="link-card-sub">€84,00 · Anna hat bezahlt</div>
+                  </div>
+                  <div class="link-arrow">›</div>
+                </div>
+                <div class="bubble-time">09:31</div>
+              </div>
+            </div>
+
+            <!-- Me -->
+            <div class="bubble-row me" style="margin-top:6px;">
+              <div class="bubble me">
+                Zahlen wir das gemeinsam ab, oder lieber split?
+                <div class="bubble-time">09:33 ✓✓</div>
+              </div>
+            </div>
+
+            <!-- Them -->
+            <div class="bubble-row" style="margin-top:6px;">
+              <div class="avatar av-t">T</div>
+              <div class="bubble them">
+                <div class="bubble-sender" style="color:#0891b2;">Thomas</div>
+                Nicht vergessen: Sonnencreme auf die Packliste!
+                <div class="link-card">
+                  <div class="link-card-icon">🎒</div>
+                  <div class="link-card-body">
+                    <div class="link-card-type">🎒 Packliste</div>
+                    <div class="link-card-title">Sonnencreme LSF 50</div>
+                    <div class="link-card-sub">Noch niemand übernommen</div>
+                  </div>
+                  <div class="link-arrow">›</div>
+                </div>
+                <div class="bubble-time">09:45</div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Attach Picker (floating) -->
+          <div class="attach-picker">
+            <div class="attach-picker-title">Element verknüpfen</div>
+            <div class="attach-grid">
+              <div class="attach-item">
+                <div class="attach-icon ai-teal">✈️</div>
+                <div class="attach-label">Ausflug</div>
+              </div>
+              <div class="attach-item">
+                <div class="attach-icon ai-green">💶</div>
+                <div class="attach-label">Ausgabe</div>
+              </div>
+              <div class="attach-item">
+                <div class="attach-icon ai-blue">🎒</div>
+                <div class="attach-label">Packliste</div>
+              </div>
+              <div class="attach-item">
+                <div class="attach-icon ai-amber">🛒</div>
+                <div class="attach-label">Einkauf</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Input -->
+        <div class="chat-input">
+          <div class="attach-btn">+</div>
+          <div class="input-field">Nachricht schreiben…</div>
+          <div class="send-btn">➤</div>
+        </div>
+
+        <!-- Bottom Nav -->
+        <div class="bottom-nav">
+          <div class="nav-item"><div class="nav-icon">🏠</div><div class="nav-label">Home</div></div>
+          <div class="nav-item"><div class="nav-icon">📅</div><div class="nav-label">Planen</div></div>
+          <div class="nav-item"><div class="nav-icon">📋</div><div class="nav-label">Listen</div></div>
+          <div class="nav-item"><div class="nav-icon active" style="font-size:17px;">💬</div><div class="nav-label active">Gruppe</div></div>
+          <div class="nav-item"><div class="nav-icon">💳</div><div class="nav-label">Geld</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════
+       KONZEPT B: Pinnwand + Chat
+       ════════════════════════════════════════════════════ -->
+  <div class="konzept reverse">
+    <div class="konzept-info">
+      <div class="konzept-tag tag-b">Konzept B</div>
+      <div class="konzept-title">Pinnwand & Chat<br>in einem</div>
+      <p class="konzept-desc">
+        Zwei Modi: <strong style="color:#fff">Pinnwand</strong> zeigt verknüpfte App-Elemente
+        als strukturierte Cards mit Abstimm-Funktion und Kommentarspalte direkt darunter.
+        <strong style="color:#fff">Chat</strong> ist der klassische Freitext-Kanal für alles andere.
+        Perfekt wenn die Gruppe oft abstimmt oder Elemente kommentieren will.
+      </p>
+      <ul class="pros">
+        <li>Pinnwand bündelt alle "offiziellen" Themen übersichtlich</li>
+        <li>Abstimmen direkt auf der Card ohne Seitenwechsel</li>
+        <li>Kommentare am richtigen Kontext, nicht im Chat-Rauschen</li>
+        <li>Chat bleibt für Smalltalk und spontane Nachrichten</li>
+        <li>Badge-Counter zeigt neue Kommentare pro Card</li>
+        <li>Ideal für Gruppen die viel diskutieren</li>
+      </ul>
+    </div>
+
+    <div class="phone-wrap">
+      <div class="phone">
+        <!-- Header -->
+        <div class="app-header">
+          <div class="back-btn">‹</div>
+          <div class="trip-emoji">🏖️</div>
+          <div class="header-info">
+            <div class="header-title">Gruppe</div>
+            <div class="header-sub">Mallorca 2025 · 16 Personen</div>
+          </div>
+          <div class="header-icon">+</div>
+        </div>
+
+        <!-- SubNav -->
+        <div class="subnav">
+          <div class="subnav-btn active">📌 Pinnwand</div>
+          <div class="subnav-btn">💬 Chat</div>
+          <div class="subnav-btn">🖼 Fotos</div>
+        </div>
+
+        <!-- Pinboard -->
+        <div class="pinboard">
+
+          <!-- Pin 1: Activity -->
+          <div class="pin-card">
+            <div class="pin-header">
+              <div class="pin-emoji pe-teal">🏰</div>
+              <div class="pin-info">
+                <div class="pin-type">✈️ Ausflug</div>
+                <div class="pin-title">Besichtigung Palma Altstadt</div>
+              </div>
+              <div class="pin-badge pb-amber">💡 Idee</div>
+            </div>
+            <div class="pin-body">
+              <div class="pin-body-text">Mi, 23. Juli · 10:00 · Treffen: Hotel Lobby</div>
+              <div class="vote-bar-row">
+                <div class="vote-btn vb-yes">✓ Ja (7)</div>
+                <div class="vote-btn vb-maybe">~ Vielleicht (3)</div>
+                <div class="vote-btn vb-no">✗ Nein (2)</div>
+              </div>
+            </div>
+            <div class="mini-comments">
+              <div class="mini-comment">
+                <div class="mc-avatar av-k">K</div>
+                <div class="mc-text"><span class="mc-name">Karin:</span> Bitte Sonnenhut mitnehmen! ☀️</div>
+              </div>
+              <div class="mini-comment">
+                <div class="mc-avatar av-a">A</div>
+                <div class="mc-text"><span class="mc-name">Anna:</span> Wir können danach Tapas essen?</div>
+              </div>
+              <div class="mc-input">
+                <div class="mc-field">Kommentar…</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pin 2: Expense -->
+          <div class="pin-card">
+            <div class="pin-header">
+              <div class="pin-emoji pe-blue">💶</div>
+              <div class="pin-info">
+                <div class="pin-type">💰 Ausgabe</div>
+                <div class="pin-title">Bootstour Cabrera</div>
+              </div>
+              <div class="pin-badge pb-blue">€ 320,00</div>
+            </div>
+            <div class="pin-body">
+              <div class="pin-body-text">Thomas hat bezahlt · aufgeteilt auf 16 Personen</div>
+              <div class="pin-stats">
+                <div class="pin-stat">👥 €20 pro Person</div>
+                <div class="pin-stat">📅 20. Juli</div>
+              </div>
+            </div>
+            <div class="mini-comments">
+              <div class="mini-comment">
+                <div class="mc-avatar av-t">T</div>
+                <div class="mc-text"><span class="mc-name">Thomas:</span> War mega! Danke allen 🌊</div>
+              </div>
+              <div class="mc-input">
+                <div class="mc-field">Kommentar…</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Bottom Nav -->
+        <div class="bottom-nav">
+          <div class="nav-item"><div class="nav-icon">🏠</div><div class="nav-label">Home</div></div>
+          <div class="nav-item"><div class="nav-icon">📅</div><div class="nav-label">Planen</div></div>
+          <div class="nav-item"><div class="nav-icon">📋</div><div class="nav-label">Listen</div></div>
+          <div class="nav-item"><div class="nav-icon active" style="font-size:17px;">💬</div><div class="nav-label active">Gruppe</div></div>
+          <div class="nav-item"><div class="nav-icon">💳</div><div class="nav-label">Geld</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════
+       KONZEPT C: Threads / Topics
+       ════════════════════════════════════════════════════ -->
+  <div class="konzept">
+    <div class="konzept-info">
+      <div class="konzept-tag tag-c">Konzept C</div>
+      <div class="konzept-title">Themen-Threads<br>à la Slack</div>
+      <p class="konzept-desc">
+        Kein flacher Chat — stattdessen strukturierte <strong style="color:#fff">Themen-Threads</strong>.
+        Jeder Thread ist direkt mit einem App-Element verknüpft oder ein freies Thema.
+        Übersicht zeigt alle Threads mit letztem Post und Ungelesen-Indikator.
+        Im Thread selbst sieht man das verknüpfte Element als fixiertes Banner oben.
+      </p>
+      <ul class="pros">
+        <li>Kein Chaos durch 16 Personen in einem Chat</li>
+        <li>Verknüpftes Element immer sichtbar im Thread-Kontext</li>
+        <li>Emoji-Reaktionen und strukturierte Antworten</li>
+        <li>Ungelesen-Indikator pro Thread</li>
+        <li>Threads können an Ausflüge, Ausgaben etc. geheftet sein</li>
+        <li>Besonders gut für lange Urlaubsplanung mit vielen Themen</li>
+      </ul>
+    </div>
+
+    <div class="phone-wrap">
+      <div class="phone">
+        <!-- Header -->
+        <div class="app-header">
+          <div class="back-btn">‹</div>
+          <div class="trip-emoji">🏖️</div>
+          <div class="header-info">
+            <div class="header-title">Gruppe · Themen</div>
+            <div class="header-sub">Mallorca 2025</div>
+          </div>
+          <div class="header-icon">+</div>
+        </div>
+
+        <!-- Threads list -->
+        <div class="threads-header">
+          <div class="threads-title">5 aktive Themen</div>
+          <div class="new-thread-btn">+ Thema</div>
+        </div>
+
+        <div class="thread-list">
+
+          <div class="thread-item">
+            <div class="unread-dot"></div>
+            <div class="thread-icon ai-teal">🏰</div>
+            <div class="thread-body">
+              <div class="thread-title">
+                Besichtigung Palma
+                <span class="thread-tag tt-teal">Ausflug</span>
+              </div>
+              <div class="thread-preview">Karin: Bitte Sonnenhut mitnehmen! ☀️</div>
+              <div class="thread-meta">
+                <div class="thread-avatars">
+                  <div class="thread-av av-k">K</div>
+                  <div class="thread-av av-a">A</div>
+                  <div class="thread-av av-t">T</div>
+                </div>
+                <div class="thread-count">12 Nachrichten</div>
+                <div class="thread-time">09:45</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="thread-item">
+            <div class="thread-icon" style="background:#fee2e2;">💶</div>
+            <div class="thread-body">
+              <div class="thread-title">
+                Bootstour Abrechnung
+                <span class="thread-tag tt-blue">Ausgabe</span>
+              </div>
+              <div class="thread-preview">Thomas: War mega! Danke allen 🌊</div>
+              <div class="thread-meta">
+                <div class="thread-avatars">
+                  <div class="thread-av av-t">T</div>
+                  <div class="thread-av av-k">K</div>
+                </div>
+                <div class="thread-count">5 Nachrichten</div>
+                <div class="thread-time">08:12</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="thread-item">
+            <div class="unread-dot"></div>
+            <div class="thread-icon" style="background:#fef9c3;">🛒</div>
+            <div class="thread-body">
+              <div class="thread-title">
+                Einkaufsliste Mittwoch
+                <span class="thread-tag tt-amber">Einkauf</span>
+              </div>
+              <div class="thread-preview">Anna: Wein nicht vergessen!</div>
+              <div class="thread-meta">
+                <div class="thread-avatars">
+                  <div class="thread-av av-a">A</div>
+                </div>
+                <div class="thread-count">3 Nachrichten</div>
+                <div class="thread-time">Gestern</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="thread-item">
+            <div class="thread-icon" style="background:#f0fdf4;">💬</div>
+            <div class="thread-body">
+              <div class="thread-title">
+                Allgemeines
+                <span class="thread-tag tt-green">Frei</span>
+              </div>
+              <div class="thread-preview">Wann fahren wir morgen los?</div>
+              <div class="thread-meta">
+                <div class="thread-avatars">
+                  <div class="thread-av" style="background:#6366f1;">M</div>
+                  <div class="thread-av av-k">K</div>
+                  <div class="thread-av av-a">A</div>
+                </div>
+                <div class="thread-count">28 Nachrichten</div>
+                <div class="thread-time">Gestern</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Detail preview at bottom (collapsed) -->
+        <div style="background:#e8e5dd; padding:8px 10px 4px; border-top:1px solid rgba(0,0,0,.08);">
+          <div style="font-size:10px; font-weight:700; color:#9ca3af; text-align:center; margin-bottom:6px;">↑ Tippe auf ein Thema zum Öffnen</div>
+        </div>
+
+        <!-- Bottom Nav -->
+        <div class="bottom-nav">
+          <div class="nav-item"><div class="nav-icon">🏠</div><div class="nav-label">Home</div></div>
+          <div class="nav-item"><div class="nav-icon">📅</div><div class="nav-label">Planen</div></div>
+          <div class="nav-item"><div class="nav-icon">📋</div><div class="nav-label">Listen</div></div>
+          <div class="nav-item"><div class="nav-icon active" style="font-size:17px;">💬</div><div class="nav-label active">Gruppe</div></div>
+          <div class="nav-item"><div class="nav-icon">💳</div><div class="nav-label">Geld</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ─── Vergleichstabelle ───────────────────────────── -->
+<div class="comparison">
+  <div class="comp-title">Vergleich der drei Konzepte</div>
+  <div class="comp-grid">
+    <div class="comp-head">Kriterium</div>
+    <div class="comp-head">A · WhatsApp</div>
+    <div class="comp-head">B · Pinnwand</div>
+    <div class="comp-head">C · Threads</div>
+
+    <div class="comp-cell">Einfachheit / Onboarding</div>
+    <div class="comp-cell good">Sehr einfach</div>
+    <div class="comp-cell mid">Mittel</div>
+    <div class="comp-cell mid">Mittel</div>
+
+    <div class="comp-cell">App-Element verknüpfen</div>
+    <div class="comp-cell mid">Als Anhang</div>
+    <div class="comp-cell good">Kontext-Cards</div>
+    <div class="comp-cell good">Fixer Banner</div>
+
+    <div class="comp-cell">Übersicht bei 16 Personen</div>
+    <div class="comp-cell bad">Chaotisch</div>
+    <div class="comp-cell good">Sehr gut</div>
+    <div class="comp-cell good">Sehr gut</div>
+
+    <div class="comp-cell">Abstimmung & Voting</div>
+    <div class="comp-cell bad">Nicht integriert</div>
+    <div class="comp-cell good">Direkt auf Card</div>
+    <div class="comp-cell mid">Im Thread</div>
+
+    <div class="comp-cell">Umsetzungsaufwand</div>
+    <div class="comp-cell good">Gering</div>
+    <div class="comp-cell mid">Mittel</div>
+    <div class="comp-cell bad">Hoch</div>
+
+    <div class="comp-cell">Supabase Realtime</div>
+    <div class="comp-cell good">Einfach</div>
+    <div class="comp-cell good">Einfach</div>
+    <div class="comp-cell mid">Komplex</div>
+
+    <div class="comp-cell">Empfehlung</div>
+    <div class="comp-cell mid">Gut für Start</div>
+    <div class="comp-cell good" style="font-weight:700;">★ Optimum</div>
+    <div class="comp-cell mid">Phase 2</div>
+  </div>
+</div>
+
+</body>
+</html>

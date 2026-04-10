@@ -22,6 +22,22 @@ export default function TripBottomNav({ tripId, isEnded }: TripBottomNavProps) {
       isActive: pathname === base,
     },
     {
+      href: `${base}/expenses`,
+      label: 'Geld',
+      icon: Wallet,
+      isActive:
+        pathname.startsWith(`${base}/expenses`) ||
+        pathname.startsWith(`${base}/stats`) ||
+        pathname.startsWith(`${base}/settlement`),
+      dot: isEnded,
+    },
+    {
+      href: `${base}/gruppe`,
+      label: 'Talk',
+      icon: MessageCircle,
+      isActive: pathname.startsWith(`${base}/gruppe`),
+    },
+    {
       href: `${base}/planen`,
       label: 'Planen',
       icon: Calendar,
@@ -32,22 +48,6 @@ export default function TripBottomNav({ tripId, isEnded }: TripBottomNavProps) {
       label: 'Listen',
       icon: ClipboardList,
       isActive: pathname.startsWith(`${base}/packlist`) || pathname.startsWith(`${base}/einkauf`) || pathname.startsWith(`${base}/listen`),
-    },
-    {
-      href: `${base}/gruppe`,
-      label: 'Gruppe',
-      icon: MessageCircle,
-      isActive: pathname.startsWith(`${base}/gruppe`),
-    },
-    {
-      href: `${base}/expenses`,
-      label: 'Geld',
-      icon: Wallet,
-      isActive:
-        pathname.startsWith(`${base}/expenses`) ||
-        pathname.startsWith(`${base}/stats`) ||
-        pathname.startsWith(`${base}/settlement`),
-      dot: isEnded,
     },
   ]
 

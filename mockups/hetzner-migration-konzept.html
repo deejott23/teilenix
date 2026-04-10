@@ -1,0 +1,1595 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TeileniX – Hetzner Migration: Von Vercel zu Self-Hosted</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=DM+Mono:wght@400;500&display=swap');
+
+:root {
+  --bg:        #080b12;
+  --surface:   #0f1420;
+  --surface2:  #161d2e;
+  --border:    rgba(255,255,255,0.07);
+  --border2:   rgba(255,255,255,0.12);
+  --text:      #e8ecf5;
+  --muted:     #6b7a99;
+  --gold:      #f0a500;
+  --gold-dim:  rgba(240,165,0,0.12);
+  --green:     #22c55e;
+  --green-dim: rgba(34,197,94,0.10);
+  --blue:      #60a5fa;
+  --blue-dim:  rgba(96,165,250,0.10);
+  --red:       #f87171;
+  --red-dim:   rgba(248,113,113,0.10);
+  --amber:     #fb923c;
+  --r:         12px;
+  --r-sm:      8px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── NOISE OVERLAY ─────────────────────────────────────── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.4;
+}
+
+/* ─── SCROLLBAR ─────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 2px; }
+
+/* ─── NAV ────────────────────────────────────────────────── */
+nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(8,11,18,0.88);
+  backdrop-filter: blur(20px) saturate(1.4);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  height: 52px;
+  overflow-x: auto;
+}
+
+nav a {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  text-decoration: none;
+  text-transform: uppercase;
+  padding: 0 1rem;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  transition: color .2s, border-color .2s;
+}
+nav a:hover { color: var(--text); border-color: var(--gold); }
+nav .nav-brand {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--gold);
+  margin-right: 1rem;
+  border: none;
+  letter-spacing: 0;
+}
+
+/* ─── HERO ───────────────────────────────────────────────── */
+.hero {
+  position: relative;
+  padding: 5rem 2rem 4rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+.hero-bg {
+  position: absolute;
+  top: -60px; right: -80px;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle at center, rgba(240,165,0,0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.hero-eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+.hero-eyebrow::before {
+  content: '';
+  width: 24px; height: 1px;
+  background: var(--gold);
+}
+
+h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(2.4rem, 5vw, 3.8rem);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin-bottom: 1.25rem;
+  background: linear-gradient(135deg, #fff 30%, #8899bb 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-sub {
+  font-size: 17px;
+  font-weight: 300;
+  color: var(--muted);
+  max-width: 580px;
+  line-height: 1.7;
+  margin-bottom: 2.5rem;
+}
+
+.hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+}
+
+/* ─── BADGES ─────────────────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  padding: .3rem .7rem;
+  border-radius: 4px;
+  border: 1px solid;
+}
+.badge-gold { background: var(--gold-dim); border-color: rgba(240,165,0,0.3); color: var(--gold); }
+.badge-green { background: var(--green-dim); border-color: rgba(34,197,94,0.3); color: var(--green); }
+.badge-blue { background: var(--blue-dim); border-color: rgba(96,165,250,0.3); color: var(--blue); }
+.badge-red { background: var(--red-dim); border-color: rgba(248,113,113,0.3); color: var(--red); }
+.badge-muted { background: rgba(255,255,255,0.04); border-color: var(--border2); color: var(--muted); }
+
+/* ─── SECTIONS ───────────────────────────────────────────── */
+section {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 4rem 2rem;
+  border-top: 1px solid var(--border);
+}
+
+.section-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: .6rem;
+}
+
+h2 {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin-bottom: .75rem;
+}
+
+h3 {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: .5rem;
+}
+
+p { color: #a0aec5; line-height: 1.75; margin-bottom: .75rem; }
+p:last-child { margin-bottom: 0; }
+
+/* ─── CONTEXT CARDS ──────────────────────────────────────── */
+.context-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--gold), transparent);
+}
+
+.stat-num {
+  font-family: 'Syne', sans-serif;
+  font-size: 2.5rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--gold);
+  margin-bottom: .3rem;
+}
+.stat-label { font-size: 13px; color: var(--muted); }
+
+/* ─── VARIANT CARDS ──────────────────────────────────────── */
+.variants-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.25rem;
+  margin-top: 2.5rem;
+}
+
+.variant-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 1.75rem;
+  position: relative;
+  transition: border-color .25s, transform .25s;
+  cursor: default;
+}
+.variant-card:hover {
+  border-color: var(--border2);
+  transform: translateY(-2px);
+}
+.variant-card.recommended {
+  border-color: rgba(240,165,0,0.35);
+  background: linear-gradient(135deg, var(--surface) 0%, rgba(240,165,0,0.04) 100%);
+}
+.variant-card.recommended::after {
+  content: 'EMPFOHLEN';
+  position: absolute;
+  top: 1rem; right: 1rem;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  background: var(--gold);
+  color: #000;
+  padding: .2rem .5rem;
+  border-radius: 3px;
+  font-weight: 500;
+}
+
+.variant-letter {
+  font-family: 'Syne', sans-serif;
+  font-size: 3rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--surface2);
+  position: absolute;
+  top: 1rem; right: 1.5rem;
+  user-select: none;
+}
+.variant-card.recommended .variant-letter { color: rgba(240,165,0,0.08); }
+
+.variant-tag {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: .5rem;
+}
+
+.variant-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: .35rem;
+  color: var(--text);
+}
+
+.variant-desc { font-size: 13px; color: var(--muted); margin-bottom: 1.25rem; line-height: 1.6; }
+
+.metric-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: .4rem 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.metric-row:last-child { border-bottom: none; }
+.metric-key { color: var(--muted); }
+.metric-val { font-weight: 500; }
+
+.stars {
+  display: inline-flex;
+  gap: 2px;
+  font-size: 11px;
+}
+.star-on { color: var(--gold); }
+.star-off { color: rgba(255,255,255,0.12); }
+
+/* ─── COMPARISON TABLE ───────────────────────────────────── */
+.table-wrap {
+  overflow-x: auto;
+  margin-top: 2rem;
+  border-radius: var(--r);
+  border: 1px solid var(--border);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 680px;
+}
+
+th {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 1rem 1.25rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border2);
+  background: var(--surface);
+  white-space: nowrap;
+}
+th:first-child { color: var(--text); width: 200px; }
+
+td {
+  padding: .9rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 13.5px;
+  vertical-align: middle;
+}
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(255,255,255,0.015); }
+
+td:first-child {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  color: var(--text);
+  font-size: 13px;
+}
+
+.col-rec {
+  background: rgba(240,165,0,0.04) !important;
+}
+th.col-rec { color: var(--gold) !important; }
+
+/* ─── DETAIL SECTIONS ────────────────────────────────────── */
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin-top: 1.75rem;
+}
+@media (max-width: 680px) {
+  .detail-grid { grid-template-columns: 1fr; }
+}
+
+.detail-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 1.5rem;
+}
+
+.detail-card h4 {
+  font-family: 'Syne', sans-serif;
+  font-size: .9rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+
+ul.pro-con {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+}
+ul.pro-con li {
+  font-size: 13px;
+  color: #8a9bb8;
+  display: flex;
+  align-items: flex-start;
+  gap: .5rem;
+  line-height: 1.5;
+}
+ul.pro-con li::before {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 700;
+  margin-top: 1px;
+}
+ul.pro-con.pros li::before { content: '+'; background: var(--green-dim); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+ul.pro-con.cons li::before { content: '−'; background: var(--red-dim); color: var(--red); border: 1px solid rgba(248,113,113,0.3); }
+
+/* ─── TECH DEEP DIVES ────────────────────────────────────── */
+.tech-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.25rem;
+  margin-top: 2rem;
+}
+
+.tech-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 1.75rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.tech-card::before {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  opacity: 0;
+  transition: opacity .3s;
+}
+.tech-card:hover::before { opacity: 1; }
+
+.tech-icon {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.tech-card h3 { margin-bottom: .5rem; }
+
+.code-block {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 1rem 1.25rem;
+  margin-top: 1rem;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: #7dd3fc;
+  line-height: 1.7;
+  overflow-x: auto;
+}
+.code-block .comment { color: var(--muted); }
+.code-block .keyword { color: #c084fc; }
+.code-block .string { color: #86efac; }
+
+/* ─── ROADMAP ────────────────────────────────────────────── */
+.roadmap {
+  margin-top: 2rem;
+  position: relative;
+}
+
+.roadmap::before {
+  content: '';
+  position: absolute;
+  left: 20px;
+  top: 0; bottom: 0;
+  width: 1px;
+  background: linear-gradient(to bottom, var(--gold), rgba(240,165,0,0.1));
+}
+
+.roadmap-step {
+  display: flex;
+  gap: 1.5rem;
+  padding-bottom: 2.5rem;
+  position: relative;
+}
+.roadmap-step:last-child { padding-bottom: 0; }
+
+.step-dot {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 2px solid var(--gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--gold);
+  position: relative;
+  z-index: 1;
+}
+
+.step-content {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 1.25rem 1.5rem;
+  flex: 1;
+}
+
+.step-content h4 {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: .95rem;
+  margin-bottom: .35rem;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+}
+
+.step-content p { font-size: 13px; margin-bottom: 0; }
+
+/* ─── RECOMMENDATION BOX ─────────────────────────────────── */
+.rec-box {
+  background: linear-gradient(135deg, rgba(240,165,0,0.08) 0%, rgba(240,165,0,0.03) 100%);
+  border: 1px solid rgba(240,165,0,0.3);
+  border-radius: var(--r);
+  padding: 2.5rem;
+  margin-top: 2.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.rec-box::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--gold), var(--amber));
+}
+
+.rec-box h3 {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--gold);
+  margin-bottom: .5rem;
+}
+
+.rec-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin: 1rem 0;
+}
+
+/* ─── DECISION MATRIX ────────────────────────────────────── */
+.matrix-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border-radius: var(--r);
+  overflow: hidden;
+  margin-top: 2rem;
+}
+@media (max-width: 600px) { .matrix-grid { grid-template-columns: 1fr; } }
+
+.matrix-cell {
+  background: var(--surface);
+  padding: 1.5rem;
+}
+.matrix-cell h4 {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: .75rem;
+}
+.matrix-cell p { font-size: 13px; margin-bottom: 0; }
+.matrix-highlight { background: rgba(240,165,0,0.04) !important; }
+.matrix-highlight h4 { color: var(--gold) !important; }
+
+/* ─── FOOTER ─────────────────────────────────────────────── */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 2rem;
+  text-align: center;
+  color: var(--muted);
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+}
+
+/* ─── ANIMATIONS ─────────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.hero > * {
+  animation: fadeUp .6s ease both;
+}
+.hero-eyebrow { animation-delay: .05s; }
+h1 { animation-delay: .15s; }
+.hero-sub { animation-delay: .25s; }
+.hero-meta { animation-delay: .35s; }
+
+.variant-card, .tech-card, .stat-card {
+  animation: fadeUp .5s ease both;
+}
+
+/* ─── DIVIDER ────────────────────────────────────────────── */
+.divider {
+  border: none;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border2), transparent);
+  margin: 2rem 0;
+}
+
+/* ─── EFFORT PILL ────────────────────────────────────────── */
+.effort {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  font-size: 12px;
+  font-family: 'DM Mono', monospace;
+  padding: .2rem .6rem;
+  border-radius: 4px;
+}
+.effort-low    { background: var(--green-dim); color: var(--green); border: 1px solid rgba(34,197,94,0.2); }
+.effort-medium { background: rgba(251,146,60,0.1); color: var(--amber); border: 1px solid rgba(251,146,60,0.2); }
+.effort-high   { background: var(--red-dim); color: var(--red); border: 1px solid rgba(248,113,113,0.2); }
+
+/* ─── CHECK LIST ─────────────────────────────────────────── */
+ul.checklist { list-style: none; display: flex; flex-direction: column; gap: .4rem; margin-top: .75rem; }
+ul.checklist li { font-size: 13px; color: #8a9bb8; display: flex; align-items: flex-start; gap: .5rem; line-height: 1.5; }
+ul.checklist li::before { content: '✓'; color: var(--green); flex-shrink: 0; font-weight: 700; }
+
+/* ─── COST COMPARISON ────────────────────────────────────── */
+.cost-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin-top: 2rem;
+}
+@media (max-width: 620px) { .cost-grid { grid-template-columns: 1fr; } }
+
+.cost-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 1.75rem;
+  position: relative;
+  overflow: hidden;
+}
+.cost-card.cheaper {
+  border-color: rgba(34,197,94,0.3);
+  background: linear-gradient(135deg, var(--surface) 0%, rgba(34,197,94,0.03) 100%);
+}
+.cost-card.cheaper::before {
+  content: 'GÜNSTIGER';
+  position: absolute;
+  top: 1rem; right: 1rem;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  background: var(--green);
+  color: #000;
+  padding: .2rem .5rem;
+  border-radius: 3px;
+  font-weight: 500;
+}
+.cost-amount {
+  font-family: 'Syne', sans-serif;
+  font-size: 2.5rem;
+  font-weight: 800;
+  line-height: 1;
+  margin-bottom: .25rem;
+}
+.cost-period { font-size: 12px; color: var(--muted); margin-bottom: 1rem; }
+.cost-provider {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: .4rem;
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-brand">TeileniX</a>
+  <a href="#kontext">Kontext</a>
+  <a href="#varianten">Varianten</a>
+  <a href="#vergleich">Vergleich</a>
+  <a href="#supabase">Supabase</a>
+  <a href="#empfehlung">Empfehlung</a>
+  <a href="#setup">Setup</a>
+  <a href="#kosten">Kosten</a>
+  <a href="#risiken">Risiken</a>
+  <a href="#roadmap">Roadmap</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-eyebrow">Technisches Konzept — April 2026</div>
+  <h1>TeileniX auf Hetzner<br>migrieren</h1>
+  <p class="hero-sub">
+    Von Vercel + Supabase Cloud zu einer selbstgehosteten Infrastruktur auf Hetzner — Analyse der Optionen, Kosten, Risiken und der optimalen Migrationsstrategie.
+  </p>
+  <div class="hero-meta">
+    <span class="badge badge-muted">Aktuell: Vercel + Supabase</span>
+    <span class="badge badge-gold">Ziel: Hetzner</span>
+    <span class="badge badge-blue">Next.js App Router</span>
+    <span class="badge badge-green">3 Varianten</span>
+    <span class="badge badge-muted">PostgreSQL + Auth + Realtime</span>
+  </div>
+</div>
+
+<!-- KONTEXT -->
+<section id="kontext">
+  <div class="section-label">Ausgangslage</div>
+  <h2>Aktuelle Architektur</h2>
+  <p>TeileniX läuft aktuell vollständig in der Cloud von Drittanbietern: das Next.js-Frontend auf Vercel, das Backend und die Datenbank auf Supabase Cloud. Ein Hetzner-Server steht bereits zur Verfügung und wartet auf Nutzung.</p>
+
+  <div class="context-grid">
+    <div class="stat-card">
+      <div class="stat-num">Vercel</div>
+      <div class="stat-label">Next.js App Router, Edge Network, CI/CD</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">Supa</div>
+      <div class="stat-label">PostgreSQL, Auth, Realtime, Storage</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">€5</div>
+      <div class="stat-label">Hetzner CX21 — bereits verfügbar</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">3</div>
+      <div class="stat-label">Migrations-Varianten zur Auswahl</div>
+    </div>
+  </div>
+
+  <div class="detail-grid" style="margin-top:2rem;">
+    <div class="detail-card">
+      <h4>Was aktuell funktioniert</h4>
+      <ul class="checklist">
+        <li>Next.js SSR + App Router auf Vercel</li>
+        <li>Supabase Auth (Email + Magic Link)</li>
+        <li>PostgreSQL mit Row Level Security (RLS)</li>
+        <li>Supabase Realtime für Live-Updates</li>
+        <li>Storage für zukünftige Datei-Uploads</li>
+        <li>Automatisches CI/CD via Vercel + GitHub</li>
+      </ul>
+    </div>
+    <div class="detail-card">
+      <h4>Warum Migration erwägen?</h4>
+      <ul class="pro-con cons">
+        <li>Vercel Pro: $20/Monat für ein kleines Projekt viel</li>
+        <li>Vendor-Lock-in bei Vercel (serverless, Edge Functions)</li>
+        <li>Hetzner-Server liegt brach — Ressourcen ungenutzt</li>
+        <li>Mehr Kontrolle über Deployment und Infrastruktur</li>
+        <li>Kosten langfristig deutlich reduzieren</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- VARIANTEN -->
+<section id="varianten">
+  <div class="section-label">Technische Optionen</div>
+  <h2>Die drei Varianten im Überblick</h2>
+  <p>Vom minimalen Deployment-Wechsel bis zur vollständigen Infrastruktur-Migration — jede Variante hat andere Anforderungen, Kosten und Risiken.</p>
+
+  <div class="variants-grid">
+    <!-- A -->
+    <div class="variant-card recommended">
+      <div class="variant-letter">A</div>
+      <div class="variant-tag">Variante A · Hybrid</div>
+      <div class="variant-title">Next.js auf Hetzner, Supabase bleibt Cloud</div>
+      <p class="variant-desc">Nur das Next.js-Deployment wechselt zu Hetzner. Supabase Cloud bleibt vollständig erhalten — Auth, DB, Realtime, Storage laufen unverändert.</p>
+      <hr class="divider">
+      <div class="metric-row">
+        <span class="metric-key">Aufwand</span>
+        <span class="metric-val"><span class="effort effort-low">Niedrig</span></span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">Risiko</span>
+        <span class="stars"><span class="star-on">★</span><span class="star-off">★</span><span class="star-off">★</span><span class="star-off">★</span><span class="star-off">★</span></span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">Kontrolle</span>
+        <span class="stars"><span class="star-on">★</span><span class="star-on">★</span><span class="star-on">★</span><span class="star-off">★</span><span class="star-off">★</span></span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">Supabase</span>
+        <span class="metric-val" style="color:var(--green)">Bleibt Cloud</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">Kosten/Monat</span>
+        <span class="metric-val" style="color:var(--green)">~€5,52 + Supa Free</span>
+      </div>
+    </div>
+
+    <!-- B -->
+    <div class="variant-card">
+      <div class="variant-letter">B</div>
+      <div class="variant-tag">Variante B · Voll-Migration</div>
+      <div class="variant-title">Next.js + Supabase selbst auf Hetzner</div>
+      <p class="variant-desc">Alles wandert auf Hetzner: Next.js per Docker, Supabase als selbstgehosteter Stack (supabase/supabase Docker Compose). Maximale Kontrolle, höchster Aufwand.</p>
+      <hr class="divider">
+      <div class="metric-row">
+        <span class="metric-key">Aufwand</span>
+        <span class="metric-val"><span class="effort effort-high">Sehr hoch</span></span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">Risiko</span>
+        <span class="stars"><span class="star-on">★</span><span class="star-on">★</span><span class="star-on">★</span><span class="star-on">★</span><span class="star-off">★</span></span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">Kontrolle</span>
+        <span class="stars"><span class="star-on">★</span><span class="star-on">★</span><span class="star-on">★</span><span class="star-on">★</span><span class="star-on">★</span></span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">Supabase</span>
+        <span class="metric-val" style="color:var(--amber)">Self-Hosted</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">Kosten/Monat</span>
+        <span class="metric-val" style="color:var(--green)">~€15–25 (größerer Server)</span>
+      </div>
+    </div>
+
+    <!-- C -->
+    <div class="variant-card">
+      <div class="variant-letter">C</div>
+      <div class="variant-tag">Variante C · Nur DB</div>
+      <div class="variant-title">Next.js + PostgreSQL direkt (ohne Supabase)</div>
+      <p class="variant-desc">Next.js auf Hetzner, Supabase wird komplett ersetzt durch PostgreSQL direkt + eigene Auth-Lösung (NextAuth.js). Maximale Kontrolle über DB, aber Realtime und Auth selbst implementieren.</p>
+      <hr class="divider">
+      <div class="metric-row">
+        <span class="metric-key">Aufwand</span>
+        <span class="metric-val"><span class="effort effort-high">Extrem hoch</span></span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">Risiko</span>
+        <span class="stars"><span class="star-on">★</span><span class="star-on">★</span><span class="star-on">★</span><span class="star-on">★</span><span class="star-on">★</span></span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">Kontrolle</span>
+        <span class="stars"><span class="star-on">★</span><span class="star-on">★</span><span class="star-on">★</span><span class="star-on">★</span><span class="star-on">★</span></span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">Supabase</span>
+        <span class="metric-val" style="color:var(--red)">Komplett ersetzt</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">Kosten/Monat</span>
+        <span class="metric-val" style="color:var(--green)">~€5,52 (minimal)</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- VERCEL vs. HETZNER VERGLEICH -->
+<section id="vergleich">
+  <div class="section-label">Deployment-Plattform</div>
+  <h2>Vercel vs. Hetzner — Next.js Deployment</h2>
+  <p>Vercel wurde für Next.js gebaut und hat einen klaren DX-Vorteil. Hetzner ist günstiger und flexibler, erfordert aber mehr eigene Konfiguration.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Kriterium</th>
+          <th>Vercel (aktuell)</th>
+          <th class="col-rec">Hetzner CX21 (Variante A)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>TTFB (Time to First Byte)</td>
+          <td><strong style="color:var(--green)">~50–100ms</strong> (Edge Network)</td>
+          <td class="col-rec">~100–200ms (ein Standort)</td>
+        </tr>
+        <tr>
+          <td>Edge Network / CDN</td>
+          <td><span class="badge badge-green">Global, automatisch</span></td>
+          <td class="col-rec"><span class="badge badge-muted">Kein Edge, ein Standort</span></td>
+        </tr>
+        <tr>
+          <td>CI/CD</td>
+          <td>Automatisch via GitHub Push</td>
+          <td class="col-rec">GitHub Actions (selbst konfigurieren)</td>
+        </tr>
+        <tr>
+          <td>Preview Deployments</td>
+          <td><span class="badge badge-green">Automatisch für jeden PR</span></td>
+          <td class="col-rec"><span class="badge badge-muted">Muss selbst gebaut werden</span></td>
+        </tr>
+        <tr>
+          <td>SSL-Zertifikate</td>
+          <td>Automatisch</td>
+          <td class="col-rec">Automatisch via Caddy + Let's Encrypt</td>
+        </tr>
+        <tr>
+          <td>Skalierung</td>
+          <td>Automatisch (Serverless)</td>
+          <td class="col-rec">Manuell (Server upgraden)</td>
+        </tr>
+        <tr>
+          <td>Next.js Server Actions</td>
+          <td><span class="badge badge-green">Voll unterstützt</span></td>
+          <td class="col-rec"><span class="badge badge-green">Voll unterstützt (Node.js)</span></td>
+        </tr>
+        <tr>
+          <td>Monitoring / Logs</td>
+          <td>Vercel Dashboard, integriert</td>
+          <td class="col-rec">Docker Logs, selbst einrichten</td>
+        </tr>
+        <tr>
+          <td>Wartungsaufwand</td>
+          <td><span class="effort effort-low">Minimal</span></td>
+          <td class="col-rec"><span class="effort effort-medium">Mittel (Server-Updates)</span></td>
+        </tr>
+        <tr>
+          <td>Kosten / Monat</td>
+          <td><strong style="color:var(--red)">$20 (Pro)</strong></td>
+          <td class="col-rec"><strong style="color:var(--green)">~€5,52 (CX21)</strong></td>
+        </tr>
+        <tr>
+          <td>Developer Experience</td>
+          <td>
+            <span class="stars"><span class="star-on">★</span><span class="star-on">★</span><span class="star-on">★</span><span class="star-on">★</span><span class="star-on">★</span></span>
+          </td>
+          <td class="col-rec">
+            <span class="stars"><span class="star-on">★</span><span class="star-on">★</span><span class="star-on">★</span><span class="star-off">★</span><span class="star-off">★</span></span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- SUPABASE VERGLEICH -->
+<section id="supabase">
+  <div class="section-label">Backend-Infrastruktur</div>
+  <h2>Supabase Cloud vs. Self-Hosted</h2>
+  <p>Supabase lässt sich theoretisch selbst hosten — aber der Aufwand ist erheblich. Hier ein ehrlicher Vergleich zwischen dem bequemen Cloud-Service und dem vollständig selbstgehosteten Stack.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Bereich</th>
+          <th class="col-rec">Supabase Cloud (behalten)</th>
+          <th>Self-Hosted auf Hetzner</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Auth (Email, Magic Link)</td>
+          <td class="col-rec"><span class="badge badge-green">Sofort, konfigurierbar</span></td>
+          <td>Eigener GoTrue-Stack nötig</td>
+        </tr>
+        <tr>
+          <td>Realtime (WebSockets)</td>
+          <td class="col-rec"><span class="badge badge-green">Integriert, skaliert auto.</span></td>
+          <td>Eigener Realtime-Server, komplex</td>
+        </tr>
+        <tr>
+          <td>Storage</td>
+          <td class="col-rec">S3-kompatibel, sofort nutzbar</td>
+          <td>MinIO oder S3-Anbindung nötig</td>
+        </tr>
+        <tr>
+          <td>Row Level Security (RLS)</td>
+          <td class="col-rec"><span class="badge badge-green">Voll unterstützt</span></td>
+          <td><span class="badge badge-green">Voll unterstützt</span> (PostgreSQL-Feature)</td>
+        </tr>
+        <tr>
+          <td>Backups</td>
+          <td class="col-rec">Automatisch täglich (Pro)</td>
+          <td>Selbst einrichten (pg_dump, Cron)</td>
+        </tr>
+        <tr>
+          <td>Updates / Sicherheitspatches</td>
+          <td class="col-rec">Automatisch</td>
+          <td>Manuell (Docker pull, Downtime)</td>
+        </tr>
+        <tr>
+          <td>PostgreSQL-Version</td>
+          <td class="col-rec">Managed, immer aktuell</td>
+          <td>Frei wählbar, selbst updaten</td>
+        </tr>
+        <tr>
+          <td>Dashboard / Studio</td>
+          <td class="col-rec">Vollständig, poliert</td>
+          <td>Supabase Studio lokal (Docker)</td>
+        </tr>
+        <tr>
+          <td>Kosten / Monat</td>
+          <td class="col-rec"><strong style="color:var(--green)">Free Tier: €0</strong> (bis 50k Rows)</td>
+          <td>Server-Kosten + Overhead ~€10–15 extra</td>
+        </tr>
+        <tr>
+          <td>Migrations (CLI)</td>
+          <td class="col-rec"><span class="badge badge-green">Vollständig unterstützt</span></td>
+          <td><span class="badge badge-green">Vollständig unterstützt</span></td>
+        </tr>
+        <tr>
+          <td>Setup-Aufwand</td>
+          <td class="col-rec"><span class="effort effort-low">Zero</span></td>
+          <td><span class="effort effort-high">40–80h initial</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Selbst-gehostetes Supabase Warnung -->
+  <div style="margin-top:1.5rem; background:rgba(248,113,113,0.05); border:1px solid rgba(248,113,113,0.2); border-radius:var(--r); padding:1.75rem;">
+    <h4 style="font-family:Syne,sans-serif;font-weight:700;font-size:1rem;color:var(--red);margin-bottom:.75rem;">Achtung: Self-Hosted Supabase ist aufwendig</h4>
+    <p style="font-size:13px; margin-bottom:0;">Supabase Self-Hosted besteht aus über 10 Docker-Containern (PostgreSQL, GoTrue, PostgREST, Realtime, Storage, Kong API Gateway, Studio u.a.). Das Einrichten, Warten und Updaten dieses Stacks ist eine eigene Arbeit — und bei einem kleinen Projekt wie TeileniX ist der Aufwand klar nicht gerechtfertigt. <strong style="color:var(--amber)">Supabase Cloud auf dem Free Tier zu behalten ist fast immer die bessere Entscheidung.</strong></p>
+  </div>
+</section>
+
+<!-- EMPFEHLUNG -->
+<section id="empfehlung">
+  <div class="section-label">Empfehlung</div>
+  <h2>Die optimale Strategie: Variante A</h2>
+
+  <div class="rec-box">
+    <h3>Next.js zu Hetzner, Supabase bleibt Cloud</h3>
+    <p style="color:#c8d5e8; font-size:15px; margin-bottom:1rem;">
+      <strong>Variante A (Hybrid)</strong> bietet das beste Verhältnis aus Aufwand, Kosten und Kontrolle. Das Deployment wechselt zu Hetzner — Supabase Cloud bleibt vollständig erhalten. Kosten sinken von ~$20/Monat (Vercel Pro) auf ~€5,52/Monat (Hetzner CX21), während alle Supabase-Features unverändert funktionieren.
+    </p>
+    <div class="rec-tags">
+      <span class="badge badge-gold">Best of Both Worlds</span>
+      <span class="badge badge-green">€14+ günstiger pro Monat</span>
+      <span class="badge badge-blue">Supabase unverändert</span>
+      <span class="badge badge-muted">1–2 Tage Setup</span>
+    </div>
+    <hr class="divider">
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem;">
+      <div>
+        <h4 style="font-family:DM Mono,monospace; font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--gold); margin-bottom:.75rem;">Was sich ändert</h4>
+        <ul class="checklist">
+          <li>Next.js läuft als Docker-Container auf Hetzner</li>
+          <li>Caddy als Reverse Proxy mit automatischem SSL</li>
+          <li>GitHub Actions deployt bei jedem Push auf main</li>
+          <li>Domain/DNS zeigt auf Hetzner IP statt Vercel</li>
+          <li>Environment Variables auf dem Server statt Vercel</li>
+        </ul>
+      </div>
+      <div>
+        <h4 style="font-family:DM Mono,monospace; font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--gold); margin-bottom:.75rem;">Was identisch bleibt</h4>
+        <ul class="checklist">
+          <li>Supabase Auth — keine Code-Änderungen</li>
+          <li>Supabase Realtime — funktioniert wie vorher</li>
+          <li>Supabase Storage — URL-Struktur unverändert</li>
+          <li>Row Level Security — bleibt in Supabase</li>
+          <li>Alle Migrations und Daten — kein Datenbankumzug</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="detail-grid" style="margin-top:1.5rem;">
+    <div class="detail-card">
+      <h4 style="color:var(--green)">Vorteile von Variante A</h4>
+      <ul class="pro-con pros">
+        <li>Kosten sinken von $20 auf ~€5,52 pro Monat</li>
+        <li>Volle Kontrolle über das Deployment</li>
+        <li>Keine Code-Änderungen nötig — nur Infrastruktur</li>
+        <li>Supabase Cloud im Free Tier: Auth, Realtime, Storage weiter kostenlos</li>
+        <li>GitHub Actions ist flexibler als Vercel CI/CD</li>
+        <li>Hetzner Standort Deutschland — DSGVO-freundlich</li>
+      </ul>
+    </div>
+    <div class="detail-card">
+      <h4 style="color:var(--red)">Einschränkungen von Variante A</h4>
+      <ul class="pro-con cons">
+        <li>Kein automatisches Edge Network — alle Requests gehen nach Frankfurt/Nürnberg</li>
+        <li>Preview Deployments müssen selbst gebaut werden</li>
+        <li>Server-Updates und Monitoring selbst verwalten</li>
+        <li>Vercel hatte bessere DX (Dashboard, Logs, Analytics)</li>
+        <li>Cold Starts entfallen (gut!), aber kein Serverless-Auto-Scaling</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- SETUP VARIANTE A -->
+<section id="setup">
+  <div class="section-label">Technische Umsetzung</div>
+  <h2>Was für Variante A nötig ist</h2>
+  <p>Die konkrete Infrastruktur für Variante A — Next.js auf Hetzner mit Docker, Caddy als Reverse Proxy und GitHub Actions für automatisches Deployment.</p>
+
+  <div class="tech-grid">
+    <div class="tech-card">
+      <span class="tech-icon">🐳</span>
+      <h3>Docker + Docker Compose</h3>
+      <p style="font-size:13px;">Next.js läuft als Docker-Container auf dem Hetzner-Server. Docker Compose verwaltet den Container mit dem richtigen Restart-Verhalten und Port-Mapping. Kein PM2 nötig.</p>
+      <div class="code-block">
+<span class="comment"># docker-compose.yml</span>
+services:
+  nextjs:
+    build: .
+    restart: always
+    ports:
+      - <span class="string">"3000:3000"</span>
+    env_file:
+      - .env.production
+    environment:
+      - NODE_ENV=production
+      </div>
+      <div style="margin-top:1rem; display:flex; gap:.5rem; flex-wrap:wrap;">
+        <span class="badge badge-green">Restart on Crash</span>
+        <span class="badge badge-muted">Kein PM2 nötig</span>
+      </div>
+    </div>
+
+    <div class="tech-card">
+      <span class="tech-icon">🔐</span>
+      <h3>Caddy als Reverse Proxy</h3>
+      <p style="font-size:13px;">Caddy übernimmt SSL-Terminierung (Let's Encrypt automatisch), leitet Requests von Port 443 an den Next.js-Container weiter und handhabt HTTP→HTTPS Redirects ohne Konfiguration.</p>
+      <div class="code-block">
+<span class="comment"># Caddyfile</span>
+teilenix.de {
+  reverse_proxy localhost:3000
+  <span class="comment"># SSL: automatisch via Let's Encrypt</span>
+  <span class="comment"># HTTP → HTTPS: automatisch</span>
+}
+      </div>
+      <div style="margin-top:1rem; display:flex; gap:.5rem; flex-wrap:wrap;">
+        <span class="badge badge-gold">SSL automatisch</span>
+        <span class="badge badge-green">Zero-Config HTTPS</span>
+      </div>
+    </div>
+
+    <div class="tech-card">
+      <span class="tech-icon">⚙️</span>
+      <h3>GitHub Actions — CI/CD</h3>
+      <p style="font-size:13px;">Bei jedem Push auf main baut GitHub Actions ein neues Docker-Image und deployt es auf den Hetzner-Server via SSH. Kein manuelles Deployment, zero Downtime via Docker rollout.</p>
+      <div class="code-block">
+<span class="comment"># .github/workflows/deploy.yml</span>
+<span class="keyword">on</span>:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - <span class="keyword">name</span>: Deploy to Hetzner
+        run: |
+          ssh deploy@$SERVER_IP \
+            <span class="string">"cd /app && git pull && docker compose up -d --build"</span>
+      </div>
+      <div style="margin-top:1rem; display:flex; gap:.5rem; flex-wrap:wrap;">
+        <span class="badge badge-blue">Push → Deploy</span>
+        <span class="badge badge-muted">SSH-basiert</span>
+      </div>
+    </div>
+
+    <div class="tech-card">
+      <span class="tech-icon">🔑</span>
+      <h3>Environment Variables</h3>
+      <p style="font-size:13px;">Die Supabase-Keys und andere Secrets werden als <code style="font-family:DM Mono;font-size:11px;color:var(--blue)">.env.production</code>-Datei direkt auf dem Server abgelegt — nicht im Git-Repo. GitHub Actions liest Server-SSH-Keys aus GitHub Secrets.</p>
+      <div class="code-block">
+<span class="comment"># Auf dem Hetzner-Server einmalig anlegen</span>
+cat > /app/.env.production << <span class="string">'EOF'</span>
+NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbG...
+SUPABASE_SERVICE_ROLE_KEY=eyJhbG...
+<span class="string">EOF</span>
+
+<span class="comment"># Berechtigungen einschränken</span>
+chmod 600 /app/.env.production
+      </div>
+      <div style="margin-top:1rem; display:flex; gap:.5rem; flex-wrap:wrap;">
+        <span class="badge badge-red">Nie im Git!</span>
+        <span class="badge badge-muted">Direkt auf Server</span>
+      </div>
+    </div>
+
+    <div class="tech-card">
+      <span class="tech-icon">🌐</span>
+      <h3>Domain & DNS</h3>
+      <p style="font-size:13px;">Der DNS-A-Record der Domain zeigt nach der Migration auf die Hetzner-IP statt auf Vercel. Propagation dauert je nach TTL 5 Minuten bis 24 Stunden. Zuerst alles auf Hetzner testen, dann DNS umziehen.</p>
+      <div class="code-block">
+<span class="comment"># DNS-Einträge beim Domainprovider</span>
+@ A     65.21.xxx.xxx   <span class="comment"># Hetzner IP</span>
+www CNAME teilenix.de.  <span class="comment"># Weiterleitung</span>
+
+<span class="comment"># IP des Hetzner-Servers herausfinden</span>
+hcloud server describe mein-server --output json \
+  | jq '.public_net.ipv4.ip'
+      </div>
+      <div style="margin-top:1rem; display:flex; gap:.5rem; flex-wrap:wrap;">
+        <span class="badge badge-blue">TTL niedrig setzen</span>
+        <span class="badge badge-muted">Erst testen, dann umziehen</span>
+      </div>
+    </div>
+
+    <div class="tech-card">
+      <span class="tech-icon">📁</span>
+      <h3>Dockerfile für Next.js</h3>
+      <p style="font-size:13px;">Ein optimiertes Dockerfile mit Multi-Stage Build: Erst Build-Stage (installiert alle Dependencies, baut die App), dann Production-Stage (nur Runtime-Dependencies). Ergebnis: kleines, schnelles Image.</p>
+      <div class="code-block">
+<span class="comment"># Dockerfile (Multi-Stage)</span>
+<span class="keyword">FROM</span> node:20-alpine <span class="keyword">AS</span> builder
+WORKDIR /app
+COPY package*.json .
+RUN npm ci
+COPY . .
+RUN npm run build
+
+<span class="keyword">FROM</span> node:20-alpine <span class="keyword">AS</span> runner
+WORKDIR /app
+COPY --from=builder /app/.next/standalone .
+EXPOSE 3000
+CMD [<span class="string">"node"</span>, <span class="string">"server.js"</span>]
+      </div>
+      <div style="margin-top:1rem; display:flex; gap:.5rem; flex-wrap:wrap;">
+        <span class="badge badge-green">Multi-Stage = klein</span>
+        <span class="badge badge-gold">output: standalone</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- KOSTEN -->
+<section id="kosten">
+  <div class="section-label">Finanzielle Analyse</div>
+  <h2>Kosten-Vergleich: Vercel vs. Hetzner</h2>
+  <p>Der hauptsächliche Vorteil von Variante A liegt bei den Kosten. Hetzner ist deutlich günstiger als Vercel Pro — bei gleicher Funktionalität für TeileniX.</p>
+
+  <div class="cost-grid">
+    <div class="cost-card">
+      <div class="cost-provider" style="color:var(--muted)">Aktuell: Vercel</div>
+      <div class="cost-amount" style="color:var(--red)">$20</div>
+      <div class="cost-period">pro Monat (Vercel Pro)</div>
+      <hr class="divider">
+      <ul class="checklist">
+        <li>Vercel Pro: $20/Monat</li>
+        <li>Supabase Free Tier: $0</li>
+        <li>Domain/DNS: separat</li>
+      </ul>
+      <div style="margin-top:1.25rem; font-family:DM Mono,monospace; font-size:13px; color:var(--muted);">
+        Gesamt: <strong style="color:var(--red)">~$20/Monat</strong>
+      </div>
+    </div>
+
+    <div class="cost-card cheaper">
+      <div class="cost-provider" style="color:var(--green)">Ziel: Hetzner</div>
+      <div class="cost-amount" style="color:var(--green)">€5,52</div>
+      <div class="cost-period">pro Monat (Hetzner CX21)</div>
+      <hr class="divider">
+      <ul class="checklist">
+        <li>Hetzner CX21 (2 vCPU, 4 GB RAM): ~€5,52/Monat</li>
+        <li>Supabase Free Tier: €0</li>
+        <li>Caddy (SSL): kostenlos</li>
+        <li>Domain/DNS: separat (gleich wie vorher)</li>
+      </ul>
+      <div style="margin-top:1.25rem; font-family:DM Mono,monospace; font-size:13px; color:var(--muted);">
+        Gesamt: <strong style="color:var(--green)">~€5,52/Monat</strong>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-wrap" style="margin-top:1.5rem;">
+    <table>
+      <thead>
+        <tr>
+          <th>Szenario</th>
+          <th>Vercel (aktuell)</th>
+          <th class="col-rec">Hetzner Variante A</th>
+          <th>Hetzner Variante B</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Next.js Hosting</td>
+          <td>$20 (Vercel Pro)</td>
+          <td class="col-rec"><strong style="color:var(--green)">€5,52 (CX21)</strong></td>
+          <td>€15–25 (größerer Server)</td>
+        </tr>
+        <tr>
+          <td>Supabase</td>
+          <td>$0 (Free Tier)</td>
+          <td class="col-rec"><strong style="color:var(--green)">$0 (Free Tier bleibt)</strong></td>
+          <td>€0 (Self-Hosted)</td>
+        </tr>
+        <tr>
+          <td>SSL-Zertifikat</td>
+          <td>$0 (Vercel inklusive)</td>
+          <td class="col-rec">$0 (Caddy + Let's Encrypt)</td>
+          <td>$0 (Caddy)</td>
+        </tr>
+        <tr>
+          <td>Monitoring</td>
+          <td>$0 (Vercel Dashboard)</td>
+          <td class="col-rec">$0–5 (selbst, optional Grafana)</td>
+          <td>$0–5</td>
+        </tr>
+        <tr>
+          <td>Gesamt / Monat</td>
+          <td><strong style="color:var(--red)">~$20</strong></td>
+          <td class="col-rec"><strong style="color:var(--green)">~€5,52</strong></td>
+          <td>~€15–30</td>
+        </tr>
+        <tr>
+          <td>Ersparnis vs. Vercel</td>
+          <td>—</td>
+          <td class="col-rec"><strong style="color:var(--green)">~$14/Monat = ~$168/Jahr</strong></td>
+          <td>~$5/Monat</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="margin-top:1.5rem; background:var(--surface2); border:1px solid var(--border); border-radius:var(--r); padding:1.5rem;">
+    <p style="font-size:13px; margin-bottom:0;">
+      <strong style="color:var(--gold)">Hetzner CX21</strong> bietet 2 vCPUs (Intel), 4 GB RAM, 40 GB SSD und 20 TB Traffic für ~€5,52/Monat. Für eine Next.js App mit moderatem Traffic ist das deutlich überdimensioniert — ein CX11 (2 GB RAM, ~€3,29) reicht ebenfalls.
+      Supabase Free Tier unterstützt bis zu 50.000 Datenbankzeilen, 50 MB Storage und 500 MB Datenbankspeicher kostenlos.
+    </p>
+  </div>
+</section>
+
+<!-- RISIKEN -->
+<section id="risiken">
+  <div class="section-label">Einschränkungen & Risiken</div>
+  <h2>Was man wissen muss</h2>
+  <p>Hetzner ist keine Drop-in-Replacement für Vercel. Diese Einschränkungen sind real und sollten vor der Migration bewusst abgewogen werden.</p>
+
+  <div style="margin-bottom:2rem;">
+    <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1rem; flex-wrap:wrap;">
+      <h3 style="font-size:1.15rem;">Kein Edge Network</h3>
+      <span class="badge badge-muted">Performance</span>
+    </div>
+    <p>Vercel liefert Inhalte von über 70 Edge-Standorten weltweit aus — der TTFB liegt bei 50–100ms. Hetzner hat einen Standort (Frankfurt oder Nürnberg). Für europäische Nutzer ist der Unterschied minimal, für andere Kontinente deutlicher. Für TeileniX — eine App hauptsächlich für deutsche Familien — ist das praktisch irrelevant.</p>
+    <div class="detail-grid">
+      <div class="detail-card">
+        <h4 style="color:var(--amber)">Auswirkung in der Praxis</h4>
+        <ul class="pro-con cons">
+          <li>TTFB steigt von ~80ms auf ~150ms für deutsche Nutzer</li>
+          <li>Internationale Nutzer (USA, Asien) spüren mehr Latenz</li>
+          <li>Static Assets (JS, CSS) sollten über ein CDN (Cloudflare) ausgeliefert werden</li>
+        </ul>
+      </div>
+      <div class="detail-card">
+        <h4 style="color:var(--green)">Milderung</h4>
+        <ul class="pro-con pros">
+          <li>Cloudflare Proxy vor Hetzner (kostenlos) gibt CDN für Static Assets</li>
+          <li>Next.js output: standalone baut optimierten Server</li>
+          <li>Für TeileniX-Nutzerschaft (DE/AT/CH): kein relevanter Unterschied</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-bottom:2rem;">
+    <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1rem; flex-wrap:wrap;">
+      <h3 style="font-size:1.15rem;">Keine automatischen Preview Deployments</h3>
+      <span class="badge badge-muted">Developer Experience</span>
+    </div>
+    <p>Bei Vercel bekommt jeder Pull Request automatisch eine Preview-URL. Das ist enorm praktisch für Reviews. Auf Hetzner muss das selbst gebaut werden — z.B. über einen staging-Branch, der auf einen zweiten Docker-Container deployed wird.</p>
+    <div class="detail-grid">
+      <div class="detail-card">
+        <h4 style="color:var(--amber)">Was fehlt</h4>
+        <ul class="pro-con cons">
+          <li>Kein automatisches Preview-Deployment für jeden PR</li>
+          <li>Kein Vercel-Kommentar im PR mit der Preview-URL</li>
+          <li>Reviewer müssen Code lokal auschecken zum Testen</li>
+        </ul>
+      </div>
+      <div class="detail-card">
+        <h4 style="color:var(--green)">Alternativen</h4>
+        <ul class="pro-con pros">
+          <li>Staging-Environment auf demselben Server (Docker, anderer Port)</li>
+          <li>GitHub Actions deployt staging-Branch automatisch</li>
+          <li>Für 2-Personen-Team meist ausreichend</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1rem; flex-wrap:wrap;">
+      <h3 style="font-size:1.15rem;">Wartungsaufwand</h3>
+      <span class="badge badge-muted">Operations</span>
+    </div>
+    <p>Ein selbstverwalteter Server braucht gelegentliche Aufmerksamkeit: OS-Updates, Docker-Updates, Monitoring auf Ressourcenverbrauch. Das ist bei einem kleinen Projekt überschaubar — aber es ist nicht null.</p>
+    <div class="detail-grid">
+      <div class="detail-card">
+        <h4 style="color:var(--amber)">Aufgaben</h4>
+        <ul class="pro-con cons">
+          <li>Monatlich: apt upgrade auf dem Server</li>
+          <li>Docker-Images aktuell halten (Security-Patches)</li>
+          <li>Festplattennutzung und RAM überwachen</li>
+          <li>Backup-Strategie für den Server (Hetzner Snapshots: ~€0,01/GB)</li>
+        </ul>
+      </div>
+      <div class="detail-card">
+        <h4 style="color:var(--green)">Aufwand in der Praxis</h4>
+        <ul class="pro-con pros">
+          <li>Realistisch: ~15–30 Minuten pro Monat</li>
+          <li>Hetzner bietet automatische OS-Updates (unattended-upgrades)</li>
+          <li>Docker Watchtower kann Container automatisch updaten</li>
+          <li>Hetzner Backups: täglich automatisch konfigurierbar</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ROADMAP -->
+<section id="roadmap">
+  <div class="section-label">Umsetzungsplan</div>
+  <h2>Roadmap: Von Vercel zu Hetzner</h2>
+  <p>Schritt für Schritt zur Migration — zuerst alles auf Hetzner zum Laufen bringen, dann erst DNS umziehen. Kein Downtime-Risiko durch diesen Ansatz.</p>
+
+  <div class="roadmap">
+    <div class="roadmap-step">
+      <div class="step-dot">1</div>
+      <div class="step-content">
+        <h4>Hetzner Server einrichten <span class="effort effort-low">~30 Min</span></h4>
+        <p>Server im Hetzner Cloud Dashboard auswählen (CX21 empfohlen: 2 vCPU, 4 GB RAM, Ubuntu 22.04). SSH-Key hinterlegen. Server erstellen. Erstes Login via SSH, System updaten: <code style="font-family:DM Mono;font-size:11px;color:var(--blue)">apt update && apt upgrade -y</code>. Deploy-User anlegen.</p>
+      </div>
+    </div>
+
+    <div class="roadmap-step">
+      <div class="step-dot">2</div>
+      <div class="step-content">
+        <h4>Docker + Docker Compose installieren <span class="effort effort-low">~15 Min</span></h4>
+        <p>Docker über das offizielle Skript installieren: <code style="font-family:DM Mono;font-size:11px;color:var(--blue)">curl -fsSL https://get.docker.com | sh</code>. Docker Compose v2 ist ab Docker 23 inklusive. Deploy-User zur docker-Gruppe hinzufügen. Docker-Daemon testen mit <code style="font-family:DM Mono;font-size:11px;color:var(--blue)">docker run hello-world</code>.</p>
+      </div>
+    </div>
+
+    <div class="roadmap-step">
+      <div class="step-dot">3</div>
+      <div class="step-content">
+        <h4>Caddy als Reverse Proxy einrichten <span class="effort effort-low">~20 Min</span></h4>
+        <p>Caddy als Docker-Container (oder apt-Paket) installieren. Caddyfile mit Domain und Reverse-Proxy-Regel anlegen. Ports 80 und 443 in Hetzner Firewall öffnen. Caddy starten — SSL-Zertifikat wird automatisch via Let's Encrypt angefragt.</p>
+      </div>
+    </div>
+
+    <div class="roadmap-step">
+      <div class="step-dot">4</div>
+      <div class="step-content">
+        <h4>Dockerfile + docker-compose.yml erstellen <span class="effort effort-low">~1h</span></h4>
+        <p>Multi-Stage Dockerfile für Next.js im Repo anlegen. <code style="font-family:DM Mono;font-size:11px;color:var(--blue)">output: 'standalone'</code> in next.config.ts aktivieren (erzeugt minimales Server-Bundle). docker-compose.yml mit korrekten Port-Mappings und env_file. Lokal testen: <code style="font-family:DM Mono;font-size:11px;color:var(--blue)">docker compose up --build</code>.</p>
+      </div>
+    </div>
+
+    <div class="roadmap-step">
+      <div class="step-dot">5</div>
+      <div class="step-content">
+        <h4>GitHub Actions Workflow anlegen <span class="effort effort-medium">~2h</span></h4>
+        <p>Workflow-Datei <code style="font-family:DM Mono;font-size:11px;color:var(--blue)">.github/workflows/deploy.yml</code> erstellen. SSH-Private-Key als GitHub Secret hinterlegen. Workflow: checkout → build Docker Image → SSH zum Server → pull + rebuild. Ersten manuellen Deploy-Test durchführen.</p>
+      </div>
+    </div>
+
+    <div class="roadmap-step">
+      <div class="step-dot">6</div>
+      <div class="step-content">
+        <h4>Environment Variables auf Server konfigurieren <span class="effort effort-low">~15 Min</span></h4>
+        <p>.env.production-Datei auf dem Server anlegen (nie im Git!). Alle Supabase-Keys aus der lokalen .env.local kopieren. Docker Compose referenziert die Datei via <code style="font-family:DM Mono;font-size:11px;color:var(--blue)">env_file</code>. Berechtigungen auf 600 setzen. App neu starten und testen.</p>
+      </div>
+    </div>
+
+    <div class="roadmap-step">
+      <div class="step-dot">7</div>
+      <div class="step-content">
+        <h4>App auf Hetzner testen (vor DNS-Umzug) <span class="effort effort-low">~1h</span></h4>
+        <p>App über die Hetzner-IP oder einen Testdomain-A-Record testen. Auth-Flow mit Supabase prüfen (Redirect-URLs müssen ggf. in Supabase erweitert werden). Realtime-Funktionen testen. Performance checken. Erst wenn alles funktioniert: DNS umziehen.</p>
+      </div>
+    </div>
+
+    <div class="roadmap-step">
+      <div class="step-dot">8</div>
+      <div class="step-content">
+        <h4>DNS auf Hetzner umziehen <span class="effort effort-low">~5 Min</span></h4>
+        <p>TTL beim Domainprovider auf 300 Sekunden (5 Minuten) reduzieren — mindestens 24h vorher. A-Record von Vercel-IP auf Hetzner-IP ändern. Propagation abwarten. App über die echte Domain testen. Vercel-Deployment kann danach abgekündigt werden.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="matrix-grid" style="margin-top:3rem;">
+    <div class="matrix-cell matrix-highlight">
+      <h4>Wann Variante A wählen</h4>
+      <p>Wenn das Ziel primär Kostensenkung ist, Supabase reibungslos funktioniert und kein massiver Skalierungsbedarf besteht. Beste Wahl für TeileniX in der aktuellen Phase.</p>
+    </div>
+    <div class="matrix-cell">
+      <h4>Wann Variante B erwägen</h4>
+      <p>Wenn vollständige Datenkontrolle (DSGVO, Unternehmensrichtlinien) nötig ist oder Supabase zu teuer wird (Pro Plan bei wachsenden Datenmengen). Für ein privates Hobbyprojekt nicht empfohlen.</p>
+    </div>
+    <div class="matrix-cell">
+      <h4>Wann bei Vercel bleiben</h4>
+      <p>Wenn Preview Deployments täglich genutzt werden, Edge-Performance kritisch ist oder die Entwicklungszeit wichtiger ist als die $20/Monat. Vercel ist objektiv bequemer.</p>
+    </div>
+    <div class="matrix-cell matrix-highlight">
+      <h4>Rollback-Strategie</h4>
+      <p>Vercel-Deployment nicht sofort löschen — erst 2–4 Wochen auf Hetzner beobachten. Bei Problemen einfach DNS zurückzeigen lassen. Supabase ist unverändert, kein Datenverlustrisiko.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  TeileniX Hetzner-Migrations-Konzept · Erstellt April 2026 · Next.js + Supabase + Hetzner + Docker
+</footer>
+
+<script>
+// Staggered animation for cards
+const cards = document.querySelectorAll('.variant-card, .stat-card, .tech-card, .cost-card');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) {
+      entry.target.style.animationDelay = (i * 0.08) + 's';
+      entry.target.style.opacity = '1';
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.1 });
+
+cards.forEach(card => {
+  card.style.opacity = '0';
+  observer.observe(card);
+});
+
+// Active nav highlight on scroll
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('nav a[href^="#"]');
+
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => {
+    if (window.scrollY >= s.offsetTop - 80) current = s.id;
+  });
+  navLinks.forEach(a => {
+    a.style.color = a.getAttribute('href') === '#' + current ? 'var(--text)' : '';
+    a.style.borderBottomColor = a.getAttribute('href') === '#' + current ? 'var(--gold)' : 'transparent';
+  });
+});
+</script>
+</body>
+</html>

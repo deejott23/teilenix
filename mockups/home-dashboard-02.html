@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=390, initial-scale=1">
+<title>Trip Dashboard – Focus Cards</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f4f1ed; color: #1a1612; max-width: 390px; margin: 0 auto; min-height: 100vh; }
+
+  :root {
+    --primary: #1b5c58;
+    --primary-light: rgba(27,92,88,0.10);
+    --amber: #c47a1e;
+    --amber-light: #fef3e2;
+    --green: #2d7a4f;
+    --green-light: #f0faf4;
+    --red: #c0392b;
+    --muted: #f0ece7;
+    --muted-fg: #8a7f74;
+    --border: #e5dfd8;
+    --card: #ffffff;
+    --fg: #1a1612;
+    --bg: #f4f1ed;
+  }
+
+  /* ── Header ── */
+  .header {
+    background: linear-gradient(150deg, #1b5c58 0%, #134844 100%);
+    padding: 52px 16px 20px;
+    display: flex; align-items: flex-start; gap: 10px;
+  }
+  .header-back { width:32px; height:32px; border-radius:10px; background:rgba(255,255,255,0.15); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; margin-top:2px; }
+  .header-back svg { width:16px; height:16px; stroke:#fff; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+  .header-info { flex:1; }
+  .header-label { font-size:11px; color:rgba(255,255,255,0.55); font-weight:600; letter-spacing:.05em; text-transform:uppercase; margin-bottom:2px; }
+  .header-title { font-size:22px; font-weight:800; color:#fff; line-height:1.1; }
+  .header-meta { font-size:12px; color:rgba(255,255,255,0.65); font-weight:500; margin-top:4px; }
+  .header-gear { width:32px; height:32px; border-radius:10px; background:rgba(255,255,255,0.15); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; margin-top:2px; }
+  .header-gear svg { width:16px; height:16px; stroke:#fff; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+
+  /* ── Content ── */
+  .content { padding: 16px 14px 100px; display: flex; flex-direction: column; gap: 12px; }
+
+  /* ── Hero Status Card ── */
+  .hero-card {
+    background: linear-gradient(150deg, #1b5c58 0%, #134844 100%);
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 4px 20px rgba(27,92,88,.25);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-card::after {
+    content: '';
+    position: absolute;
+    top: -30px; right: -30px;
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+    pointer-events: none;
+  }
+  .hero-eyebrow { font-size: 11px; color: rgba(255,255,255,0.6); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 8px; }
+  .hero-balance { font-size: 36px; font-weight: 900; color: #fff; letter-spacing: -1px; line-height: 1; margin-bottom: 6px; }
+  .hero-balance span { font-size: 20px; font-weight: 700; opacity: .7; margin-right: 2px; }
+  .hero-sub { font-size: 12px; color: rgba(255,255,255,0.6); margin-bottom: 16px; line-height: 1.4; }
+  .hero-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+  .hero-pill { padding: 5px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,.2); white-space: nowrap; }
+  .hero-pill.highlight { background: rgba(255,255,255,0.22); border-color: rgba(255,255,255,.35); }
+
+  /* ── Card base ── */
+  .card { background: var(--card); border-radius: 18px; box-shadow: 0 1px 3px rgba(26,22,18,.05), 0 2px 10px rgba(26,22,18,.07); border: 1px solid var(--border); overflow: hidden; }
+
+  .card-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px 10px; }
+  .card-title { font-size: 14px; font-weight: 800; color: var(--fg); }
+  .card-title-icon { margin-right: 4px; }
+  .card-link { font-size: 12px; font-weight: 700; color: var(--primary); text-decoration: none; display: flex; align-items: center; gap: 2px; }
+  .card-link svg { width: 12px; height: 12px; stroke: var(--primary); fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* ── Ausflüge Card ── */
+  .trip-list { padding: 0 16px; display: flex; flex-direction: column; gap: 0; }
+  .trip-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-top: 1px solid var(--border); }
+  .trip-emoji { font-size: 22px; width: 38px; height: 38px; background: var(--muted); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .trip-info { flex: 1; }
+  .trip-name { font-size: 13px; font-weight: 700; color: var(--fg); margin-bottom: 2px; }
+  .trip-meta { font-size: 11px; color: var(--muted-fg); }
+  .trip-badge { padding: 3px 8px; border-radius: 20px; font-size: 10px; font-weight: 700; background: var(--green-light); color: var(--green); border: 1px solid rgba(45,122,79,.15); white-space: nowrap; }
+
+  .vote-hint { margin: 10px 16px 14px; padding: 10px 12px; background: var(--amber-light); border-radius: 12px; border: 1px solid rgba(196,122,30,.15); display: flex; align-items: center; gap: 8px; cursor: pointer; }
+  .vote-hint-text { font-size: 12px; color: var(--amber); font-weight: 700; flex: 1; }
+  .vote-hint svg { width: 14px; height: 14px; stroke: var(--amber); fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* ── Split Card (Packliste + Einkauf) ── */
+  .split-card { display: flex; gap: 10px; }
+  .split-half { flex: 1; background: var(--card); border-radius: 18px; box-shadow: 0 1px 3px rgba(26,22,18,.05), 0 2px 10px rgba(26,22,18,.07); border: 1px solid var(--border); padding: 14px; cursor: pointer; text-decoration: none; display: block; }
+  .split-half:active { opacity: .85; }
+  .split-icon { font-size: 22px; margin-bottom: 8px; }
+  .split-label { font-size: 11px; font-weight: 700; color: var(--muted-fg); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 4px; }
+  .split-value { font-size: 20px; font-weight: 900; color: var(--fg); letter-spacing: -.5px; margin-bottom: 8px; }
+  .progress-track { height: 5px; background: var(--muted); border-radius: 10px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 10px; background: var(--primary); }
+  .progress-fill.amber { background: var(--amber); }
+  .split-sub { font-size: 10px; color: var(--muted-fg); font-weight: 600; margin-top: 5px; }
+
+  /* ── Ausgaben Card ── */
+  .expense-list { padding: 0 16px; display: flex; flex-direction: column; gap: 0; }
+  .expense-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-top: 1px solid var(--border); }
+  .expense-avatar { width: 30px; height: 30px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: #fff; flex-shrink: 0; }
+  .av-anna { background: linear-gradient(135deg,#67c6f3,#1b5c58); }
+  .av-max  { background: linear-gradient(135deg,#a8d5b5,#2d7a4f); }
+  .av-tom  { background: linear-gradient(135deg,#f6c96a,#c47a1e); }
+  .expense-info { flex: 1; }
+  .expense-name { font-size: 13px; font-weight: 700; color: var(--fg); }
+  .expense-meta { font-size: 11px; color: var(--muted-fg); margin-top: 1px; }
+  .expense-amount { font-size: 14px; font-weight: 800; color: var(--fg); }
+
+  .bars-section { padding: 12px 16px 16px; border-top: 1px solid var(--border); margin-top: 2px; }
+  .bars-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; color: var(--muted-fg); margin-bottom: 10px; }
+  .bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
+  .bar-row:last-child { margin-bottom: 0; }
+  .bar-name { font-size: 11px; font-weight: 700; color: var(--fg); width: 36px; flex-shrink: 0; }
+  .bar-track { flex: 1; height: 8px; background: var(--muted); border-radius: 10px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 10px; }
+  .bar-fill.anna { background: linear-gradient(90deg,#67c6f3,#1b5c58); width: 65%; }
+  .bar-fill.max  { background: linear-gradient(90deg,#a8d5b5,#2d7a4f); width: 82%; }
+  .bar-fill.tom  { background: linear-gradient(90deg,#f6c96a,#c47a1e); width: 48%; }
+  .bar-val { font-size: 11px; font-weight: 700; color: var(--fg); width: 44px; text-align: right; flex-shrink: 0; }
+
+  /* ── Bottom Nav ── */
+  .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 390px; background: #fff; border-top: 1px solid var(--border); display: flex; padding: 8px 0 20px; z-index: 100; box-shadow: 0 -1px 0 rgba(0,0,0,.04); }
+  .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; text-decoration: none; padding: 4px 0; }
+  .nav-item svg { width: 22px; height: 22px; stroke: var(--muted-fg); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .nav-item.active svg { stroke: var(--primary); }
+  .nav-label { font-size: 10px; font-weight: 600; color: var(--muted-fg); }
+  .nav-item.active .nav-label { color: var(--primary); }
+  .nav-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--primary); margin-top: -2px; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <a href="#" class="header-back">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+  </a>
+  <div class="header-info">
+    <div class="header-label">Meine Reise</div>
+    <div class="header-title">Toskana 2025</div>
+    <div class="header-meta">14.–21. Juli · 9 Personen</div>
+  </div>
+  <a href="#" class="header-gear">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+  </a>
+</div>
+
+<!-- Content -->
+<div class="content">
+
+  <!-- Hero Status -->
+  <div class="hero-card">
+    <div class="hero-eyebrow">Dein Stand heute</div>
+    <div class="hero-balance"><span>+</span>12,50 €</div>
+    <div class="hero-sub">von 1.847,50 € Gesamtausgaben · 18 Buchungen</div>
+    <div class="hero-pills">
+      <div class="hero-pill highlight">3× bekomme ich</div>
+      <div class="hero-pill">0× schulde ich</div>
+      <div class="hero-pill">6 offen</div>
+    </div>
+  </div>
+
+  <!-- Ausflüge Card -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title"><span class="card-title-icon">✈️</span> Ausflüge · 5 gesamt</div>
+      <a href="#" class="card-link">Alle <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></a>
+    </div>
+    <div class="trip-list">
+      <div class="trip-row">
+        <div class="trip-emoji">⛵</div>
+        <div class="trip-info">
+          <div class="trip-name">Bootstour nach Capri</div>
+          <div class="trip-meta">Di 15. Juli · 9 Personen</div>
+        </div>
+        <div class="trip-badge">✓ 9/9 dabei</div>
+      </div>
+      <div class="trip-row">
+        <div class="trip-emoji">🏛️</div>
+        <div class="trip-info">
+          <div class="trip-name">Pompeii</div>
+          <div class="trip-meta">Fr 18. Juli · 7 Personen</div>
+        </div>
+        <div class="trip-badge">✓ 7/9 dabei</div>
+      </div>
+    </div>
+    <a href="#" class="vote-hint">
+      <div class="vote-hint-text">💡 3 Ideen warten auf deine Stimme</div>
+      <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+    </a>
+  </div>
+
+  <!-- Split Card: Packliste + Einkauf -->
+  <div class="split-card">
+    <a href="#" class="split-half">
+      <div class="split-icon">🎒</div>
+      <div class="split-label">Packliste</div>
+      <div class="split-value">8/14</div>
+      <div class="progress-track">
+        <div class="progress-fill" style="width:57%"></div>
+      </div>
+      <div class="split-sub">57 % erledigt</div>
+    </a>
+    <a href="#" class="split-half">
+      <div class="split-icon">🛒</div>
+      <div class="split-label">Einkauf</div>
+      <div class="split-value">6</div>
+      <div class="progress-track">
+        <div class="progress-fill amber" style="width:100%"></div>
+      </div>
+      <div class="split-sub">Artikel noch offen</div>
+    </a>
+  </div>
+
+  <!-- Ausgaben Card -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Letzte Ausgaben</div>
+      <a href="#" class="card-link">Alle 18 <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></a>
+    </div>
+    <div class="expense-list">
+      <div class="expense-row">
+        <div class="expense-avatar av-anna">A</div>
+        <div class="expense-info">
+          <div class="expense-name">Bootstickets</div>
+          <div class="expense-meta">Anna · vor 2 Stunden</div>
+        </div>
+        <div class="expense-amount">140,00 €</div>
+      </div>
+      <div class="expense-row">
+        <div class="expense-avatar av-max">M</div>
+        <div class="expense-info">
+          <div class="expense-name">Abendessen Siena</div>
+          <div class="expense-meta">Max · gestern</div>
+        </div>
+        <div class="expense-amount">87,50 €</div>
+      </div>
+      <div class="expense-row">
+        <div class="expense-avatar av-tom">T</div>
+        <div class="expense-info">
+          <div class="expense-name">Pompeii Eintritt</div>
+          <div class="expense-meta">Tom · vor 2 Tagen</div>
+        </div>
+        <div class="expense-amount">126,00 €</div>
+      </div>
+    </div>
+    <div class="bars-section">
+      <div class="bars-label">Wer hat wie viel bezahlt</div>
+      <div class="bar-row">
+        <div class="bar-name">Max</div>
+        <div class="bar-track"><div class="bar-fill max"></div></div>
+        <div class="bar-val">624 €</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-name">Anna</div>
+        <div class="bar-track"><div class="bar-fill anna"></div></div>
+        <div class="bar-val">497 €</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-name">Tom</div>
+        <div class="bar-track"><div class="bar-fill tom"></div></div>
+        <div class="bar-val">365 €</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Bottom Nav -->
+<nav class="bottom-nav">
+  <a href="#" class="nav-item active">
+    <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span class="nav-label">Home</span>
+    <div class="nav-dot"></div>
+  </a>
+  <a href="#" class="nav-item">
+    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    <span class="nav-label">Planen</span>
+  </a>
+  <a href="#" class="nav-item">
+    <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+    <span class="nav-label">Listen</span>
+  </a>
+  <a href="#" class="nav-item">
+    <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    <span class="nav-label">Gruppe</span>
+  </a>
+  <a href="#" class="nav-item">
+    <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+    <span class="nav-label">Geld</span>
+  </a>
+</nav>
+
+</body>
+</html>
