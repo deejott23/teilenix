@@ -163,6 +163,7 @@ export type Activity = {
   title: string
   activity_type: ActivityType
   description: string | null
+  link: string | null
   activity_date: string | null
   departure_time: string | null
   duration_label: string | null
@@ -172,6 +173,15 @@ export type Activity = {
   cover_emoji: string | null
   created_at: string
   updated_at: string
+}
+
+export type ActivityComment = {
+  id: string
+  activity_id: string
+  participant_id: string
+  content: string
+  created_at: string
+  participant_name: string
 }
 
 export type ActivityVote = {
@@ -185,5 +195,6 @@ export type ActivityVote = {
 export type ActivityWithVotes = Activity & {
   votes: ActivityVote[]
   creator_name: string
+  comment_count?: number
 }
 

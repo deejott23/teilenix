@@ -44,11 +44,12 @@ export default function AddActivitySheet({
   const [title, setTitle] = useState('')
   const [activityType, setActivityType] = useState<ActivityType>('activity')
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
+  const [description, setDescription] = useState('')
+  const [link, setLink] = useState('')
   const [departureTime, setDepartureTime] = useState('')
   const [durationLabel, setDurationLabel] = useState<string | null>(null)
   const [meetingPoint, setMeetingPoint] = useState('')
   const [costEuros, setCostEuros] = useState('')
-  const [description, setDescription] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [showDetails, setShowDetails] = useState(false)
 
@@ -64,11 +65,12 @@ export default function AddActivitySheet({
         title: title.trim(),
         activity_type: activityType,
         activity_date: selectedDate,
+        description: description.trim() || null,
+        link: link.trim() || null,
         departure_time: departureTime || null,
         duration_label: durationLabel,
         meeting_point: meetingPoint.trim() || null,
         cost_per_person_cents: costCents && !isNaN(costCents) ? costCents : null,
-        description: description.trim() || null,
       })
       onClose()
     } finally {
@@ -186,6 +188,35 @@ export default function AddActivitySheet({
             </div>
           )}
 
+          {/* Description */}
+          <div>
+            <label className="block text-[12px] font-bold text-muted-foreground mb-1.5 uppercase tracking-wide">
+              Beschreibung
+            </label>
+            <textarea
+              value={description}
+              onChange={e => setDescription(e.target.value)}
+              placeholder="Was ist geplant? Warum sollten alle mitmachen? 😄"
+              rows={2}
+              maxLength={500}
+              className="w-full px-3.5 py-2.5 rounded-[12px] bg-muted border border-transparent focus:outline-none focus:ring-2 focus:ring-primary text-[14px] placeholder:text-muted-foreground/60 resize-none"
+            />
+          </div>
+
+          {/* Link */}
+          <div>
+            <label className="block text-[12px] font-bold text-muted-foreground mb-1.5 uppercase tracking-wide">
+              Link (optional)
+            </label>
+            <input
+              type="url"
+              value={link}
+              onChange={e => setLink(e.target.value)}
+              placeholder="https://..."
+              className="w-full px-3.5 py-2.5 rounded-[12px] bg-muted border border-transparent focus:outline-none focus:ring-2 focus:ring-primary text-[14px] placeholder:text-muted-foreground/60"
+            />
+          </div>
+
           {/* Optional fields toggle */}
           <button
             type="button"
@@ -267,20 +298,6 @@ export default function AddActivitySheet({
                     className="w-full pl-8 pr-3.5 py-2.5 rounded-[12px] bg-muted border border-transparent focus:outline-none focus:ring-2 focus:ring-primary text-[14px] placeholder:text-muted-foreground/60"
                   />
                 </div>
-              </div>
-
-              {/* Description */}
-              <div>
-                <label className="block text-[12px] font-bold text-muted-foreground mb-1.5 uppercase tracking-wide">
-                  Beschreibung
-                </label>
-                <textarea
-                  value={description}
-                  onChange={e => setDescription(e.target.value)}
-                  placeholder="Was ist geplant? Warum sollten alle mitmachen? 😄"
-                  rows={3}
-                  className="w-full px-3.5 py-2.5 rounded-[12px] bg-muted border border-transparent focus:outline-none focus:ring-2 focus:ring-primary text-[14px] placeholder:text-muted-foreground/60 resize-none"
-                />
               </div>
             </div>
           )}

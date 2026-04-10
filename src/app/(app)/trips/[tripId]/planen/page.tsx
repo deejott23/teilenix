@@ -26,9 +26,19 @@ export default async function PlanenPage({ params }: { params: Promise<{ tripId:
   const participantMap = new Map(participants.map(p => [p.id, p]))
 
   const activityIds = (activitiesRaw ?? []).map((a: { id: string }) => a.id)
-  const { data: votesRaw } = activityIds.length > 0
-    ? await db.from('trip_activity_votes').select('*').in('activity_id', activityIds)
-    : { data: [] }
+  const [{ data: votesRaw }, { data: commentCountsRaw }] = await Promise.all([
+    activityIds.length > 0
+      ? db.from('trip_activity_votes').select('*').in('activity_id', activityIds)
+      : { data: [] },
+    activityIds.length > 0
+      ? db.from('trip_activity_comments').select('activity_id').in('activity_id', activityIds)
+      : { data: [] },
+  ])
+
+  const commentCountMap: Record<string, number> = {}
+  for (const row of (commentCountsRaw ?? [])) {
+    commentCountMap[row.activity_id] = (commentCountMap[row.activity_id] ?? 0) + 1
+  }
 
   const me = participants.find(p => p.user_id === user.id && !p.is_group)
   const myParticipantId = me?.id ?? ''
@@ -37,6 +47,7 @@ export default async function PlanenPage({ params }: { params: Promise<{ tripId:
     ...raw,
     votes: (votesRaw ?? []).filter((v: { activity_id: string }) => v.activity_id === raw.id),
     creator_name: participantMap.get(raw.created_by_participant_id as string)?.name ?? 'Unbekannt',
+    comment_count: commentCountMap[raw.id as string] ?? 0,
   })) as ActivityWithVotes[]
 
   return (

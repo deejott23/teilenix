@@ -6,6 +6,7 @@ const schema = z.object({
   title: z.string().min(1).max(120),
   activity_type: z.enum(['activity','boat','food','culture','swimming','shopping','other']).default('activity'),
   description: z.string().optional().nullable(),
+  link: z.string().url().optional().nullable().or(z.literal('')),
   activity_date: z.string().optional().nullable(),
   departure_time: z.string().optional().nullable(),
   duration_label: z.string().optional().nullable(),
@@ -30,11 +31,28 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ trip
     .order('created_at', { ascending: true })
 
   const activityIds = (activities ?? []).map((a: { id: string }) => a.id)
-  const { data: votes } = activityIds.length > 0
-    ? await db.from('trip_activity_votes').select('*').in('activity_id', activityIds)
-    : { data: [] }
 
-  return NextResponse.json({ activities: activities ?? [], votes: votes ?? [] })
+  const [{ data: votes }, { data: commentCounts }] = await Promise.all([
+    activityIds.length > 0
+      ? db.from('trip_activity_votes').select('*').in('activity_id', activityIds)
+      : { data: [] },
+    activityIds.length > 0
+      ? db.from('trip_activity_comments').select('activity_id').in('activity_id', activityIds)
+      : { data: [] },
+  ])
+
+  // Aggregate comment counts per activity
+  const countMap: Record<string, number> = {}
+  for (const row of (commentCounts ?? [])) {
+    countMap[row.activity_id] = (countMap[row.activity_id] ?? 0) + 1
+  }
+
+  const activitiesWithCounts = (activities ?? []).map((a: { id: string }) => ({
+    ...a,
+    comment_count: countMap[a.id] ?? 0,
+  }))
+
+  return NextResponse.json({ activities: activitiesWithCounts, votes: votes ?? [] })
 }
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ tripId: string }> }) {
@@ -57,12 +75,18 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ tri
 
   if (!participant) return NextResponse.json({ error: 'Not a participant' }, { status: 403 })
 
+  // Normalize empty link to null
+  const insertData = {
+    ...parsed.data,
+    link: parsed.data.link || null,
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const db = supabase as any
   const { data, error } = await db.from('trip_activities').insert({
     trip_id: tripId,
     created_by_participant_id: participant.id,
-    ...parsed.data,
+    ...insertData,
   }).select().single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })

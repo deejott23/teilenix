@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Essenliste – Zettelwand</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #2a2a2a;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    padding: 24px 0 40px;
+  }
+
+  .phone {
+    width: 390px;
+    min-height: 844px;
+    background: #1a1a1a;
+    border-radius: 50px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.08);
+  }
+
+  .screen {
+    width: 100%;
+    height: 100%;
+    background: #d4c5a9;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+
+  /* ── Header ── */
+  .header {
+    background: linear-gradient(135deg, #1b5c58 0%, #2d7a74 60%, #1b5c58 100%);
+    padding: 52px 20px 18px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+  }
+
+  .header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 4px;
+  }
+
+  .header-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -0.3px;
+  }
+
+  .header-subtitle {
+    font-size: 13px;
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 16px;
+  }
+
+  .header-meta {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .badge-count {
+    background: rgba(255,255,255,0.18);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+
+  /* ── Tabs ── */
+  .tabs {
+    display: flex;
+    gap: 8px;
+    padding: 0 20px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    background: linear-gradient(135deg, #1b5c58 0%, #2d7a74 100%);
+    padding-bottom: 14px;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+
+  .tab {
+    flex-shrink: 0;
+    padding: 7px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.65);
+    background: rgba(255,255,255,0.12);
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .tab.active {
+    background: #fff;
+    color: #1b5c58;
+  }
+
+  /* ── Cork Board ── */
+  .corkboard {
+    flex: 1;
+    background-color: #c8b89a;
+    background-image:
+      radial-gradient(ellipse at 20% 30%, rgba(160,140,110,0.4) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 70%, rgba(180,160,130,0.3) 0%, transparent 40%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Ccircle cx='1' cy='1' r='0.6' fill='rgba(100,80,50,0.12)'/%3E%3C/svg%3E");
+    padding: 20px 12px 100px;
+    min-height: 600px;
+    position: relative;
+  }
+
+  /* ── Section Label ── */
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #7a6a55;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 4px 8px 12px;
+  }
+
+  /* ── Zettel Grid ── */
+  .zettel-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    padding: 0 4px;
+  }
+
+  /* ── Sticky Note ── */
+  .zettel {
+    border-radius: 4px;
+    padding: 14px 12px 12px;
+    box-shadow: 3px 5px 12px rgba(0,0,0,0.22), 0 1px 3px rgba(0,0,0,0.15);
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    min-height: 150px;
+    display: flex;
+    flex-direction: column;
+    margin: 6px;
+  }
+
+  .zettel:hover {
+    transform: scale(1.04) rotate(0deg) !important;
+    box-shadow: 6px 10px 20px rgba(0,0,0,0.3);
+    z-index: 10;
+  }
+
+  /* Colors per person */
+  .zettel-yellow  { background: #fff9c4; }
+  .zettel-pink    { background: #fce4ec; }
+  .zettel-green   { background: #dcedc8; }
+  .zettel-blue    { background: #e3f2fd; }
+  .zettel-orange  { background: #ffe0b2; }
+  .zettel-lavender{ background: #ede7f6; }
+
+  /* Rotation */
+  .r-neg3 { transform: rotate(-3deg); }
+  .r-neg2 { transform: rotate(-2deg); }
+  .r-neg1 { transform: rotate(-1deg); }
+  .r-pos1 { transform: rotate(1deg); }
+  .r-pos2 { transform: rotate(2deg); }
+  .r-pos3 { transform: rotate(3deg); }
+
+  /* Unvoted pulse */
+  .zettel-unvoted {
+    animation: pulse-glow 2.5s ease-in-out infinite;
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 3px 5px 12px rgba(0,0,0,0.22), 0 0 0 0 rgba(255,165,0,0.4); }
+    50% { box-shadow: 3px 5px 12px rgba(0,0,0,0.22), 0 0 0 6px rgba(255,165,0,0); }
+  }
+
+  /* Pushpin */
+  .pushpin {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 20px;
+    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3));
+  }
+
+  /* Day badge */
+  .day-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: #1b5c58;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 10px;
+  }
+
+  .zettel-emoji {
+    font-size: 28px;
+    margin-bottom: 6px;
+    line-height: 1;
+  }
+
+  .zettel-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #333;
+    line-height: 1.3;
+    margin-bottom: 4px;
+  }
+
+  .zettel-desc {
+    font-size: 11px;
+    color: #666;
+    line-height: 1.4;
+    flex: 1;
+  }
+
+  .zettel-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 10px;
+  }
+
+  .avatar-bubble {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+  }
+
+  .av-teal   { background: #1b5c58; }
+  .av-orange { background: #c47a1e; }
+  .av-pink   { background: #e91e63; }
+  .av-blue   { background: #1565c0; }
+
+  .vote-pill {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    background: rgba(0,0,0,0.08);
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #444;
+  }
+
+  /* ── Wide Zettel (pinned/featured) ── */
+  .zettel-wide {
+    grid-column: span 2;
+    min-height: 100px;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .zettel-wide .zettel-emoji { font-size: 36px; margin-bottom: 0; }
+
+  .zettel-wide-content {
+    flex: 1;
+  }
+
+  .zettel-wide .zettel-name { font-size: 15px; }
+
+  /* ── Separator ── */
+  .separator {
+    height: 2px;
+    background: rgba(100,80,50,0.15);
+    margin: 18px 8px 14px;
+    border-radius: 1px;
+  }
+
+  /* ── FAB ── */
+  .fab {
+    position: fixed;
+    bottom: 88px;
+    right: calc(50% - 195px + 16px);
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    background: #c47a1e;
+    color: #fff;
+    font-size: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 20px rgba(196,122,30,0.5);
+    cursor: pointer;
+    border: none;
+    transition: transform 0.15s;
+    z-index: 200;
+    line-height: 1;
+  }
+  .fab:active { transform: scale(0.92); }
+
+  /* ── Bottom Nav ── */
+  .bottom-nav {
+    position: sticky;
+    bottom: 0;
+    background: rgba(255,255,255,0.97);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid #e5dfd8;
+    height: 72px;
+    display: flex;
+    align-items: flex-start;
+    padding-top: 8px;
+    z-index: 150;
+  }
+
+  .nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    cursor: pointer;
+  }
+
+  .nav-icon { font-size: 22px; line-height: 1; }
+  .nav-label { font-size: 10px; color: #8a7f74; font-weight: 500; }
+  .nav-item.active .nav-label { color: #1b5c58; font-weight: 700; }
+  .nav-item.active .nav-icon { filter: none; }
+
+  /* ── Kochplan Tab ── */
+  .kochplan { display: none; padding: 16px 16px 100px; }
+  .kochplan.visible { display: block; }
+
+  .day-row {
+    background: #fff;
+    border-radius: 14px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    border: 1px solid #e5dfd8;
+  }
+
+  .day-row-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  .day-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1b5c58;
+  }
+
+  .day-date {
+    font-size: 11px;
+    color: #8a7f74;
+  }
+
+  .meal-slot {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    background: #f4f1ed;
+    margin-bottom: 6px;
+  }
+
+  .meal-slot:last-child { margin-bottom: 0; }
+
+  .meal-time {
+    font-size: 10px;
+    color: #8a7f74;
+    font-weight: 600;
+    width: 48px;
+    flex-shrink: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .meal-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #fff;
+    border-radius: 8px;
+    padding: 5px 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    flex: 1;
+  }
+
+  .meal-chip-emoji { font-size: 18px; }
+  .meal-chip-name { font-size: 12px; font-weight: 600; color: #333; }
+
+  .meal-empty {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #8a7f74;
+    font-style: italic;
+  }
+
+  /* ── Einkauf Tab ── */
+  .einkauf { display: none; padding: 16px 16px 100px; }
+  .einkauf.visible { display: block; }
+
+  .shopping-section {
+    background: #fff;
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    border: 1px solid #e5dfd8;
+  }
+
+  .shopping-section-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: #8a7f74;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 10px;
+  }
+
+  .shopping-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 0;
+    border-bottom: 1px solid #f4f1ed;
+  }
+  .shopping-item:last-child { border-bottom: none; }
+
+  .check-circle {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    border: 2px solid #e5dfd8;
+    flex-shrink: 0;
+  }
+  .check-circle.done { background: #1b5c58; border-color: #1b5c58; }
+
+  .shopping-name { font-size: 13px; color: #333; flex: 1; }
+  .shopping-qty { font-size: 12px; color: #8a7f74; }
+
+  /* Tab content switching */
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+  .corkboard.active { display: block; }
+  .kochplan.active { display: block; }
+  .einkauf.active { display: block; }
+</style>
+</head>
+<body>
+
+<div class="phone">
+<div class="screen">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-top">
+      <div class="header-title">🍽️ Essenliste</div>
+      <div style="font-size:20px; cursor:pointer;">⚙️</div>
+    </div>
+    <div class="header-subtitle">Alpentrip 2025 · 6 Personen</div>
+    <div class="header-meta">
+      <div class="badge-count">8 Ideen</div>
+      <div class="badge-count">3 eingeplant</div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('ideen', this)">📌 Ideen</button>
+    <button class="tab" onclick="switchTab('kochplan', this)">📅 Kochplan</button>
+    <button class="tab" onclick="switchTab('einkauf', this)">🛒 Einkauf</button>
+  </div>
+
+  <!-- ══ TAB: IDEEN (Corkboard) ══ -->
+  <div id="tab-ideen" class="corkboard active">
+
+    <div class="section-label">📌 Bereits eingeplant</div>
+    <div class="zettel-grid">
+
+      <!-- Wide pinned note -->
+      <div class="zettel zettel-yellow zettel-wide r-neg1" style="padding-top: 20px;">
+        <span class="pushpin">📌</span>
+        <span class="day-badge">Mo. Abend</span>
+        <div class="zettel-emoji">🍝</div>
+        <div class="zettel-wide-content">
+          <div class="zettel-name">Spaghetti Carbonara</div>
+          <div class="zettel-desc">Klassiker! Mit echtem Guanciale und Pecorino</div>
+          <div class="zettel-footer">
+            <div class="avatar-bubble av-teal">Li</div>
+            <div class="vote-pill">🔥 7</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pinned note 2 -->
+      <div class="zettel zettel-green r-pos2" style="padding-top: 20px;">
+        <span class="pushpin">📌</span>
+        <span class="day-badge">Di. Mittag</span>
+        <div class="zettel-emoji">🥗</div>
+        <div class="zettel-name">Caesar Salat</div>
+        <div class="zettel-desc">Frisch & leicht</div>
+        <div class="zettel-footer">
+          <div class="avatar-bubble av-pink">An</div>
+          <div class="vote-pill">🔥 5</div>
+        </div>
+      </div>
+
+      <!-- Pinned note 3 -->
+      <div class="zettel zettel-blue r-neg2" style="padding-top: 20px;">
+        <span class="pushpin">📌</span>
+        <span class="day-badge">Mi. Abend</span>
+        <div class="zettel-emoji">🥩</div>
+        <div class="zettel-name">Schweinebraten</div>
+        <div class="zettel-desc">Mit Knödel & Soß'</div>
+        <div class="zettel-footer">
+          <div class="avatar-bubble av-blue">To</div>
+          <div class="vote-pill">🔥 6</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="separator"></div>
+    <div class="section-label">💡 Neue Ideen — noch abstimmen!</div>
+
+    <div class="zettel-grid">
+
+      <!-- Unvoted: pulsing -->
+      <div class="zettel zettel-pink r-pos3 zettel-unvoted">
+        <div class="zettel-emoji">🥞</div>
+        <div class="zettel-name">Pfannkuchen mit Nutella</div>
+        <div class="zettel-desc">Für den Sonntagmorgen 😍</div>
+        <div class="zettel-footer">
+          <div class="avatar-bubble av-orange">Ma</div>
+          <div class="vote-pill">🔥 0</div>
+        </div>
+      </div>
+
+      <div class="zettel zettel-lavender r-neg3 zettel-unvoted">
+        <div class="zettel-emoji">🍕</div>
+        <div class="zettel-name">Flammkuchen</div>
+        <div class="zettel-desc">Elsässer Art, mit Speck und Zwiebeln</div>
+        <div class="zettel-footer">
+          <div class="avatar-bubble av-teal">Li</div>
+          <div class="vote-pill">🔥 1</div>
+        </div>
+      </div>
+
+      <div class="zettel zettel-orange r-pos1">
+        <div class="zettel-emoji">🍔</div>
+        <div class="zettel-name">Veggie-Burger</div>
+        <div class="zettel-desc">Hausgemacht! Mit Halloumi oder Linsen-Patty</div>
+        <div class="zettel-footer">
+          <div class="avatar-bubble av-pink">An</div>
+          <div class="vote-pill">🔥 4</div>
+        </div>
+      </div>
+
+      <div class="zettel zettel-yellow r-neg2">
+        <div class="zettel-emoji">🍗</div>
+        <div class="zettel-name">Gegrillte Hähnchenbrust</div>
+        <div class="zettel-desc">Mit Kräutermarinade vom Vortag</div>
+        <div class="zettel-footer">
+          <div class="avatar-bubble av-blue">To</div>
+          <div class="vote-pill">🔥 3</div>
+        </div>
+      </div>
+
+      <!-- Wide note with recipe link -->
+      <div class="zettel zettel-green zettel-wide r-pos1">
+        <div class="zettel-emoji">🍝</div>
+        <div class="zettel-wide-content">
+          <div class="zettel-name">Pasta Pesto</div>
+          <div class="zettel-desc">Super schnell, alle lieben's. Rezept: chefkoch.de 🔗</div>
+          <div style="display:flex; gap:6px; margin-top:6px;">
+            <div style="background:rgba(27,92,88,0.12); color:#1b5c58; font-size:10px; font-weight:600; padding:2px 8px; border-radius:10px;">🌿 Vegi</div>
+            <div style="background:rgba(27,92,88,0.12); color:#1b5c58; font-size:10px; font-weight:600; padding:2px 8px; border-radius:10px;">⏱️ 20 min</div>
+          </div>
+          <div class="zettel-footer">
+            <div class="avatar-bubble av-orange">Ma</div>
+            <div class="vote-pill">🔥 5</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Vote CTA -->
+    <div style="text-align:center; margin-top:24px; padding:0 20px;">
+      <div style="background:rgba(255,255,255,0.6); border-radius:14px; padding:14px 16px; border: 1.5px dashed #c8b89a;">
+        <div style="font-size:22px; margin-bottom:4px;">✍️</div>
+        <div style="font-size:13px; font-weight:600; color:#7a6a55;">Hast du eine Idee?</div>
+        <div style="font-size:11px; color:#9a8a78; margin-top:2px;">Klick auf + und wirf deine Idee an die Wand!</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══ TAB: KOCHPLAN ══ -->
+  <div id="tab-kochplan" class="kochplan">
+
+    <div style="font-size:13px; font-weight:600; color:#8a7f74; margin-bottom:14px;">📅 Alpentrip 2025 · Woche 1</div>
+
+    <!-- Monday -->
+    <div class="day-row">
+      <div class="day-row-header">
+        <div class="day-name">Montag</div>
+        <div class="day-date">14. Jul</div>
+      </div>
+      <div class="meal-slot">
+        <div class="meal-time">Mittag</div>
+        <div class="meal-empty">＋ Noch leer</div>
+      </div>
+      <div class="meal-slot">
+        <div class="meal-time">Abend</div>
+        <div class="meal-chip">
+          <span class="meal-chip-emoji">🍝</span>
+          <span class="meal-chip-name">Spaghetti Carbonara</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tuesday -->
+    <div class="day-row">
+      <div class="day-row-header">
+        <div class="day-name">Dienstag</div>
+        <div class="day-date">15. Jul</div>
+      </div>
+      <div class="meal-slot">
+        <div class="meal-time">Mittag</div>
+        <div class="meal-chip">
+          <span class="meal-chip-emoji">🥗</span>
+          <span class="meal-chip-name">Caesar Salat</span>
+        </div>
+      </div>
+      <div class="meal-slot">
+        <div class="meal-time">Abend</div>
+        <div class="meal-empty">＋ Noch leer</div>
+      </div>
+    </div>
+
+    <!-- Wednesday -->
+    <div class="day-row">
+      <div class="day-row-header">
+        <div class="day-name">Mittwoch</div>
+        <div class="day-date">16. Jul</div>
+      </div>
+      <div class="meal-slot">
+        <div class="meal-time">Mittag</div>
+        <div class="meal-empty">＋ Noch leer</div>
+      </div>
+      <div class="meal-slot">
+        <div class="meal-time">Abend</div>
+        <div class="meal-chip">
+          <span class="meal-chip-emoji">🥩</span>
+          <span class="meal-chip-name">Schweinebraten</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Thursday -->
+    <div class="day-row">
+      <div class="day-row-header">
+        <div class="day-name">Donnerstag</div>
+        <div class="day-date">17. Jul</div>
+      </div>
+      <div class="meal-slot">
+        <div class="meal-time">Mittag</div>
+        <div class="meal-empty">＋ Noch leer</div>
+      </div>
+      <div class="meal-slot">
+        <div class="meal-time">Abend</div>
+        <div class="meal-empty">＋ Noch leer</div>
+      </div>
+    </div>
+
+    <!-- Friday -->
+    <div class="day-row">
+      <div class="day-row-header">
+        <div class="day-name">Freitag</div>
+        <div class="day-date">18. Jul</div>
+      </div>
+      <div class="meal-slot">
+        <div class="meal-time">Mittag</div>
+        <div class="meal-empty">＋ Noch leer</div>
+      </div>
+      <div class="meal-slot">
+        <div class="meal-time">Abend</div>
+        <div class="meal-empty">＋ Noch leer</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══ TAB: EINKAUF ══ -->
+  <div id="tab-einkauf" class="einkauf">
+
+    <div style="font-size:13px; font-weight:600; color:#8a7f74; margin-bottom:14px;">🛒 Einkaufsliste · Woche 1</div>
+
+    <div class="shopping-section">
+      <div class="shopping-section-title">🍝 Spaghetti Carbonara</div>
+      <div class="shopping-item">
+        <div class="check-circle done"></div>
+        <div class="shopping-name">Spaghetti (500g)</div>
+        <div class="shopping-qty">2 Pkg.</div>
+      </div>
+      <div class="shopping-item">
+        <div class="check-circle done"></div>
+        <div class="shopping-name">Guanciale / Speck</div>
+        <div class="shopping-qty">300g</div>
+      </div>
+      <div class="shopping-item">
+        <div class="check-circle"></div>
+        <div class="shopping-name">Pecorino Romano</div>
+        <div class="shopping-qty">150g</div>
+      </div>
+      <div class="shopping-item">
+        <div class="check-circle"></div>
+        <div class="shopping-name">Eier (groß)</div>
+        <div class="shopping-qty">6 Stk.</div>
+      </div>
+    </div>
+
+    <div class="shopping-section">
+      <div class="shopping-section-title">🥗 Caesar Salat</div>
+      <div class="shopping-item">
+        <div class="check-circle"></div>
+        <div class="shopping-name">Römersalat</div>
+        <div class="shopping-qty">2 Köpfe</div>
+      </div>
+      <div class="shopping-item">
+        <div class="check-circle"></div>
+        <div class="shopping-name">Croutons</div>
+        <div class="shopping-qty">1 Beutel</div>
+      </div>
+      <div class="shopping-item">
+        <div class="check-circle"></div>
+        <div class="shopping-name">Parmesan</div>
+        <div class="shopping-qty">80g</div>
+      </div>
+    </div>
+
+    <div class="shopping-section">
+      <div class="shopping-section-title">🥩 Schweinebraten</div>
+      <div class="shopping-item">
+        <div class="check-circle"></div>
+        <div class="shopping-name">Schweinebauch (1,5 kg)</div>
+        <div class="shopping-qty">1 Stk.</div>
+      </div>
+      <div class="shopping-item">
+        <div class="check-circle"></div>
+        <div class="shopping-name">Kartoffelknödel (TK)</div>
+        <div class="shopping-qty">2 Pkg.</div>
+      </div>
+      <div class="shopping-item">
+        <div class="check-circle"></div>
+        <div class="shopping-name">Dunkles Bier</div>
+        <div class="shopping-qty">1 Flasche</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FAB -->
+  <button class="fab" onclick="alert('Neue Idee hinzufügen...')">＋</button>
+
+  <!-- Bottom Nav -->
+  <div class="bottom-nav">
+    <div class="nav-item active">
+      <div class="nav-icon">🍽️</div>
+      <div class="nav-label">Essen</div>
+    </div>
+    <div class="nav-item">
+      <div class="nav-icon">💸</div>
+      <div class="nav-label">Ausgaben</div>
+    </div>
+    <div class="nav-item">
+      <div class="nav-icon">🏔️</div>
+      <div class="nav-label">Ausflüge</div>
+    </div>
+    <div class="nav-item">
+      <div class="nav-icon">🎒</div>
+      <div class="nav-label">Packliste</div>
+    </div>
+    <div class="nav-item">
+      <div class="nav-icon">👥</div>
+      <div class="nav-label">Gruppe</div>
+    </div>
+  </div>
+
+</div><!-- /screen -->
+</div><!-- /phone -->
+
+<script>
+function switchTab(name, el) {
+  // Deactivate all tab buttons
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+
+  // Hide all content panels
+  document.getElementById('tab-ideen').classList.remove('active');
+  document.getElementById('tab-kochplan').classList.remove('active');
+  document.getElementById('tab-einkauf').classList.remove('active');
+
+  // Show selected
+  const map = { ideen: 'tab-ideen', kochplan: 'tab-kochplan', einkauf: 'tab-einkauf' };
+  document.getElementById(map[name]).classList.add('active');
+}
+
+// Make corkboard style consistent: use active class approach
+document.querySelectorAll('#tab-ideen, #tab-kochplan, #tab-einkauf').forEach(el => {
+  el.classList.remove('active');
+});
+document.getElementById('tab-ideen').classList.add('active');
+
+// Shopping item toggle
+document.querySelectorAll('.check-circle').forEach(circle => {
+  circle.addEventListener('click', () => {
+    circle.classList.toggle('done');
+    const name = circle.nextElementSibling;
+    if (name) name.style.textDecoration = circle.classList.contains('done') ? 'line-through' : 'none';
+    if (name) name.style.color = circle.classList.contains('done') ? '#aaa' : '#333';
+  });
+});
+
+// Vote pill tap
+document.querySelectorAll('.vote-pill').forEach(pill => {
+  pill.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const current = parseInt(pill.textContent.replace(/\D/g,'')) || 0;
+    pill.textContent = '🔥 ' + (current + 1);
+    // Remove unvoted glow if parent has it
+    pill.closest('.zettel')?.classList.remove('zettel-unvoted');
+    pill.style.background = 'rgba(255,100,0,0.15)';
+    pill.style.color = '#c44200';
+  });
+});
+</script>
+</body>
+</html>

@@ -1,15 +1,24 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft, Calendar, Clock, MapPin, Euro, Timer } from 'lucide-react'
+import { ChevronLeft, Calendar, Clock, MapPin, Euro, Timer, ExternalLink } from 'lucide-react'
 import { activityTypeEmoji, activityTypeGradient, activityTypeLabel, formatDepartureTime } from '@/lib/activities'
 import { formatCurrency } from '@/lib/formatting'
 import ActivityDetailActions from '@/components/activities/ActivityDetailActions'
-import type { ActivityWithVotes, TripParticipant } from '@/types/app'
+import ActivityComments from '@/components/activities/ActivityComments'
+import type { ActivityComment, ActivityWithVotes, TripParticipant } from '@/types/app'
 
 function formatActivityDate(dateStr: string): string {
   const d = new Date(dateStr + 'T00:00:00')
   return d.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' })
+}
+
+function extractHostname(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, '')
+  } catch {
+    return url
+  }
 }
 
 export default async function ActivityDetailPage({
@@ -25,11 +34,12 @@ export default async function ActivityDetailPage({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const db = supabase as any
 
-  const [{ data: activityRaw }, { data: votesRaw }, { data: participantsRaw }, { data: trip }] = await Promise.all([
+  const [{ data: activityRaw }, { data: votesRaw }, { data: participantsRaw }, { data: trip }, { data: commentsRaw }] = await Promise.all([
     db.from('trip_activities').select('*').eq('id', activityId).single(),
     db.from('trip_activity_votes').select('*').eq('activity_id', activityId),
     supabase.from('trip_participants').select('*').eq('trip_id', tripId),
     supabase.from('trips').select('status, created_by').eq('id', tripId).single(),
+    db.from('trip_activity_comments').select('*, trip_participants(name)').eq('activity_id', activityId).order('created_at', { ascending: true }),
   ])
 
   if (!activityRaw) notFound()
@@ -45,6 +55,15 @@ export default async function ActivityDetailPage({
     votes: votesRaw ?? [],
     creator_name: participantMap.get((activityRaw as Record<string, unknown>).created_by_participant_id as string)?.name ?? 'Unbekannt',
   } as unknown as ActivityWithVotes
+
+  const comments: ActivityComment[] = (commentsRaw ?? []).map((c: Record<string, unknown> & { trip_participants: { name: string } | null }) => ({
+    id: c.id as string,
+    activity_id: c.activity_id as string,
+    participant_id: c.participant_id as string,
+    content: c.content as string,
+    created_at: c.created_at as string,
+    participant_name: c.trip_participants?.name ?? 'Unbekannt',
+  }))
 
   const isActive = trip?.status === 'active'
   const isMyActivity = activity.created_by_participant_id === myParticipantId
@@ -68,9 +87,9 @@ export default async function ActivityDetailPage({
         Ausflüge
       </Link>
 
-      {/* Hero */}
-      <div className={`rounded-[20px] overflow-hidden bg-gradient-to-br ${gradient} aspect-[3/1] flex items-center justify-center relative`}>
-        <span className="text-[72px] leading-none drop-shadow-lg">{emoji}</span>
+      {/* Hero — compact emoji banner */}
+      <div className={`rounded-[20px] overflow-hidden bg-gradient-to-br ${gradient} h-[100px] flex items-center justify-center relative`}>
+        <span className="text-[64px] leading-none drop-shadow-lg">{emoji}</span>
         <div className="absolute top-3 right-3 flex gap-2">
           {activity.status === 'confirmed' && (
             <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-green-500 text-white">✓ Bestätigt</span>
@@ -89,13 +108,33 @@ export default async function ActivityDetailPage({
         )}
       </div>
 
-      {/* Title */}
+      {/* Title + meta */}
       <div>
         <h1 className="text-[22px] font-bold text-foreground leading-tight">{activity.title}</h1>
         <p className="text-[13px] text-muted-foreground mt-1">
           {activityTypeLabel[activity.activity_type]} · Vorschlag von {activity.creator_name}
         </p>
+
+        {/* Link */}
+        {activity.link && (
+          <a
+            href={activity.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 mt-2 px-3 py-1.5 rounded-xl bg-primary/10 text-primary text-[13px] font-semibold"
+          >
+            <ExternalLink className="w-3.5 h-3.5" />
+            {extractHostname(activity.link)}
+          </a>
+        )}
       </div>
+
+      {/* Description */}
+      {activity.description && (
+        <div className="bg-card rounded-[18px] card-shadow p-4">
+          <p className="text-[14px] text-muted-foreground leading-relaxed">{activity.description}</p>
+        </div>
+      )}
 
       {/* Details card */}
       {(activity.departure_time || activity.meeting_point || activity.duration_label || activity.cost_per_person_cents != null) && (
@@ -185,13 +224,13 @@ export default async function ActivityDetailPage({
         />
       </div>
 
-      {/* Description */}
-      {activity.description && (
-        <div className="bg-card rounded-[18px] card-shadow p-4">
-          <h2 className="text-[13px] font-bold mb-2">Beschreibung</h2>
-          <p className="text-[14px] text-muted-foreground leading-relaxed">{activity.description}</p>
-        </div>
-      )}
+      {/* Comments */}
+      <ActivityComments
+        activityId={activityId}
+        tripId={tripId}
+        myParticipantId={myParticipantId}
+        initialComments={comments}
+      />
 
       {/* Expense hint */}
       <Link
