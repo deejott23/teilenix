@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import PacklistClient from '@/components/packlist/PacklistClient'
 import RealtimeQueryRefresher from '@/components/realtime/RealtimeQueryRefresher'
+import { HydrationBoundary, QueryClient, dehydrate } from '@tanstack/react-query'
+import { queryKeys } from '@/lib/query/queryKeys'
 import type { PacklistItem, TripParticipant } from '@/types/app'
 
 export default async function PacklistPage({
@@ -69,8 +71,12 @@ export default async function PacklistPage({
       })),
   }))
 
+  const queryClient = new QueryClient()
+  queryClient.setQueryData(queryKeys.packlist.byTrip(tripId), items)
+  const dehydratedState = dehydrate(queryClient)
+
   return (
-    <>
+    <HydrationBoundary state={dehydratedState}>
       <RealtimeQueryRefresher tripId={tripId} tables={['packlist_items', 'packlist_checks', 'packlist_claims']} />
       <PacklistClient
         tripId={tripId}
@@ -81,6 +87,6 @@ export default async function PacklistPage({
         myGroupName={myGroupName}
         isActive={trip?.status === 'active'}
       />
-    </>
+    </HydrationBoundary>
   )
 }

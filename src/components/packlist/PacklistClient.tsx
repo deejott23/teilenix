@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useEffect, useRef } from 'react'
-import { usePacklistInvalidate } from '@/hooks/usePacklist'
+import { usePacklist, usePacklistInvalidate } from '@/hooks/usePacklist'
 import TripSubNav from '@/components/layout/TripSubNav'
 import { toast } from 'sonner'
 import { Plus, ChevronRight, Trash2, Pencil, Check, X } from 'lucide-react'
@@ -416,8 +416,8 @@ export default function PacklistClient({
   tripId, items: initialItems, participants, myParticipantId, myGroupId, myGroupName, isActive,
 }: PacklistClientProps) {
   const invalidate = usePacklistInvalidate(tripId)
-  const [items, setItems] = useState<PacklistItem[]>(initialItems)
-  useEffect(() => { setItems(initialItems) }, [initialItems])
+  // TQ liefert Live-Daten nach Realtime-Invalidierung — kein router.refresh() mehr nötig
+  const { data: items = initialItems } = usePacklist(tripId, initialItems)
 
   const [filter, setFilter] = useState<FilterKey>('all')
   const [showSheet, setShowSheet] = useState(false)

@@ -320,6 +320,12 @@ export default function ExpenseForm({
 
       toast.success(isEdit ? 'Ausgabe aktualisiert!' : 'Ausgabe gespeichert!')
       queryClient.invalidateQueries({ queryKey: queryKeys.expenses.withSplits(tripId) })
+      // Next.js Router-Cache für Trip-Übersicht invalidieren (Balance-Karte aktualisieren)
+      fetch('/api/revalidate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path: `/trips/${tripId}` }),
+      }).catch(() => {}) // fire-and-forget
       router.push(`/trips/${tripId}/expenses`)
     } catch (e: unknown) {
       const isNetworkError = e instanceof TypeError && e.message.toLowerCase().includes('fetch')
