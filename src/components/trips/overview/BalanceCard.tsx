@@ -47,6 +47,7 @@ export default async function BalanceCard({
 
   const settlement = computeSettlement(expenses, participants)
   const myBalance = settlement.balances.find(b => b.participantId === myParticipantId)
+  const realExpenseCount = expenses.filter(e => (e as unknown as { category: string }).category !== 'payment').length
 
   return (
     <Link
@@ -67,7 +68,7 @@ export default async function BalanceCard({
       <div className="w-px h-9 bg-border flex-shrink-0" />
       <div className="flex-1 min-w-0">
         <div className="text-[14px] font-bold text-foreground">{formatCurrency(settlement.totalSpentCents)}</div>
-        <div className="text-[11px] text-muted-foreground mt-0.5">{expenses.length} Ausgaben gesamt</div>
+        <div className="text-[11px] text-muted-foreground mt-0.5">{realExpenseCount} Ausgaben gesamt</div>
       </div>
       <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
     </Link>

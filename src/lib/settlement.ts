@@ -21,6 +21,7 @@ export function computeGroupBreakdowns(
     members.forEach(m => memberTotals.set(m.id, 0))
 
     expenses.forEach(e => {
+      if (e.category === 'payment') return // Zahlungstransfers nicht als Gruppenausgabe werten
       const payer = participantMap.get(e.paid_by_participant_id)
       if (payer?.group_id === group.id) {
         memberTotals.set(payer.id, (memberTotals.get(payer.id) ?? 0) + e.amount_cents)
@@ -64,7 +65,10 @@ export function computeSettlement(
   let totalSpentCents = 0
 
   expenses.forEach(expense => {
-    totalSpentCents += expense.amount_cents
+    // Zahlungstransfers (Ausgleichszahlungen) sind keine echten Ausgaben
+    if (expense.category !== 'payment') {
+      totalSpentCents += expense.amount_cents
+    }
 
     // Resolve payer to their group if they belong to one
     const payerParticipant = participantLookup.get(expense.paid_by_participant_id)
