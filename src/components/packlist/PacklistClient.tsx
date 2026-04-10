@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect, useRef } from 'react'
 import { usePacklist, usePacklistInvalidate } from '@/hooks/usePacklist'
 import TripSubNav from '@/components/layout/TripSubNav'
 import { toast } from 'sonner'
-import { Plus, Trash2, Pencil, Check, X, ChevronDown, Users } from 'lucide-react'
+import { Plus, Minus, Trash2, Pencil, Check, X, ChevronDown, Users } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { PacklistItem, PacklistItemType, TripParticipant } from '@/types/app'
 
@@ -49,18 +49,18 @@ function Checkbox({ checked, onToggle }: { checked: boolean; onToggle: () => voi
   )
 }
 
-// ── Quantity stepper ──────────────────────────────────────────────────────────
+// ── Quantity stepper — same style as shopping list ───────────────────────────
 function Stepper({ value, onMinus, onPlus, min = 1 }: { value: number; onMinus: () => void; onPlus: () => void; min?: number }) {
   return (
-    <div className="flex items-center gap-0 bg-muted rounded-lg overflow-hidden flex-shrink-0">
+    <div className="flex items-center gap-1">
       <button type="button" onClick={onMinus} disabled={value <= min}
-        className="w-7 h-7 flex items-center justify-center text-primary font-bold text-[15px] disabled:opacity-30 active:bg-border/60 transition-colors">
-        −
+        className="w-6 h-6 rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:bg-muted/80 active:scale-90 transition-all disabled:opacity-30">
+        <Minus className="w-2.5 h-2.5" strokeWidth={2.5} />
       </button>
-      <span className="w-6 text-center text-[12px] font-bold text-foreground tabular-nums">{value}</span>
+      <span className="w-5 text-center text-[13px] font-bold text-foreground tabular-nums">{value}</span>
       <button type="button" onClick={onPlus}
-        className="w-7 h-7 flex items-center justify-center text-primary font-bold text-[15px] active:bg-border/60 transition-colors">
-        +
+        className="w-6 h-6 rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:bg-muted/80 active:scale-90 transition-all">
+        <Plus className="w-2.5 h-2.5" strokeWidth={2.5} />
       </button>
     </div>
   )
