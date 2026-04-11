@@ -27,7 +27,7 @@ export async function GET(
   const [{ data: checks }, { data: claims }] = itemIds.length > 0
     ? await Promise.all([
         supabase.from('packlist_checks').select('item_id, participant_id').in('item_id', itemIds),
-        supabase.from('packlist_claims').select('*').in('item_id', itemIds),
+        supabase.from('packlist_claims').select('id, item_id, participant_id, quantity_claimed').in('item_id', itemIds),
       ])
     : [{ data: [] }, { data: [] }]
 

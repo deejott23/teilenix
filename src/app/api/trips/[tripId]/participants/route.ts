@@ -19,7 +19,7 @@ export async function GET(
 
   const { data, error } = await supabase
     .from('trip_participants')
-    .select('*')
+    .select('id, name, shares, user_id, group_id, is_group, joined_at')
     .eq('trip_id', tripId)
     .order('joined_at', { ascending: true })
 

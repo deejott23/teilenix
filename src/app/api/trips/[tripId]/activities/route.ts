@@ -25,7 +25,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ trip
   const db = supabase as any
   const { data: activities } = await db
     .from('trip_activities')
-    .select('*')
+    .select('id, trip_id, created_by_participant_id, title, activity_type, description, link, activity_date, departure_time, duration_label, meeting_point, cost_per_person_cents, status, cover_emoji, created_at, updated_at')
     .eq('trip_id', tripId)
     .order('activity_date', { ascending: true, nullsFirst: false })
     .order('created_at', { ascending: true })
@@ -34,7 +34,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ trip
 
   const [{ data: votes }, { data: commentCounts }] = await Promise.all([
     activityIds.length > 0
-      ? db.from('trip_activity_votes').select('*').in('activity_id', activityIds)
+      ? db.from('trip_activity_votes').select('id, activity_id, participant_id, vote, created_at').in('activity_id', activityIds)
       : { data: [] },
     activityIds.length > 0
       ? db.from('trip_activity_comments').select('activity_id').in('activity_id', activityIds)

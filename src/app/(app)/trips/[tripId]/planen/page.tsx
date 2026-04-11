@@ -15,9 +15,9 @@ export default async function PlanenPage({ params }: { params: Promise<{ tripId:
   const db = supabase as any
 
   const [{ data: trip }, { data: participantsRaw }, { data: activitiesRaw }] = await Promise.all([
-    supabase.from('trips').select('*').eq('id', tripId).single(),
-    supabase.from('trip_participants').select('*').eq('trip_id', tripId),
-    db.from('trip_activities').select('*').eq('trip_id', tripId)
+    supabase.from('trips').select('status, start_date, end_date').eq('id', tripId).single(),
+    supabase.from('trip_participants').select('id, name, shares, user_id, group_id, is_group').eq('trip_id', tripId),
+    db.from('trip_activities').select('id, trip_id, created_by_participant_id, title, activity_type, description, link, activity_date, departure_time, duration_label, meeting_point, cost_per_person_cents, status, cover_emoji, created_at, updated_at').eq('trip_id', tripId)
       .order('activity_date', { ascending: true, nullsFirst: false })
       .order('created_at', { ascending: true }),
   ])
@@ -28,7 +28,7 @@ export default async function PlanenPage({ params }: { params: Promise<{ tripId:
   const activityIds = (activitiesRaw ?? []).map((a: { id: string }) => a.id)
   const [{ data: votesRaw }, { data: commentCountsRaw }] = await Promise.all([
     activityIds.length > 0
-      ? db.from('trip_activity_votes').select('*').in('activity_id', activityIds)
+      ? db.from('trip_activity_votes').select('id, activity_id, participant_id, vote, created_at').in('activity_id', activityIds)
       : { data: [] },
     activityIds.length > 0
       ? db.from('trip_activity_comments').select('activity_id').in('activity_id', activityIds)

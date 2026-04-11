@@ -1,12 +1,14 @@
 'use client'
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { queryKeys } from '@/lib/query/queryKeys'
+import dynamic from 'next/dynamic'
 import MealZettel from './MealZettel'
-import AddMealSheet from './AddMealSheet'
 import KochplanView from './KochplanView'
+
+const AddMealSheet = dynamic(() => import('./AddMealSheet'), { ssr: false })
 import type { MealIdea, MealSlot, TripParticipant } from '@/types/app'
 
 interface EssenClientProps {
@@ -45,10 +47,13 @@ export default function EssenClient({
   const ideas = data?.ideas ?? []
   const slots = data?.slots ?? []
 
-  const assignedIdeaIds = new Set(slots.filter(s => s.meal_idea_id).map(s => s.meal_idea_id!))
+  const assignedIdeaIds = useMemo(
+    () => new Set(slots.filter(s => s.meal_idea_id).map(s => s.meal_idea_id!)),
+    [slots]
+  )
 
-  const assignedIdeas = ideas.filter(i => assignedIdeaIds.has(i.id))
-  const unassignedIdeas = ideas.filter(i => !assignedIdeaIds.has(i.id))
+  const assignedIdeas = useMemo(() => ideas.filter(i => assignedIdeaIds.has(i.id)), [ideas, assignedIdeaIds])
+  const unassignedIdeas = useMemo(() => ideas.filter(i => !assignedIdeaIds.has(i.id)), [ideas, assignedIdeaIds])
 
   const handleAdd = async (formData: object) => {
     const res = await fetch(`/api/trips/${tripId}/meals`, {

@@ -18,7 +18,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ tri
   const db = supabase as any
   const { data } = await db
     .from('shopping_items')
-    .select('*')
+    .select('id, trip_id, title, category, quantity, is_bought, added_by_participant_id, created_at')
     .eq('trip_id', tripId)
     .order('created_at', { ascending: true })
 

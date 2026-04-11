@@ -18,7 +18,7 @@ export default async function PacklistPage({
 
   const [{ data: trip }, { data: participantsRaw }, { data: itemsRaw }] = await Promise.all([
     supabase.from('trips').select('status').eq('id', tripId).single(),
-    supabase.from('trip_participants').select('*').eq('trip_id', tripId),
+    supabase.from('trip_participants').select('id, name, user_id, group_id, is_group').eq('trip_id', tripId),
     supabase.from('packlist_items').select('*').eq('trip_id', tripId).order('created_at', { ascending: true }),
   ])
 
@@ -31,7 +31,7 @@ export default async function PacklistPage({
   const [checksRaw, claimsRaw] = itemIds.length > 0
     ? await Promise.all([
         supabase.from('packlist_checks').select('item_id, participant_id').in('item_id', itemIds),
-        supabase.from('packlist_claims').select('*').in('item_id', itemIds),
+        supabase.from('packlist_claims').select('id, item_id, participant_id, quantity_claimed').in('item_id', itemIds),
       ])
     : [{ data: [] }, { data: [] }]
 

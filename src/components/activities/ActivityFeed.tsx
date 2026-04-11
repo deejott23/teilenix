@@ -5,9 +5,11 @@ import { toast } from 'sonner'
 import { Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { queryKeys } from '@/lib/query/queryKeys'
+import dynamic from 'next/dynamic'
 import ActivityCard from './ActivityCard'
-import AddActivitySheet from './AddActivitySheet'
 import type { ActivityWithVotes, TripParticipant } from '@/types/app'
+
+const AddActivitySheet = dynamic(() => import('./AddActivitySheet'), { ssr: false })
 
 function generateDateRange(start: string | null, end: string | null): Date[] {
   if (!start || !end) return []
