@@ -381,6 +381,42 @@ export type Database = {
           },
         ]
       }
+      feedback_comments: {
+        Row: {
+          id: string
+          created_at: string
+          page_path: string
+          feature_label: string | null
+          comment: string
+          tester_email: string
+          tester_name: string | null
+          status: string
+          developer_note: string | null
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          page_path: string
+          feature_label?: string | null
+          comment: string
+          tester_email: string
+          tester_name?: string | null
+          status?: string
+          developer_note?: string | null
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          page_path?: string
+          feature_label?: string | null
+          comment?: string
+          tester_email?: string
+          tester_name?: string | null
+          status?: string
+          developer_note?: string | null
+        }
+        Relationships: []
+      }
       trips: {
         Row: {
           cover_emoji: string | null

@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import AppNav from '@/components/layout/AppNav'
+import FeedbackFab from '@/components/feedback/FeedbackFab'
+import { isTesterEmail } from '@/lib/tester'
 
 export default async function AppLayout({
   children,
@@ -32,12 +34,15 @@ export default async function AppLayout({
     })
   }
 
+  const isTester = isTesterEmail(user.email)
+
   return (
     <div className="min-h-screen bg-background pb-[72px] md:pb-0 md:pl-60">
       <AppNav userId={user.id} needsOnboarding={false} />
       <main className="max-w-2xl mx-auto px-4 py-7 md:max-w-3xl">
         {children}
       </main>
+      {isTester && <FeedbackFab />}
     </div>
   )
 }
