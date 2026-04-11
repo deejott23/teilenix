@@ -20,14 +20,20 @@ export default function VoteButtons({
   compact?: boolean
 }) {
   const [votes, setVotes] = useState(initialVotes)
-  const [loading, setLoading] = useState(false)
+  const [pending, setPending] = useState(false)
 
   const myVote = votes.find(v => v.participant_id === participantId)?.vote ?? null
   const countFor = (v: VoteValue) => votes.filter(x => x.vote === v).length
 
   const handleVote = async (v: VoteValue) => {
-    if (loading) return
-    setLoading(true)
+    if (pending) return
+    // Optimistic update
+    const prev = votes
+    setVotes(current => [
+      ...current.filter(x => x.participant_id !== participantId),
+      ...(myVote === v ? [] : [{ participant_id: participantId, vote: v, activity_id: activityId } as ActivityVote]),
+    ])
+    setPending(true)
     try {
       const res = await fetch(`/api/trips/${tripId}/activities/${activityId}/vote`, {
         method: 'POST',
@@ -36,11 +42,12 @@ export default function VoteButtons({
       })
       if (!res.ok) throw new Error()
       const data = await res.json()
-      setVotes(data.votes)
+      setVotes(data.votes) // sync with server
     } catch {
+      setVotes(prev) // rollback
       toast.error('Fehler beim Abstimmen')
     } finally {
-      setLoading(false)
+      setPending(false)
     }
   }
 
@@ -54,7 +61,6 @@ export default function VoteButtons({
             key={opt.value}
             type="button"
             onClick={() => handleVote(opt.value)}
-            disabled={loading}
             className={cn(
               'flex items-center gap-1 px-2.5 py-1.5 rounded-xl border-[1.5px] text-[12px] font-bold transition-all active:scale-95 flex-1 justify-center',
               isActive

@@ -16,6 +16,12 @@ export const fetchers = {
   shopping: (tripId: string) =>
     apiFetch<unknown[]>(`/api/trips/${tripId}/shopping`),
 
+  activities: (tripId: string) =>
+    apiFetch<unknown[]>(`/api/trips/${tripId}/activities`),
+
+  meals: (tripId: string) =>
+    apiFetch<unknown>(`/api/trips/${tripId}/meals`),
+
   dashboardTrips: () =>
     apiFetch<unknown[]>('/api/trips'),
 }

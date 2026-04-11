@@ -1,12 +1,14 @@
 'use client'
 
 import { useState, useCallback, useEffect, useRef } from 'react'
-import { usePacklist, usePacklistInvalidate } from '@/hooks/usePacklist'
+import { useQueryClient } from '@tanstack/react-query'
+import { usePacklist } from '@/hooks/usePacklist'
+import { queryKeys } from '@/lib/query/queryKeys'
 import TripSubNav from '@/components/layout/TripSubNav'
 import { toast } from 'sonner'
 import { Plus, Minus, Trash2, Pencil, Check, X, ChevronDown, Users } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import type { PacklistItem, PacklistItemType, TripParticipant } from '@/types/app'
+import type { PacklistItem, PacklistItemType, PacklistClaim, TripParticipant } from '@/types/app'
 
 interface PacklistClientProps {
   tripId: string
@@ -68,10 +70,12 @@ function Stepper({ value, onMinus, onPlus, min = 1 }: { value: number; onMinus: 
 
 // ── Bringing item row ─────────────────────────────────────────────────────────
 function BringingRow({
-  item, myParticipantId, tripId, onRefresh, isActive,
+  item, myParticipantId, tripId, isActive,
 }: {
-  item: PacklistItem; myParticipantId: string; tripId: string; onRefresh: () => void; isActive: boolean
+  item: PacklistItem; myParticipantId: string; tripId: string; isActive: boolean
 }) {
+  const queryClient = useQueryClient()
+  const key = queryKeys.packlist.byTrip(tripId)
   const [editing, setEditing] = useState(false)
   const [editTitle, setEditTitle] = useState(item.title)
   const [saving, setSaving] = useState(false)
@@ -81,35 +85,60 @@ function BringingRow({
   useEffect(() => { if (editing) inputRef.current?.focus() }, [editing])
 
   const handleCheck = async () => {
+    const prev = queryClient.getQueryData<PacklistItem[]>(key)
+    queryClient.setQueryData<PacklistItem[]>(key, items =>
+      items?.map(i => i.id === item.id ? { ...i, checked: !i.checked } : i) ?? []
+    )
     try {
       await fetch(`/api/trips/${tripId}/packlist/${item.id}/check`, { method: 'POST' })
-      onRefresh()
-    } catch { toast.error('Fehler') }
+    } catch {
+      if (prev) queryClient.setQueryData(key, prev)
+      toast.error('Fehler')
+    } finally {
+      queryClient.invalidateQueries({ queryKey: key })
+    }
   }
 
   const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation()
     if (!confirm(`"${item.title}" löschen?`)) return
+    const prev = queryClient.getQueryData<PacklistItem[]>(key)
+    queryClient.setQueryData<PacklistItem[]>(key, items => items?.filter(i => i.id !== item.id) ?? [])
     try {
       await fetch(`/api/trips/${tripId}/packlist/${item.id}`, { method: 'DELETE' })
       toast.success('Gelöscht')
-      onRefresh()
-    } catch { toast.error('Fehler beim Löschen') }
+    } catch {
+      if (prev) queryClient.setQueryData(key, prev)
+      toast.error('Fehler beim Löschen')
+    } finally {
+      queryClient.invalidateQueries({ queryKey: key })
+    }
   }
 
   const handleEditSave = async () => {
     const trimmed = editTitle.trim()
     if (!trimmed || trimmed === item.title) { setEditing(false); setEditTitle(item.title); return }
     setSaving(true)
+    const prev = queryClient.getQueryData<PacklistItem[]>(key)
+    queryClient.setQueryData<PacklistItem[]>(key, items =>
+      items?.map(i => i.id === item.id ? { ...i, title: trimmed } : i) ?? []
+    )
+    setEditing(false)
     try {
       await fetch(`/api/trips/${tripId}/packlist/${item.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title: trimmed }),
       })
-      setEditing(false)
-      onRefresh()
-    } catch { toast.error('Fehler') } finally { setSaving(false) }
+    } catch {
+      if (prev) queryClient.setQueryData(key, prev)
+      setEditing(true)
+      setEditTitle(trimmed)
+      toast.error('Fehler')
+    } finally {
+      setSaving(false)
+      queryClient.invalidateQueries({ queryKey: key })
+    }
   }
 
   return (
@@ -166,11 +195,14 @@ function BringingRow({
 
 // ── Group need item row ───────────────────────────────────────────────────────
 function GroupNeedRow({
-  item, myParticipantId, myGroupId, myGroupName, tripId, onRefresh, isActive,
+  item, myParticipantId, myParticipantName, myGroupId, myGroupName, tripId, isActive,
 }: {
-  item: PacklistItem; myParticipantId: string; myGroupId: string | null; myGroupName: string | null
-  tripId: string; onRefresh: () => void; isActive: boolean
+  item: PacklistItem; myParticipantId: string; myParticipantName: string
+  myGroupId: string | null; myGroupName: string | null
+  tripId: string; isActive: boolean
 }) {
+  const queryClient = useQueryClient()
+  const key = queryKeys.packlist.byTrip(tripId)
   const [expanded, setExpanded] = useState(false)
   const [editing, setEditing] = useState(false)
   const [editTitle, setEditTitle] = useState(item.title)
@@ -185,65 +217,123 @@ function GroupNeedRow({
   const isCovered = totalClaimed >= item.quantity_needed
 
   const handleClaim = async () => {
+    const prev = queryClient.getQueryData<PacklistItem[]>(key)
+    queryClient.setQueryData<PacklistItem[]>(key, items =>
+      items?.map(i => {
+        if (i.id !== item.id) return i
+        if (myClaim) {
+          return { ...i, claims: i.claims.filter(c => c.participant_id !== myParticipantId) }
+        } else {
+          const newClaim: PacklistClaim = {
+            id: `temp-${Date.now()}`,
+            item_id: item.id,
+            participant_id: myParticipantId,
+            participant_name: myParticipantName,
+            quantity_claimed: 1,
+          }
+          return { ...i, claims: [...i.claims, newClaim] }
+        }
+      }) ?? []
+    )
     try {
       await fetch(`/api/trips/${tripId}/packlist/${item.id}/claim`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ quantity_claimed: myClaim ? null : 1 }),
       })
-      onRefresh()
-    } catch { toast.error('Fehler') }
+    } catch {
+      if (prev) queryClient.setQueryData(key, prev)
+      toast.error('Fehler')
+    } finally {
+      queryClient.invalidateQueries({ queryKey: key })
+    }
   }
 
   const handleClaimQty = async (delta: number) => {
     const next = Math.max(1, Math.min(99, (myClaim?.quantity_claimed ?? 1) + delta))
     if (next === myClaim?.quantity_claimed) return
+    const prev = queryClient.getQueryData<PacklistItem[]>(key)
+    queryClient.setQueryData<PacklistItem[]>(key, items =>
+      items?.map(i => {
+        if (i.id !== item.id) return i
+        return { ...i, claims: i.claims.map(c => c.participant_id === myParticipantId ? { ...c, quantity_claimed: next } : c) }
+      }) ?? []
+    )
     try {
       await fetch(`/api/trips/${tripId}/packlist/${item.id}/claim`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ quantity_claimed: next }),
       })
-      onRefresh()
-    } catch { toast.error('Fehler') }
+    } catch {
+      if (prev) queryClient.setQueryData(key, prev)
+      toast.error('Fehler')
+    } finally {
+      queryClient.invalidateQueries({ queryKey: key })
+    }
   }
 
   const handleNeedQty = async (delta: number) => {
     const next = Math.max(1, Math.min(99, item.quantity_needed + delta))
     if (next === item.quantity_needed) return
+    const prev = queryClient.getQueryData<PacklistItem[]>(key)
+    queryClient.setQueryData<PacklistItem[]>(key, items =>
+      items?.map(i => i.id === item.id ? { ...i, quantity_needed: next } : i) ?? []
+    )
     try {
       await fetch(`/api/trips/${tripId}/packlist/${item.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ quantity_needed: next }),
       })
-      onRefresh()
-    } catch { toast.error('Fehler') }
+    } catch {
+      if (prev) queryClient.setQueryData(key, prev)
+      toast.error('Fehler')
+    } finally {
+      queryClient.invalidateQueries({ queryKey: key })
+    }
   }
 
   const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation()
     if (!confirm(`"${item.title}" löschen?`)) return
+    const prev = queryClient.getQueryData<PacklistItem[]>(key)
+    queryClient.setQueryData<PacklistItem[]>(key, items => items?.filter(i => i.id !== item.id) ?? [])
     try {
       await fetch(`/api/trips/${tripId}/packlist/${item.id}`, { method: 'DELETE' })
       toast.success('Gelöscht')
-      onRefresh()
-    } catch { toast.error('Fehler') }
+    } catch {
+      if (prev) queryClient.setQueryData(key, prev)
+      toast.error('Fehler')
+    } finally {
+      queryClient.invalidateQueries({ queryKey: key })
+    }
   }
 
   const handleEditSave = async () => {
     const trimmed = editTitle.trim()
     if (!trimmed || trimmed === item.title) { setEditing(false); setEditTitle(item.title); return }
     setSaving(true)
+    const prev = queryClient.getQueryData<PacklistItem[]>(key)
+    queryClient.setQueryData<PacklistItem[]>(key, items =>
+      items?.map(i => i.id === item.id ? { ...i, title: trimmed } : i) ?? []
+    )
+    setEditing(false)
     try {
       await fetch(`/api/trips/${tripId}/packlist/${item.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title: trimmed }),
       })
-      setEditing(false)
-      onRefresh()
-    } catch { toast.error('Fehler') } finally { setSaving(false) }
+    } catch {
+      if (prev) queryClient.setQueryData(key, prev)
+      setEditing(true)
+      setEditTitle(trimmed)
+      toast.error('Fehler')
+    } finally {
+      setSaving(false)
+      queryClient.invalidateQueries({ queryKey: key })
+    }
   }
 
   return (
@@ -467,15 +557,34 @@ function AddItemSheet({
 export default function PacklistClient({
   tripId, items: initialItems, participants, myParticipantId, myGroupId, myGroupName, isActive,
 }: PacklistClientProps) {
-  const invalidate = usePacklistInvalidate(tripId)
+  const queryClient = useQueryClient()
   const { data: items = initialItems } = usePacklist(tripId, initialItems)
 
   const [tab, setTab] = useState<TabKey>('group_need')
   const [showSheet, setShowSheet] = useState(false)
 
-  const refresh = useCallback(() => invalidate(), [invalidate])
+  const myParticipantName = participants.find(p => p.id === myParticipantId)?.name ?? ''
 
-  const handleAdd = async (item_type: PacklistItemType, title: string) => {
+  const handleAdd = useCallback(async (item_type: PacklistItemType, title: string) => {
+    const key = queryKeys.packlist.byTrip(tripId)
+    const prev = queryClient.getQueryData<PacklistItem[]>(key)
+    const tempId = `temp-${Date.now()}`
+    queryClient.setQueryData<PacklistItem[]>(key, current => [
+      ...(current ?? []),
+      {
+        id: tempId,
+        trip_id: tripId,
+        created_by_participant_id: myParticipantId,
+        item_type,
+        title,
+        quantity_needed: 1,
+        group_id: myGroupId,
+        created_at: new Date().toISOString(),
+        checked: false,
+        claims: [],
+        creator_name: myParticipantName,
+      },
+    ])
     try {
       const res = await fetch(`/api/trips/${tripId}/packlist`, {
         method: 'POST',
@@ -483,18 +592,18 @@ export default function PacklistClient({
         body: JSON.stringify({ title, item_type }),
       })
       if (!res.ok) throw new Error()
-      toast.success('Hinzugefügt!')
-      refresh()
     } catch {
+      if (prev) queryClient.setQueryData(key, prev)
       toast.error('Fehler beim Speichern')
+    } finally {
+      queryClient.invalidateQueries({ queryKey: key })
     }
-  }
+  }, [queryClient, tripId, myParticipantId, myGroupId, myParticipantName])
 
   const isGroup = !!myGroupId
 
   const bringItems = items.filter(i => i.item_type === 'bringing')
   const needItems  = items.filter(i => i.item_type === 'group_need')
-  // Group_need items where the current user has made a claim
   const myClaimedNeedItems = needItems.filter(i => i.claims.some(c => c.participant_id === myParticipantId))
 
   return (
@@ -575,7 +684,6 @@ export default function PacklistClient({
                 item={item}
                 myParticipantId={myParticipantId}
                 tripId={tripId}
-                onRefresh={refresh}
                 isActive={isActive}
               />
             ))}
@@ -614,10 +722,10 @@ export default function PacklistClient({
               key={item.id}
               item={item}
               myParticipantId={myParticipantId}
+              myParticipantName={myParticipantName}
               myGroupId={myGroupId}
               myGroupName={myGroupName}
               tripId={tripId}
-              onRefresh={refresh}
               isActive={isActive}
             />
           ))

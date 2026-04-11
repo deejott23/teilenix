@@ -1,9 +1,10 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { queryKeys } from '@/lib/query/queryKeys'
 import ActivityCard from './ActivityCard'
 import AddActivitySheet from './AddActivitySheet'
 import type { ActivityWithVotes, TripParticipant } from '@/types/app'
@@ -51,7 +52,7 @@ export default function ActivityFeed({
   tripEndDate,
   isActive,
 }: ActivityFeedProps) {
-  const router = useRouter()
+  const queryClient = useQueryClient()
   const [activities, setActivities] = useState(initialActivities)
   const [filter, setFilter] = useState<FilterKey>('all')
   const [dateFilter, setDateFilter] = useState<DateFilter>(null)
@@ -70,8 +71,12 @@ export default function ActivityFeed({
       body: JSON.stringify(data),
     })
     if (!res.ok) throw new Error()
+    const newActivity: ActivityWithVotes = await res.json()
+    // Optimistic: add to local state immediately
+    setActivities(prev => [...prev, newActivity])
     toast.success('Ausflug vorgeschlagen!')
-    router.refresh()
+    // Background sync
+    queryClient.invalidateQueries({ queryKey: queryKeys.activities.byTrip(tripId) })
   }
 
   // Filter activities
