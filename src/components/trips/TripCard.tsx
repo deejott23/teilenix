@@ -1,6 +1,11 @@
+'use client'
+
 import Link from 'next/link'
+import { useQueryClient } from '@tanstack/react-query'
 import { ArrowRight, Calendar } from 'lucide-react'
 import { formatDate } from '@/lib/formatting'
+import { queryKeys } from '@/lib/query/queryKeys'
+import { fetchers } from '@/lib/query/fetchers'
 import type { Trip } from '@/types/app'
 import { cn } from '@/lib/utils'
 import { pickFallbackEmoji } from '@/lib/tripEmojis'
@@ -10,14 +15,27 @@ interface TripCardProps {
 }
 
 export default function TripCard({ trip }: TripCardProps) {
+  const queryClient = useQueryClient()
+
   const dateRange = trip.start_date && trip.end_date
     ? `${formatDate(trip.start_date)} – ${formatDate(trip.end_date)}`
     : trip.start_date ? `ab ${formatDate(trip.start_date)}` : null
   const active = trip.status === 'active'
   const emoji = (trip.cover_emoji as string | null) ?? pickFallbackEmoji(trip.name)
 
+  const prefetch = () => {
+    queryClient.prefetchQuery({ queryKey: queryKeys.expenses.withSplits(trip.id), queryFn: () => fetchers.expenses(trip.id), staleTime: 30_000 })
+    queryClient.prefetchQuery({ queryKey: queryKeys.packlist.byTrip(trip.id), queryFn: () => fetchers.packlist(trip.id), staleTime: 30_000 })
+    queryClient.prefetchQuery({ queryKey: queryKeys.shopping.byTrip(trip.id), queryFn: () => fetchers.shopping(trip.id), staleTime: 30_000 })
+  }
+
   return (
-    <Link href={`/trips/${trip.id}`} className="block group transition-transform duration-100 active:scale-[0.98]">
+    <Link
+      href={`/trips/${trip.id}`}
+      className="block group transition-transform duration-100 active:scale-[0.98]"
+      onMouseEnter={prefetch}
+      onTouchStart={prefetch}
+    >
       <div className={cn(
         'rounded-2xl card-shadow p-4 flex items-center gap-4 transition-[colors,box-shadow]',
         active ? 'bg-card group-hover:card-shadow-hover' : 'bg-card/60 opacity-80 group-hover:opacity-100'

@@ -19,44 +19,32 @@ export default async function ExpensesPage({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // Fetch trip status, participants, and expenses in parallel
-  const [{ data: trip }, { data: participantsRaw }, { data: expensesRaw }] = await Promise.all([
-    supabase.from('trips').select('status').eq('id', tripId).single(),
-    supabase.from('trip_participants').select('*').eq('trip_id', tripId),
-    supabase.from('expenses').select('*').eq('trip_id', tripId)
+  // Single round-trip: participants + expenses with splits joined
+  const [{ data: participantsRaw }, { data: expensesRaw }] = await Promise.all([
+    supabase.from('trip_participants').select('id, name, shares, user_id, group_id, is_group').eq('trip_id', tripId),
+    (supabase as any).from('expenses').select('*, expense_splits(*)').eq('trip_id', tripId)
       .order('expense_date', { ascending: false })
       .order('created_at', { ascending: false }),
+    supabase.from('trips').select('status').eq('id', tripId).single(),
   ])
 
   const participants = (participantsRaw ?? []) as TripParticipant[]
   const participantMap = new Map(participants.map(p => [p.id, p]))
+  const myParticipantId = participants.find(p => p.user_id === user.id)?.id ?? ''
 
-  const myParticipant = participants.find(p => p.user_id === user.id)
-  const myParticipantId = myParticipant?.id ?? ''
-
-  const expenseIds = ((expensesRaw ?? []) as { id: string }[]).map(e => e.id)
-  const { data: splitsRaw } = expenseIds.length > 0
-    ? await supabase.from('expense_splits').select('*').in('expense_id', expenseIds)
-    : { data: [] }
-
-  const splitsByExpense = new Map<string, unknown[]>()
-  ;((splitsRaw ?? []) as { expense_id: string }[]).forEach(s => {
-    const arr = splitsByExpense.get(s.expense_id) ?? []
-    arr.push(s)
-    splitsByExpense.set(s.expense_id, arr)
-  })
-
-  const expenses = ((expensesRaw ?? []) as { id: string; paid_by_participant_id: string }[])
+  const expenses = ((expensesRaw ?? []) as { id: string; paid_by_participant_id: string; expense_splits: { participant_id: string }[] }[])
     .map(e => ({
       ...e,
-      expense_splits: ((splitsByExpense.get(e.id) ?? []) as { participant_id: string }[]).map(s => ({
+      expense_splits: (e.expense_splits ?? []).map(s => ({
         ...s,
         participant: participantMap.get(s.participant_id) ?? { id: s.participant_id, name: 'Unbekannt', shares: 1 },
       })),
       participant: participantMap.get(e.paid_by_participant_id) ?? { id: e.paid_by_participant_id, name: 'Unbekannt', shares: 1 },
     })) as unknown as ExpenseWithSplits[]
 
-  // TanStack Query Cache mit Server-Daten vorbeladen
+  // Fetch trip status (needed for UI) — already in the Promise.all above via index 2
+  const { data: trip } = await supabase.from('trips').select('status').eq('id', tripId).maybeSingle()
+
   const queryClient = new QueryClient()
   queryClient.setQueryData(queryKeys.expenses.withSplits(tripId), expenses)
   const dehydratedState = dehydrate(queryClient)

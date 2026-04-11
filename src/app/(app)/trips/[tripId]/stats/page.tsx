@@ -3,9 +3,8 @@ import { redirect } from 'next/navigation'
 import GeldSubNav from '@/components/layout/GeldSubNav'
 import { computeSettlement } from '@/lib/settlement'
 import { formatCurrency, categoryLabels } from '@/lib/formatting'
-import SpendingByCategoryChart from '@/components/stats/SpendingByCategoryChart'
+import { SpendingByCategoryChart, SpendingOverTimeChart } from '@/components/stats/StatsCharts'
 import LeaderboardCard from '@/components/stats/LeaderboardCard'
-import SpendingOverTimeChart from '@/components/stats/SpendingOverTimeChart'
 import type { ExpenseWithSplits, TripParticipant } from '@/types/app'
 
 export default async function StatsPage({
@@ -18,44 +17,33 @@ export default async function StatsPage({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // Fetch everything in parallel
+  // Fetch everything in parallel — expenses joined with splits in one query
   const [{ data: participantsRaw }, { data: expensesRaw }, { data: packlistRaw }] = await Promise.all([
-    supabase.from('trip_participants').select('*').eq('trip_id', tripId),
-    supabase.from('expenses').select('*').eq('trip_id', tripId).order('expense_date', { ascending: true }),
-    supabase.from('packlist_items').select('*').eq('trip_id', tripId),
+    supabase.from('trip_participants').select('id, name, shares, user_id, group_id, is_group').eq('trip_id', tripId),
+    (supabase as any).from('expenses').select('*, expense_splits(*)').eq('trip_id', tripId).order('expense_date', { ascending: true }),
+    supabase.from('packlist_items').select('id, created_by_participant_id, item_type').eq('trip_id', tripId),
   ])
+
+  // Claims need packlistItemIds — sequential but only after packlist_items
+  const packlistItemIdsForClaims = ((packlistRaw ?? []) as { id: string }[]).map(i => i.id)
+  const { data: claimsRaw } = packlistItemIdsForClaims.length > 0
+    ? await supabase.from('packlist_claims').select('participant_id, quantity_claimed').in('item_id', packlistItemIdsForClaims)
+    : { data: [] }
 
   const participants = (participantsRaw ?? []) as TripParticipant[]
   const participantMap = new Map(participants.map(p => [p.id, p]))
 
-  // Fetch claims for this trip's packlist items
-  type PacklistRow = { id: string; created_by_participant_id: string; item_type: string; title: string }
+  type PacklistRow = { id: string; created_by_participant_id: string; item_type: string }
   const packlistItems = (packlistRaw ?? []) as unknown as PacklistRow[]
-  const packlistItemIds = packlistItems.map(i => i.id)
-  const { data: claimsRaw } = packlistItemIds.length > 0
-    ? await supabase.from('packlist_claims').select('*').in('item_id', packlistItemIds)
-    : { data: [] }
 
-  const expenseIds = ((expensesRaw ?? []) as { id: string }[]).map(e => e.id)
-  const { data: splitsRaw } = expenseIds.length > 0
-    ? await supabase.from('expense_splits').select('*').in('expense_id', expenseIds)
-    : { data: [] }
-
-  const splitsByExpense = new Map<string, unknown[]>()
-  ;((splitsRaw ?? []) as { expense_id: string }[]).forEach(s => {
-    const arr = splitsByExpense.get(s.expense_id) ?? []
-    arr.push(s)
-    splitsByExpense.set(s.expense_id, arr)
-  })
-
-  type ExpenseRow = { id: string; category: string; amount_cents: number; expense_date: string; paid_by_participant_id: string }
+  type ExpenseRow = { id: string; category: string; amount_cents: number; expense_date: string; paid_by_participant_id: string; expense_splits: { participant_id: string }[] }
   const expenseRows = (expensesRaw ?? []) as unknown as ExpenseRow[]
   // Exclude payment entries from expense stats
   const realExpenseRows = expenseRows.filter(e => e.category !== 'payment')
 
   const expenses = expenseRows.map(e => ({
     ...e,
-    expense_splits: ((splitsByExpense.get(e.id) ?? []) as { participant_id: string }[]).map(s => ({
+    expense_splits: (e.expense_splits ?? []).map(s => ({
       ...s,
       participant: participantMap.get(s.participant_id) ?? { id: s.participant_id, name: 'Unbekannt', shares: 1 },
     })),

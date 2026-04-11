@@ -38,11 +38,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ trip
 
   const participantMap = new Map((participantsRaw ?? []).map((p: { id: string; name: string }) => [p.id, p.name]))
 
-  // Votes are not filtered by trip_id directly — we need to filter by meal_idea_id
-  const ideaIds = (ideasRaw ?? []).map((i: { id: string }) => i.id)
-  const allVotes = ideaIds.length > 0
-    ? (await db.from('trip_meal_votes').select('*').in('meal_idea_id', ideaIds)).data ?? []
-    : []
+  const allVotes = votesRaw ?? []
 
   const ideas = (ideasRaw ?? []).map((raw: Record<string, unknown>) => {
     const ideaVotes = allVotes.filter((v: { meal_idea_id: string }) => v.meal_idea_id === raw.id)

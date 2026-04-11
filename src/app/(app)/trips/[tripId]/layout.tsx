@@ -5,6 +5,7 @@ import AddExpenseFab from '@/components/trips/AddExpenseFab'
 import TripEmojiPicker from '@/components/trips/TripEmojiPicker'
 import { ChevronLeft, Settings } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { pickFallbackEmoji } from '@/lib/tripEmojis'
 import { formatDate } from '@/lib/formatting'
 
@@ -22,7 +23,7 @@ export default async function TripLayout({
 
   const { data: trip } = await supabase
     .from('trips')
-    .select('*')
+    .select('id, status, name, cover_emoji, cover_image_url, start_date, end_date')
     .eq('id', tripId)
     .maybeSingle()
 
@@ -55,8 +56,7 @@ export default async function TripLayout({
         {/* Cover image background */}
         {coverImageUrl && (
           <div className="absolute inset-0 rounded-b-3xl overflow-hidden pointer-events-none">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={coverImageUrl} alt="" className="w-full h-full object-cover" />
+            <Image src={coverImageUrl} alt="" fill className="object-cover" sizes="100vw" priority />
             <div className="absolute inset-0" style={{ background: 'rgba(13,30,27,0.65)' }} />
           </div>
         )}

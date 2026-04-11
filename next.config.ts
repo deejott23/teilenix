@@ -52,6 +52,14 @@ const nextConfig: NextConfig = {
   compress: true,
   experimental: {
     viewTransition: true,
+    optimizePackageImports: ['lucide-react', 'date-fns', 'recharts'],
+  },
+  images: {
+    remotePatterns: [
+      { protocol: 'https', hostname: '*.supabase.co' },
+      { protocol: 'https', hostname: '*.supabase.com' },
+      { protocol: 'https', hostname: 'lh3.googleusercontent.com' },
+    ],
   },
   async headers() {
     return [
