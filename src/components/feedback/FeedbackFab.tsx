@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { usePathname } from 'next/navigation'
-import { MessageCircle, X, Send, CheckCircle } from 'lucide-react'
+import Link from 'next/link'
+import { MessageCircle, X, Send, CheckCircle, List } from 'lucide-react'
 import { featureLabelFromPath } from '@/lib/tester'
 
 export default function FeedbackFab() {
@@ -99,6 +100,14 @@ export default function FeedbackFab() {
                   <Send className="w-4 h-4" />
                   {loading ? 'Wird gespeichert…' : 'Absenden'}
                 </button>
+                <Link
+                  href="/feedback"
+                  onClick={() => setOpen(false)}
+                  className="w-full flex items-center justify-center gap-2 text-slate-500 text-xs py-1.5 hover:text-slate-700 transition-colors"
+                >
+                  <List className="w-3.5 h-3.5" />
+                  Alle Kommentare ansehen
+                </Link>
               </form>
             )}
           </div>
