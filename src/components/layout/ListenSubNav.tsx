@@ -24,9 +24,10 @@ export default function ListenSubNav({ tripId }: { tripId: string }) {
             className={cn(
               'flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[13px] font-semibold transition-all',
               isActive
-                ? 'bg-primary text-white'
+                ? 'text-white'
                 : 'bg-card border border-border text-muted-foreground hover:text-foreground hover:bg-muted'
             )}
+            style={isActive ? { background: 'var(--section-listen)' } : undefined}
           >
             <Icon className="w-3.5 h-3.5" strokeWidth={isActive ? 2.2 : 1.7} />
             {label}

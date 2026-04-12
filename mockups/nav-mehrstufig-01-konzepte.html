@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TeileniX – Mehrstufige Navigation: Konzepte</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #111827;
+  padding: 40px 20px 80px;
+  min-height: 100vh;
+}
+h1 {
+  color: white;
+  text-align: center;
+  font-size: 24px;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+.page-sub {
+  color: rgba(255,255,255,0.45);
+  text-align: center;
+  font-size: 14px;
+  margin-bottom: 12px;
+  line-height: 1.6;
+}
+.problem-box {
+  max-width: 700px;
+  margin: 0 auto 48px;
+  background: rgba(239,68,68,0.12);
+  border: 1px solid rgba(239,68,68,0.3);
+  border-radius: 12px;
+  padding: 16px 20px;
+  color: rgba(255,255,255,0.8);
+  font-size: 13px;
+  line-height: 1.7;
+}
+.problem-box strong { color: #f87171; }
+
+.section-title {
+  color: rgba(255,255,255,0.9);
+  font-size: 18px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 6px;
+}
+.section-note {
+  color: rgba(255,255,255,0.4);
+  font-size: 12px;
+  text-align: center;
+  margin-bottom: 32px;
+}
+.divider {
+  border: none;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  margin: 56px 0 40px;
+}
+
+.screens-row {
+  display: flex;
+  gap: 28px;
+  justify-content: center;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+.screen-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.screen-label {
+  color: rgba(255,255,255,0.5);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.badge-new {
+  display: inline-block;
+  background: #22c55e;
+  color: white;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 99px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+.badge-ref {
+  display: inline-block;
+  background: rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.5);
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 99px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+/* ── Phone shell ── */
+.phone {
+  width: 310px;
+  background: #f5f7f9;
+  border-radius: 44px;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.07);
+  position: relative;
+}
+.phone-inner {
+  border-radius: 40px;
+  overflow: hidden;
+  position: relative;
+  background: #f5f7f9;
+}
+.status-bar {
+  background: white;
+  padding: 12px 20px 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: #1f2937;
+}
+.status-icons { display: flex; gap: 5px; align-items: center; }
+.status-dot { width: 6px; height: 6px; background: #374151; border-radius: 50%; }
+.screen-content {
+  min-height: 560px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+.screen-scrollable {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 0 12px;
+}
+
+/* ── Common UI atoms ── */
+.card {
+  background: white;
+  border-radius: 14px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+}
+.item-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 14px;
+  border-bottom: 1px solid #f3f4f6;
+  font-size: 13px;
+  color: #374151;
+}
+.item-row:last-child { border-bottom: none; }
+.checkbox {
+  width: 18px; height: 18px;
+  border-radius: 5px;
+  border: 2px solid #d1d5db;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.checkbox.checked { background: #14b8a6; border-color: #14b8a6; }
+.check-icon { color: white; font-size: 11px; font-weight: 900; }
+.item-name { flex: 1; }
+.item-name.checked { text-decoration: line-through; color: #9ca3af; }
+.chip {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 99px;
+}
+.chip-teal { background: #ccfbf1; color: #0f766e; }
+.chip-blue { background: #dbeafe; color: #1d4ed8; }
+.chip-amber { background: #fef3c7; color: #b45309; }
+.chip-purple { background: #ede9fe; color: #7c3aed; }
+
+/* ── BOTTOM NAV (baseline) ── */
+.bottom-nav {
+  background: white;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  padding: 8px 0 16px;
+}
+.bnav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  cursor: pointer;
+}
+.bnav-icon {
+  width: 26px; height: 26px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 8px;
+  font-size: 16px;
+}
+.bnav-icon.active { background: #f0fdfa; }
+.bnav-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: #9ca3af;
+}
+.bnav-label.active { color: #14b8a6; }
+
+/* ── SUB NAV (baseline pills) ── */
+.sub-nav {
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 8px 14px;
+  display: flex;
+  gap: 6px;
+}
+.sub-pill {
+  padding: 5px 13px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  background: #f3f4f6;
+}
+.sub-pill.active {
+  background: #14b8a6;
+  color: white;
+}
+
+/* ── PAGE HEADER ── */
+.page-header {
+  background: white;
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid #e5e7eb;
+}
+.page-header-title {
+  font-size: 17px;
+  font-weight: 800;
+  color: #111827;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.page-header-sub {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+/* ── IN-PAGE SEGMENT TABS ── */
+.segment-tabs {
+  display: flex;
+  background: #f3f4f6;
+  border-radius: 10px;
+  margin: 12px 14px;
+  padding: 3px;
+}
+.seg-tab {
+  flex: 1;
+  text-align: center;
+  padding: 7px 4px;
+  font-size: 11.5px;
+  font-weight: 600;
+  border-radius: 8px;
+  color: #6b7280;
+}
+.seg-tab.active {
+  background: white;
+  color: #0f766e;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* ── SECTION HEADER (within page) ── */
+.section-header-inline {
+  padding: 12px 14px 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* ── PROS / CONS ── */
+.verdict-box {
+  max-width: 310px;
+  text-align: left;
+}
+.verdict-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.35);
+  margin-bottom: 6px;
+}
+.verdict-line {
+  font-size: 12px;
+  color: rgba(255,255,255,0.65);
+  line-height: 1.6;
+  margin-bottom: 2px;
+  display: flex;
+  gap: 6px;
+}
+.verdict-line::before { flex-shrink: 0; }
+.pro::before { content: '✓'; color: #34d399; }
+.con::before { content: '✗'; color: #f87171; }
+</style>
+</head>
+<body>
+
+<h1>TeileniX – Mehrstufige Navigation</h1>
+<p class="page-sub">Konzepte zur klareren Darstellung der Navigationshierarchie<br>Fokus: Listen (Packliste) · Essen</p>
+
+<div class="problem-box" style="max-width:700px;margin:0 auto 48px">
+  <strong>Problem:</strong> Die aktuelle Navigation hat 3 Ebenen ohne klares visuelles Signal:
+  Bottom Nav → Sub-Tab → In-Page-Tabs. Nutzer verlieren den Kontext, wo sie sich befinden –
+  z.B. <em>Listen &rsaquo; Packliste &rsaquo; Ich bringe mit</em> vs. <em>Listen &rsaquo; Einkaufszettel</em>.
+  Auch <em>Planen &rsaquo; Essen</em> ist nicht intuitiv.
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- KONZEPT 0 – IST-ZUSTAND -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<p class="section-title">Ist-Zustand <span class="badge-ref">Referenz</span></p>
+<p class="section-note">Aktuelle Implementierung – 3 stumme Ebenen ohne Kontext-Signal</p>
+
+<div class="screens-row">
+
+  <!-- Screen: Listen > Packliste > Ich bringe mit -->
+  <div class="screen-wrap">
+    <div class="screen-label">Listen › Packliste › Ich bringe mit</div>
+    <div class="phone"><div class="phone-inner">
+      <div class="status-bar"><span>9:41</span><div class="status-icons"><div class="status-dot"></div><div class="status-dot"></div><div class="status-dot"></div></div></div>
+      <div class="screen-content">
+        <!-- Sub Nav: Packliste | Einkaufszettel -->
+        <div class="sub-nav">
+          <div class="sub-pill active">🎒 Packliste</div>
+          <div class="sub-pill">🛒 Einkaufszettel</div>
+        </div>
+        <!-- In-page Segment -->
+        <div class="segment-tabs">
+          <div class="seg-tab active">Ich bringe mit</div>
+          <div class="seg-tab">Gruppenbedarfe</div>
+        </div>
+        <div class="screen-scrollable">
+          <div style="padding:0 14px">
+            <div class="card">
+              <div class="item-row"><div class="checkbox checked"><div class="check-icon">✓</div></div><div class="item-name checked">Zelt</div></div>
+              <div class="item-row"><div class="checkbox"></div><div class="item-name">Schlafsack</div></div>
+              <div class="item-row"><div class="checkbox"></div><div class="item-name">Isomatte</div></div>
+              <div class="item-row"><div class="checkbox"></div><div class="item-name">Regenjacke</div></div>
+            </div>
+          </div>
+        </div>
+        <!-- Bottom Nav -->
+        <div class="bottom-nav">
+          <div class="bnav-item"><div class="bnav-icon">🏠</div><div class="bnav-label">Home</div></div>
+          <div class="bnav-item"><div class="bnav-icon">💰</div><div class="bnav-label">Geld</div></div>
+          <div class="bnav-item"><div class="bnav-icon">📅</div><div class="bnav-label">Planen</div></div>
+          <div class="bnav-item"><div class="bnav-icon active" style="font-size:18px">📋</div><div class="bnav-label active">Listen</div></div>
+        </div>
+      </div>
+    </div></div>
+    <div class="verdict-box">
+      <div class="verdict-label">Problem</div>
+      <div class="verdict-line con">Wo bin ich? Kein Context-Signal</div>
+      <div class="verdict-line con">Sub-Nav und Segment-Tabs sehen identisch aus</div>
+      <div class="verdict-line con">"Listen" → was ist das? Unklar ohne Suche</div>
+    </div>
+  </div>
+
+  <!-- Screen: Planen > Essen -->
+  <div class="screen-wrap">
+    <div class="screen-label">Planen › Essen</div>
+    <div class="phone"><div class="phone-inner">
+      <div class="status-bar"><span>9:41</span><div class="status-icons"><div class="status-dot"></div><div class="status-dot"></div><div class="status-dot"></div></div></div>
+      <div class="screen-content">
+        <div class="sub-nav">
+          <div class="sub-pill">✈️ Ausflüge</div>
+          <div class="sub-pill active">🍽️ Essen</div>
+        </div>
+        <div class="screen-scrollable" style="padding:12px 14px 0">
+          <div class="card" style="margin-bottom:10px">
+            <div class="item-row" style="flex-direction:column;align-items:flex-start;gap:4px">
+              <div style="font-weight:700;font-size:13px">Sa, 14. Jun – Abend</div>
+              <div style="font-size:12px;color:#6b7280">Pasta mit Tomatensoße</div>
+              <div class="chip chip-teal" style="margin-top:2px">Anna kocht</div>
+            </div>
+          </div>
+          <div class="card" style="margin-bottom:10px">
+            <div class="item-row" style="flex-direction:column;align-items:flex-start;gap:4px">
+              <div style="font-weight:700;font-size:13px">So, 15. Jun – Mittag</div>
+              <div style="font-size:12px;color:#6b7280">Grillabend</div>
+              <div class="chip chip-amber" style="margin-top:2px">Idee – noch offen</div>
+            </div>
+          </div>
+        </div>
+        <div class="bottom-nav">
+          <div class="bnav-item"><div class="bnav-icon">🏠</div><div class="bnav-label">Home</div></div>
+          <div class="bnav-item"><div class="bnav-icon">💰</div><div class="bnav-label">Geld</div></div>
+          <div class="bnav-item"><div class="bnav-icon active" style="font-size:18px">📅</div><div class="bnav-label active">Planen</div></div>
+          <div class="bnav-item"><div class="bnav-icon">📋</div><div class="bnav-label">Listen</div></div>
+        </div>
+      </div>
+    </div></div>
+    <div class="verdict-box">
+      <div class="verdict-label">Problem</div>
+      <div class="verdict-line con">"Planen → Essen" unlogisch – Essen fühlt sich eigenständig an</div>
+      <div class="verdict-line con">Sub-Tabs ohne visuelle Hierarchie zum Bottom-Nav</div>
+    </div>
+  </div>
+
+</div>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- KONZEPT A – KONTEXT-HEADER -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<p class="section-title">Konzept A – Kontext-Header <span class="badge-new">Vorschlag</span></p>
+<p class="section-note">Aktiver Bereich + Unterseite im Header sichtbar. Bottom Nav bleibt unverändert.<br>Minimaler Eingriff, maximale Klarheit.</p>
+
+<div class="screens-row">
+
+  <!-- A1: Listen > Packliste > Ich bringe mit -->
+  <div class="screen-wrap">
+    <div class="screen-label">Listen › Packliste › Ich bringe mit</div>
+    <div class="phone"><div class="phone-inner">
+      <div class="status-bar"><span>9:41</span><div class="status-icons"><div class="status-dot"></div><div class="status-dot"></div><div class="status-dot"></div></div></div>
+      <div class="screen-content">
+
+        <!-- Context Header -->
+        <div style="background:white;border-bottom:1px solid #e5e7eb;padding:12px 16px 10px">
+          <!-- Breadcrumb -->
+          <div style="display:flex;align-items:center;gap:5px;margin-bottom:6px">
+            <span style="font-size:11px;color:#9ca3af;font-weight:600">Listen</span>
+            <span style="font-size:11px;color:#d1d5db">›</span>
+            <span style="font-size:11px;color:#14b8a6;font-weight:700;background:#f0fdfa;padding:1px 8px;border-radius:99px">🎒 Packliste</span>
+          </div>
+          <!-- Sub-tabs inside header -->
+          <div style="display:flex;gap:6px">
+            <div style="padding:5px 12px;border-radius:8px;font-size:12px;font-weight:600;background:#f3f4f6;color:#6b7280">🛒 Einkaufszettel</div>
+          </div>
+        </div>
+
+        <!-- Segment -->
+        <div class="segment-tabs" style="margin-top:10px">
+          <div class="seg-tab active">👤 Ich bringe mit</div>
+          <div class="seg-tab">👥 Gruppenbedarfe</div>
+        </div>
+
+        <div class="screen-scrollable">
+          <div style="padding:0 14px">
+            <div class="card">
+              <div class="item-row"><div class="checkbox checked"><div class="check-icon">✓</div></div><div class="item-name checked">Zelt</div></div>
+              <div class="item-row"><div class="checkbox"></div><div class="item-name">Schlafsack</div></div>
+              <div class="item-row"><div class="checkbox"></div><div class="item-name">Isomatte</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="bottom-nav">
+          <div class="bnav-item"><div class="bnav-icon">🏠</div><div class="bnav-label">Home</div></div>
+          <div class="bnav-item"><div class="bnav-icon">💰</div><div class="bnav-label">Geld</div></div>
+          <div class="bnav-item"><div class="bnav-icon">📅</div><div class="bnav-label">Planen</div></div>
+          <div class="bnav-item"><div class="bnav-icon active">📋</div><div class="bnav-label active">Listen</div></div>
+        </div>
+      </div>
+    </div></div>
+    <div class="verdict-box">
+      <div class="verdict-label">Bewertung</div>
+      <div class="verdict-line pro">Breadcrumb zeigt sofort: Listen › Packliste</div>
+      <div class="verdict-line pro">Einkaufszettel-Tab bleibt erreichbar</div>
+      <div class="verdict-line pro">Kleiner Umbau, funktioniert sofort</div>
+      <div class="verdict-line con">Header wird etwas höher</div>
+    </div>
+  </div>
+
+  <!-- A2: Packliste > Gruppenbedarfe -->
+  <div class="screen-wrap">
+    <div class="screen-label">Listen › Packliste › Gruppenbedarfe</div>
+    <div class="phone"><div class="phone-inner">
+      <div class="status-bar"><span>9:41</span><div class="status-icons"><div class="status-dot"></div><div class="status-dot"></div><div class="status-dot"></div></div></div>
+      <div class="screen-content">
+        <div style="background:white;border-bottom:1px solid #e5e7eb;padding:12px 16px 10px">
+          <div style="display:flex;align-items:center;gap:5px;margin-bottom:6px">
+            <span style="font-size:11px;color:#9ca3af;font-weight:600">Listen</span>
+            <span style="font-size:11px;color:#d1d5db">›</span>
+            <span style="font-size:11px;color:#14b8a6;font-weight:700;background:#f0fdfa;padding:1px 8px;border-radius:99px">🎒 Packliste</span>
+          </div>
+          <div style="display:flex;gap:6px">
+            <div style="padding:5px 12px;border-radius:8px;font-size:12px;font-weight:600;background:#f3f4f6;color:#6b7280">🛒 Einkaufszettel</div>
+          </div>
+        </div>
+        <div class="segment-tabs" style="margin-top:10px">
+          <div class="seg-tab">👤 Ich bringe mit</div>
+          <div class="seg-tab active">👥 Gruppenbedarfe</div>
+        </div>
+        <div class="screen-scrollable">
+          <div style="padding:0 14px">
+            <div style="font-size:11px;color:#9ca3af;padding:10px 2px 6px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em">Noch gesucht</div>
+            <div class="card">
+              <div class="item-row">
+                <div style="flex:1">
+                  <div style="font-size:13px;font-weight:600;color:#111827">Gaskocher</div>
+                  <div style="font-size:11px;color:#6b7280;margin-top:1px">Wird noch benötigt</div>
+                </div>
+                <div class="chip chip-amber">Offen</div>
+              </div>
+              <div class="item-row">
+                <div style="flex:1">
+                  <div style="font-size:13px;font-weight:600;color:#111827">Erste-Hilfe-Set</div>
+                  <div style="font-size:11px;color:#6b7280;margin-top:1px">Wird noch benötigt</div>
+                </div>
+                <div class="chip chip-amber">Offen</div>
+              </div>
+            </div>
+            <div style="font-size:11px;color:#9ca3af;padding:14px 2px 6px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em">Übernommen</div>
+            <div class="card">
+              <div class="item-row">
+                <div style="flex:1">
+                  <div style="font-size:13px;font-weight:600;color:#374151">Lagerfeuer-Besteck</div>
+                  <div style="font-size:11px;color:#14b8a6;margin-top:1px">Max bringt mit</div>
+                </div>
+                <div class="chip chip-teal">✓</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="bottom-nav">
+          <div class="bnav-item"><div class="bnav-icon">🏠</div><div class="bnav-label">Home</div></div>
+          <div class="bnav-item"><div class="bnav-icon">💰</div><div class="bnav-label">Geld</div></div>
+          <div class="bnav-item"><div class="bnav-icon">📅</div><div class="bnav-label">Planen</div></div>
+          <div class="bnav-item"><div class="bnav-icon active">📋</div><div class="bnav-label active">Listen</div></div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- A3: Planen > Essen -->
+  <div class="screen-wrap">
+    <div class="screen-label">Planen › Essen</div>
+    <div class="phone"><div class="phone-inner">
+      <div class="status-bar"><span>9:41</span><div class="status-icons"><div class="status-dot"></div><div class="status-dot"></div><div class="status-dot"></div></div></div>
+      <div class="screen-content">
+        <div style="background:white;border-bottom:1px solid #e5e7eb;padding:12px 16px 10px">
+          <div style="display:flex;align-items:center;gap:5px;margin-bottom:6px">
+            <span style="font-size:11px;color:#9ca3af;font-weight:600">Planen</span>
+            <span style="font-size:11px;color:#d1d5db">›</span>
+            <span style="font-size:11px;color:#f59e0b;font-weight:700;background:#fffbeb;padding:1px 8px;border-radius:99px">🍽️ Essen</span>
+          </div>
+          <div style="display:flex;gap:6px">
+            <div style="padding:5px 12px;border-radius:8px;font-size:12px;font-weight:600;background:#f3f4f6;color:#6b7280">✈️ Ausflüge</div>
+          </div>
+        </div>
+        <div class="screen-scrollable" style="padding:10px 14px 0">
+          <div class="card" style="margin-bottom:10px">
+            <div class="item-row" style="flex-direction:column;align-items:flex-start;gap:4px">
+              <div style="font-size:11px;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:0.06em">Sa 14. Jun · Abend</div>
+              <div style="font-weight:700;font-size:14px;color:#111827">Pasta mit Tomatensoße</div>
+              <div class="chip chip-teal">Anna kocht</div>
+            </div>
+          </div>
+          <div class="card" style="margin-bottom:10px">
+            <div class="item-row" style="flex-direction:column;align-items:flex-start;gap:4px">
+              <div style="font-size:11px;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:0.06em">So 15. Jun · Mittag</div>
+              <div style="font-weight:700;font-size:14px;color:#111827">Grillabend</div>
+              <div class="chip chip-amber">Idee – noch offen</div>
+            </div>
+          </div>
+        </div>
+        <div class="bottom-nav">
+          <div class="bnav-item"><div class="bnav-icon">🏠</div><div class="bnav-label">Home</div></div>
+          <div class="bnav-item"><div class="bnav-icon">💰</div><div class="bnav-label">Geld</div></div>
+          <div class="bnav-item"><div class="bnav-icon active">📅</div><div class="bnav-label active">Planen</div></div>
+          <div class="bnav-item"><div class="bnav-icon">📋</div><div class="bnav-label">Listen</div></div>
+        </div>
+      </div>
+    </div></div>
+    <div class="verdict-box">
+      <div class="verdict-label">Bewertung</div>
+      <div class="verdict-line pro">Breadcrumb "Planen › Essen" sofort verständlich</div>
+      <div class="verdict-line pro">"Ausflüge" als Tab sichtbar – kein verlorener Kontext</div>
+    </div>
+  </div>
+
+</div>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- KONZEPT B – ERWEITERBARE BOTTOM NAV -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<p class="section-title">Konzept B – Erweiternde Bottom-Nav <span class="badge-new">Vorschlag</span></p>
+<p class="section-note">Beim Antippen eines Bottom-Nav-Items erscheinen die Unterseiten direkt über der Nav-Bar.<br>Hierarchie wird sichtbar ohne extra Header-Zeile.</p>
+
+<div class="screens-row">
+
+  <!-- B1: Listen aktiv + Untermenü offen -->
+  <div class="screen-wrap">
+    <div class="screen-label">Tap "Listen" → Untermenü öffnet sich</div>
+    <div class="phone"><div class="phone-inner">
+      <div class="status-bar"><span>9:41</span><div class="status-icons"><div class="status-dot"></div><div class="status-dot"></div><div class="status-dot"></div></div></div>
+      <div class="screen-content">
+        <!-- Minimal page header -->
+        <div class="page-header">
+          <div class="page-header-title">🎒 Packliste</div>
+        </div>
+        <div class="segment-tabs" style="margin-top:10px">
+          <div class="seg-tab active">👤 Ich bringe mit</div>
+          <div class="seg-tab">👥 Gruppenbedarfe</div>
+        </div>
+        <div class="screen-scrollable">
+          <div style="padding:0 14px">
+            <div class="card">
+              <div class="item-row"><div class="checkbox checked"><div class="check-icon">✓</div></div><div class="item-name checked">Zelt</div></div>
+              <div class="item-row"><div class="checkbox"></div><div class="item-name">Schlafsack</div></div>
+              <div class="item-row"><div class="checkbox"></div><div class="item-name">Isomatte</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sub-item bar (between page & bottom nav) -->
+        <div style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:6px 10px;display:flex;gap:6px;align-items:center">
+          <span style="font-size:10px;color:#9ca3af;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;margin-right:4px">Listen:</span>
+          <div style="padding:5px 11px;border-radius:8px;font-size:12px;font-weight:700;background:#14b8a6;color:white">🎒 Packliste</div>
+          <div style="padding:5px 11px;border-radius:8px;font-size:12px;font-weight:600;color:#6b7280;background:#f3f4f6">🛒 Einkauf</div>
+        </div>
+        <div class="bottom-nav" style="border-top:none">
+          <div class="bnav-item"><div class="bnav-icon">🏠</div><div class="bnav-label">Home</div></div>
+          <div class="bnav-item"><div class="bnav-icon">💰</div><div class="bnav-label">Geld</div></div>
+          <div class="bnav-item"><div class="bnav-icon">📅</div><div class="bnav-label">Planen</div></div>
+          <div class="bnav-item"><div class="bnav-icon active" style="position:relative">📋<div style="position:absolute;bottom:-2px;left:50%;transform:translateX(-50%);width:18px;height:2px;background:#14b8a6;border-radius:99px"></div></div><div class="bnav-label active">Listen</div></div>
+        </div>
+      </div>
+    </div></div>
+    <div class="verdict-box">
+      <div class="verdict-label">Bewertung</div>
+      <div class="verdict-line pro">Unterseiten sichtbar im Kontext der Nav-Bar</div>
+      <div class="verdict-line pro">Kein extra Header-Platz nötig</div>
+      <div class="verdict-line con">Leiste nimmt Platz – enger auf kleinen Screens</div>
+      <div class="verdict-line con">Animationsaufwand beim Ein-/Ausblenden</div>
+    </div>
+  </div>
+
+  <!-- B2: Planen aktiv -->
+  <div class="screen-wrap">
+    <div class="screen-label">Planen aktiv mit Untermenü</div>
+    <div class="phone"><div class="phone-inner">
+      <div class="status-bar"><span>9:41</span><div class="status-icons"><div class="status-dot"></div><div class="status-dot"></div><div class="status-dot"></div></div></div>
+      <div class="screen-content">
+        <div class="page-header">
+          <div class="page-header-title">🍽️ Essen</div>
+        </div>
+        <div class="screen-scrollable" style="padding:12px 14px 0">
+          <div class="card" style="margin-bottom:10px">
+            <div class="item-row" style="flex-direction:column;align-items:flex-start;gap:4px">
+              <div style="font-size:11px;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:0.06em">Sa 14. Jun · Abend</div>
+              <div style="font-weight:700;font-size:14px;color:#111827">Pasta mit Tomatensoße</div>
+              <div class="chip chip-teal">Anna kocht</div>
+            </div>
+          </div>
+          <div class="card" style="margin-bottom:10px">
+            <div class="item-row" style="flex-direction:column;align-items:flex-start;gap:4px">
+              <div style="font-size:11px;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:0.06em">So 15. Jun · Mittag</div>
+              <div style="font-weight:700;font-size:14px;color:#111827">Grillabend</div>
+              <div class="chip chip-amber">Idee – noch offen</div>
+            </div>
+          </div>
+        </div>
+        <div style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:6px 10px;display:flex;gap:6px;align-items:center">
+          <span style="font-size:10px;color:#9ca3af;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;margin-right:4px">Planen:</span>
+          <div style="padding:5px 11px;border-radius:8px;font-size:12px;font-weight:600;color:#6b7280;background:#f3f4f6">✈️ Ausflüge</div>
+          <div style="padding:5px 11px;border-radius:8px;font-size:12px;font-weight:700;background:#f59e0b;color:white">🍽️ Essen</div>
+        </div>
+        <div class="bottom-nav" style="border-top:none">
+          <div class="bnav-item"><div class="bnav-icon">🏠</div><div class="bnav-label">Home</div></div>
+          <div class="bnav-item"><div class="bnav-icon">💰</div><div class="bnav-label">Geld</div></div>
+          <div class="bnav-item"><div class="bnav-icon active">📅</div><div class="bnav-label active">Planen</div></div>
+          <div class="bnav-item"><div class="bnav-icon">📋</div><div class="bnav-label">Listen</div></div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+
+</div>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- KONZEPT C – FARBCODIERTE BEREICHE -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<p class="section-title">Konzept C – Farbcodierte Bereiche <span class="badge-new">Vorschlag</span></p>
+<p class="section-note">Jeder Hauptbereich hat eine Akzentfarbe. Farbe zieht sich durch Header, Sub-Nav und Tabs.<br>Orientierung durch Farbe statt durch Lesen.</p>
+
+<div class="screens-row">
+
+  <!-- C1: Listen (teal) > Packliste > Ich bringe mit -->
+  <div class="screen-wrap">
+    <div class="screen-label">Listen (Teal) › Packliste › Ich bringe mit</div>
+    <div class="phone"><div class="phone-inner">
+      <div class="status-bar" style="background:#0d9488;color:white"><span>9:41</span><div class="status-icons"><div class="status-dot" style="background:rgba(255,255,255,0.7)"></div><div class="status-dot" style="background:rgba(255,255,255,0.7)"></div><div class="status-dot" style="background:rgba(255,255,255,0.7)"></div></div></div>
+      <div class="screen-content">
+        <!-- Color-coded section header -->
+        <div style="background:#0d9488;padding:10px 16px 14px">
+          <div style="font-size:11px;color:rgba(255,255,255,0.65);font-weight:600;margin-bottom:4px">Listen</div>
+          <div style="display:flex;gap:6px">
+            <div style="padding:6px 14px;border-radius:9px;font-size:13px;font-weight:700;background:rgba(255,255,255,0.2);color:white;backdrop-filter:blur(4px)">🎒 Packliste</div>
+            <div style="padding:6px 14px;border-radius:9px;font-size:13px;font-weight:600;color:rgba(255,255,255,0.65)">🛒 Einkauf</div>
+          </div>
+        </div>
+        <!-- Segment inside page -->
+        <div style="display:flex;margin:0;background:white;border-bottom:1px solid #e5e7eb">
+          <div style="flex:1;text-align:center;padding:9px;font-size:12px;font-weight:700;color:#0d9488;border-bottom:2px solid #0d9488">👤 Ich bringe mit</div>
+          <div style="flex:1;text-align:center;padding:9px;font-size:12px;font-weight:600;color:#9ca3af">👥 Gruppenbedarfe</div>
+        </div>
+        <div class="screen-scrollable">
+          <div style="padding:10px 14px 0">
+            <div class="card">
+              <div class="item-row"><div class="checkbox checked" style="border-color:#0d9488;background:#0d9488"><div class="check-icon">✓</div></div><div class="item-name checked">Zelt</div></div>
+              <div class="item-row"><div class="checkbox"></div><div class="item-name">Schlafsack</div></div>
+              <div class="item-row"><div class="checkbox"></div><div class="item-name">Isomatte</div></div>
+              <div class="item-row"><div class="checkbox"></div><div class="item-name">Regenjacke</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="bottom-nav">
+          <div class="bnav-item"><div class="bnav-icon">🏠</div><div class="bnav-label">Home</div></div>
+          <div class="bnav-item"><div class="bnav-icon">💰</div><div class="bnav-label">Geld</div></div>
+          <div class="bnav-item"><div class="bnav-icon">📅</div><div class="bnav-label">Planen</div></div>
+          <div class="bnav-item">
+            <div class="bnav-icon" style="background:#f0fdfa">📋</div>
+            <div class="bnav-label" style="color:#0d9488">Listen</div>
+          </div>
+        </div>
+      </div>
+    </div></div>
+    <div class="verdict-box">
+      <div class="verdict-label">Bewertung</div>
+      <div class="verdict-line pro">Farbe als sofortiger Kontext-Anker</div>
+      <div class="verdict-line pro">Unterseiten im farbigen Header – Hierarchie sichtbar</div>
+      <div class="verdict-line pro">Segment-Tabs mit Unterstrich differenzieren sich von Sub-Tabs</div>
+      <div class="verdict-line con">Mehr visuelle Komplexität (4 Farben pflegen)</div>
+      <div class="verdict-line con">Passt nicht zur aktuellen Teal-only-Palette</div>
+    </div>
+  </div>
+
+  <!-- C2: Planen (indigo) > Essen -->
+  <div class="screen-wrap">
+    <div class="screen-label">Planen (Indigo) › Essen</div>
+    <div class="phone"><div class="phone-inner">
+      <div class="status-bar" style="background:#4f46e5;color:white"><span>9:41</span><div class="status-icons"><div class="status-dot" style="background:rgba(255,255,255,0.7)"></div><div class="status-dot" style="background:rgba(255,255,255,0.7)"></div><div class="status-dot" style="background:rgba(255,255,255,0.7)"></div></div></div>
+      <div class="screen-content">
+        <div style="background:#4f46e5;padding:10px 16px 14px">
+          <div style="font-size:11px;color:rgba(255,255,255,0.65);font-weight:600;margin-bottom:4px">Planen</div>
+          <div style="display:flex;gap:6px">
+            <div style="padding:6px 14px;border-radius:9px;font-size:13px;font-weight:600;color:rgba(255,255,255,0.65)">✈️ Ausflüge</div>
+            <div style="padding:6px 14px;border-radius:9px;font-size:13px;font-weight:700;background:rgba(255,255,255,0.2);color:white">🍽️ Essen</div>
+          </div>
+        </div>
+        <div class="screen-scrollable" style="padding:12px 14px 0">
+          <div class="card" style="margin-bottom:10px">
+            <div class="item-row" style="flex-direction:column;align-items:flex-start;gap:4px">
+              <div style="font-size:11px;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:0.06em">Sa 14. Jun · Abend</div>
+              <div style="font-weight:700;font-size:14px;color:#111827">Pasta mit Tomatensoße</div>
+              <div class="chip" style="background:#ede9fe;color:#4f46e5">Anna kocht</div>
+            </div>
+          </div>
+          <div class="card" style="margin-bottom:10px">
+            <div class="item-row" style="flex-direction:column;align-items:flex-start;gap:4px">
+              <div style="font-size:11px;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:0.06em">So 15. Jun · Mittag</div>
+              <div style="font-weight:700;font-size:14px;color:#111827">Grillabend</div>
+              <div class="chip chip-amber">Idee – noch offen</div>
+            </div>
+          </div>
+        </div>
+        <div class="bottom-nav">
+          <div class="bnav-item"><div class="bnav-icon">🏠</div><div class="bnav-label">Home</div></div>
+          <div class="bnav-item"><div class="bnav-icon">💰</div><div class="bnav-label">Geld</div></div>
+          <div class="bnav-item">
+            <div class="bnav-icon" style="background:#eef2ff">📅</div>
+            <div class="bnav-label" style="color:#4f46e5">Planen</div>
+          </div>
+          <div class="bnav-item"><div class="bnav-icon">📋</div><div class="bnav-label">Listen</div></div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+
+</div>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- EMPFEHLUNG -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<p class="section-title">Empfehlung</p>
+<p class="section-note">Vergleich der Konzepte nach Aufwand und Wirkung</p>
+
+<div style="max-width:680px;margin:0 auto">
+  <table style="width:100%;border-collapse:collapse;font-size:13px;color:rgba(255,255,255,0.8)">
+    <thead>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.1)">
+        <th style="text-align:left;padding:10px 12px;color:rgba(255,255,255,0.4);font-size:11px;text-transform:uppercase;letter-spacing:0.08em">Konzept</th>
+        <th style="text-align:center;padding:10px 12px;color:rgba(255,255,255,0.4);font-size:11px;text-transform:uppercase;letter-spacing:0.08em">Klarheit</th>
+        <th style="text-align:center;padding:10px 12px;color:rgba(255,255,255,0.4);font-size:11px;text-transform:uppercase;letter-spacing:0.08em">Umbauaufwand</th>
+        <th style="text-align:left;padding:10px 12px;color:rgba(255,255,255,0.4);font-size:11px;text-transform:uppercase;letter-spacing:0.08em">Geeignet wenn</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.06)">
+        <td style="padding:10px 12px;font-weight:700">A – Kontext-Header</td>
+        <td style="text-align:center;padding:10px 12px">⭐⭐⭐⭐</td>
+        <td style="text-align:center;padding:10px 12px;color:#34d399">Gering</td>
+        <td style="padding:10px 12px;color:rgba(255,255,255,0.55)">Schnelle Verbesserung gewünscht</td>
+      </tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.06)">
+        <td style="padding:10px 12px;font-weight:700">B – Erweit. Bottom Nav</td>
+        <td style="text-align:center;padding:10px 12px">⭐⭐⭐⭐</td>
+        <td style="text-align:center;padding:10px 12px;color:#fbbf24">Mittel</td>
+        <td style="padding:10px 12px;color:rgba(255,255,255,0.55)">Header-Platz sparen, modernes Feel</td>
+      </tr>
+      <tr>
+        <td style="padding:10px 12px;font-weight:700">C – Farbcodiert</td>
+        <td style="text-align:center;padding:10px 12px">⭐⭐⭐⭐⭐</td>
+        <td style="text-align:center;padding:10px 12px;color:#f87171">Hoch</td>
+        <td style="padding:10px 12px;color:rgba(255,255,255,0.55)">Kompletter Design-Refresh geplant</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div style="margin-top:28px;background:rgba(20,184,166,0.12);border:1px solid rgba(20,184,166,0.3);border-radius:12px;padding:16px 20px;color:rgba(255,255,255,0.8);font-size:13px;line-height:1.8">
+    <strong style="color:#2dd4bf">Empfehlung: Konzept A</strong> als pragmatischer erster Schritt.<br>
+    Konkret: <code style="background:rgba(255,255,255,0.1);padding:1px 6px;border-radius:4px">ListenSubNav</code> und <code style="background:rgba(255,255,255,0.1);padding:1px 6px;border-radius:4px">TripSubNav</code> um eine Breadcrumb-Zeile erweitern.
+    Die Segment-Tabs (<em>Ich bringe mit / Gruppenbedarfe</em>) optisch von den Sub-Nav-Pills differenzieren
+    (z.B. Unterstrich-Tabs statt Pill-Tabs). Aufwand: ~2–3 h.
+  </div>
+</div>
+
+</body>
+</html>

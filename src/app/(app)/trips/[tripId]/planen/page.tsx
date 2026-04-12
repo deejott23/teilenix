@@ -53,7 +53,7 @@ export default async function PlanenPage({ params }: { params: Promise<{ tripId:
   return (
     <>
       <RealtimePageRefresher tripId={tripId} tables={['trip_activities', 'trip_activity_votes']} />
-      <TripSubNav tripId={tripId} tabs={[
+      <TripSubNav tripId={tripId} variant="planen" tabs={[
         { href: '/planen', label: '✈️ Ausflüge' },
         { href: '/essen',  label: '🍽️ Essen' },
       ]} />

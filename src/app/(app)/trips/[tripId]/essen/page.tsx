@@ -62,7 +62,7 @@ export default async function EssenPage({ params }: { params: Promise<{ tripId: 
         tripId={tripId}
         tables={['trip_meal_ideas', 'trip_meal_votes', 'trip_meal_slots']}
       />
-      <TripSubNav tripId={tripId} tabs={[
+      <TripSubNav tripId={tripId} variant="planen" tabs={[
         { href: '/planen', label: '✈️ Ausflüge' },
         { href: '/essen',  label: '🍽️ Essen' },
       ]} />

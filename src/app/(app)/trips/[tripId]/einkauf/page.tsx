@@ -21,7 +21,7 @@ export default async function EinkaufPage({ params }: { params: Promise<{ tripId
   return (
     <>
       <RealtimeQueryRefresher tripId={tripId} tables={['shopping_items']} />
-      <TripSubNav tripId={tripId} tabs={[
+      <TripSubNav tripId={tripId} variant="listen" tabs={[
         { href: '/packlist', label: '🎒 Packliste' },
         { href: '/einkauf',  label: '🛒 Einkaufszettel' },
       ]} />

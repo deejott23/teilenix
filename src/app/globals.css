@@ -84,6 +84,14 @@
 
   --radius: 1rem; /* 16px */
 
+  /* ── Section accent colors (Konzept C – farbcodierte Bereiche) ── */
+  --section-geld:        oklch(0.52 0.15 78);   /* amber-700  */
+  --section-geld-muted:  oklch(0.97 0.05 84);   /* amber-50   */
+  --section-planen:      oklch(0.44 0.22 264);  /* indigo-700 */
+  --section-planen-muted:oklch(0.97 0.04 265);  /* indigo-50  */
+  --section-listen:      oklch(0.40 0.09 188);  /* teal-700 = primary */
+  --section-listen-muted:oklch(0.97 0.03 188);  /* teal-50   */
+
   /* ── Sidebar ── */
   --sidebar:               oklch(0.985 0.008 82);
   --sidebar-foreground:    oklch(0.15 0.018 58);
@@ -119,6 +127,14 @@
   --chart-3:    oklch(0.62 0.16 230);
   --chart-4:    oklch(0.62 0.14 160);
   --chart-5:    oklch(0.64 0.15 300);
+  /* ── Section accent colors – dark mode ── */
+  --section-geld:        oklch(0.75 0.14 82);   /* amber-400  */
+  --section-geld-muted:  oklch(0.23 0.06 78);   /* amber-950  */
+  --section-planen:      oklch(0.68 0.16 264);  /* indigo-400 */
+  --section-planen-muted:oklch(0.23 0.07 264);  /* indigo-950 */
+  --section-listen:      oklch(0.55 0.09 188);  /* teal-400 = dark primary */
+  --section-listen-muted:oklch(0.21 0.05 188);  /* teal-950  */
+
   --sidebar:    oklch(0.15 0.018 188);
   --sidebar-foreground: oklch(0.96 0.008 82);
   --sidebar-primary: oklch(0.55 0.09 188);

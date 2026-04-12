@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TeileniX – Konzept C implementiert</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;0,9..40,800;1,9..40,400&family=DM+Mono:wght@400;500&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  /* Brand */
+  --teal-900: #134e4a;
+  --teal-700: #0f766e;
+  --teal-500: #14b8a6;
+  --teal-50:  #f0fdfa;
+
+  /* Section: Geld */
+  --geld:       #a16207;
+  --geld-mid:   #d97706;
+  --geld-light: #fffbeb;
+  --geld-muted: rgba(161,98,7,0.10);
+
+  /* Section: Planen */
+  --planen:       #4338ca;
+  --planen-mid:   #6366f1;
+  --planen-light: #eef2ff;
+  --planen-muted: rgba(67,56,202,0.10);
+
+  /* Section: Listen */
+  --listen:       #0f766e;
+  --listen-mid:   #14b8a6;
+  --listen-light: #f0fdfa;
+  --listen-muted: rgba(15,118,110,0.10);
+}
+
+body {
+  font-family: 'DM Sans', -apple-system, sans-serif;
+  background: #0e1117;
+  min-height: 100vh;
+  padding: 48px 20px 100px;
+  color: white;
+}
+
+/* ── Header ── */
+.page-header {
+  text-align: center;
+  margin-bottom: 56px;
+}
+.page-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(20,184,166,0.15);
+  border: 1px solid rgba(20,184,166,0.25);
+  color: #2dd4bf;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  border-radius: 99px;
+  margin-bottom: 16px;
+}
+.page-title {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  background: linear-gradient(135deg, #fff 40%, rgba(255,255,255,0.55));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 10px;
+}
+.page-sub {
+  font-size: 14px;
+  color: rgba(255,255,255,0.4);
+  line-height: 1.7;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+/* ── Section title ── */
+.section-title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.35);
+  text-align: center;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: center;
+}
+.section-title::before, .section-title::after {
+  content: '';
+  flex: 1;
+  max-width: 120px;
+  height: 1px;
+  background: rgba(255,255,255,0.08);
+}
+.divider { border: none; border-top: 1px solid rgba(255,255,255,0.06); margin: 60px 0 52px; }
+
+/* ── Color legend ── */
+.legend {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 48px;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── Screens row ── */
+.screens-row {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+.screen-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.screen-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.35);
+}
+.section-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 99px;
+}
+
+/* ── Phone shell ── */
+.phone {
+  width: 300px;
+  background: #f5f5f2;
+  border-radius: 42px;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.07),
+    0 20px 50px rgba(0,0,0,0.6),
+    0 4px 12px rgba(0,0,0,0.3);
+  overflow: hidden;
+  position: relative;
+}
+.phone-inner {
+  border-radius: 38px;
+  overflow: hidden;
+}
+.status-bar {
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.status-white { color: white; background: transparent; }
+.status-dark  { color: #1a1a1a; background: white; }
+.status-signals { display: flex; gap: 4px; align-items: center; }
+.sig { width: 5px; height: 5px; border-radius: 50%; }
+
+.screen-content {
+  display: flex;
+  flex-direction: column;
+  min-height: 540px;
+  background: #f5f5f2;
+}
+.screen-scroll {
+  flex: 1;
+  padding: 10px 12px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ── Trip header ── */
+.trip-header {
+  padding: 12px 14px 16px;
+  position: relative;
+}
+.trip-header-inner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+  z-index: 1;
+}
+.trip-back {
+  width: 28px; height: 28px;
+  border-radius: 9px;
+  background: rgba(255,255,255,0.18);
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 14px;
+  flex-shrink: 0;
+}
+.trip-emoji-badge {
+  width: 34px; height: 34px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.15);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.trip-name { flex: 1; }
+.trip-name-text { font-size: 15px; font-weight: 800; color: white; line-height: 1.2; }
+.trip-date { font-size: 10px; color: rgba(255,255,255,0.55); margin-top: 1px; }
+.trip-settings {
+  width: 28px; height: 28px;
+  border-radius: 9px;
+  background: rgba(255,255,255,0.18);
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 13px;
+  flex-shrink: 0;
+}
+
+/* ── Sub nav – segment pill ── */
+.sub-nav-track {
+  margin: 0 12px 10px;
+  border-radius: 12px;
+  padding: 3px;
+  display: flex;
+  gap: 2px;
+}
+.sub-nav-pill {
+  flex: 1;
+  text-align: center;
+  padding: 7px 4px;
+  font-size: 11.5px;
+  font-weight: 700;
+  border-radius: 9px;
+  color: rgba(60,60,60,0.55);
+  transition: all 0.15s;
+}
+
+/* ── Card ── */
+.card {
+  background: white;
+  border-radius: 14px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.04);
+  overflow: hidden;
+}
+.card-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 12px;
+  border-bottom: 1px solid #f3f3f0;
+  font-size: 12.5px;
+  color: #2a2a2a;
+}
+.card-row:last-child { border-bottom: none; }
+.check {
+  width: 17px; height: 17px;
+  border-radius: 5px;
+  border: 2px solid #d1d5d3;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; color: white; font-weight: 900;
+}
+.row-name { flex: 1; }
+.row-name.done { text-decoration: line-through; color: #9ca3a0; }
+
+.chip {
+  font-size: 10px; font-weight: 600;
+  padding: 2px 7px; border-radius: 99px;
+}
+
+.meal-card {
+  background: white;
+  border-radius: 14px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.04);
+  padding: 11px 12px;
+}
+.meal-date { font-size: 10px; font-weight: 700; color: #9ca3a0; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 3px; }
+.meal-name { font-size: 13.5px; font-weight: 800; color: #1a1a1a; margin-bottom: 5px; }
+
+.expense-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 12px;
+  border-bottom: 1px solid #f3f3f0;
+}
+.expense-row:last-child { border-bottom: none; }
+.expense-icon {
+  width: 32px; height: 32px;
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; flex-shrink: 0;
+}
+.expense-info { flex: 1; }
+.expense-name { font-size: 12.5px; font-weight: 700; color: #1a1a1a; }
+.expense-meta { font-size: 10.5px; color: #9ca3a0; margin-top: 1px; }
+.expense-amount { font-size: 13px; font-weight: 700; }
+
+/* ── Bottom nav ── */
+.bottom-nav {
+  background: white;
+  border-top: 1px solid #ebe8e2;
+  display: flex;
+  padding: 6px 4px 14px;
+  gap: 2px;
+}
+.bnav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 0;
+}
+.bnav-icon {
+  width: 32px; height: 32px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+}
+.bnav-label {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #a0a0a0;
+  letter-spacing: 0.02em;
+}
+
+/* ── Section overview diagram ── */
+.hierarchy-diagram {
+  max-width: 640px;
+  margin: 0 auto 52px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 20px;
+  padding: 24px 28px;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+}
+.hier-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 0;
+  color: rgba(255,255,255,0.55);
+  line-height: 1.5;
+}
+.hier-indent1 { padding-left: 20px; }
+.hier-indent2 { padding-left: 40px; }
+.hier-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.hier-arrow { color: rgba(255,255,255,0.2); font-size: 10px; }
+</style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<div class="page-header">
+  <div class="page-eyebrow">✓ Implementiert</div>
+  <h1 class="page-title">Konzept C – Farbcodierte Navigation</h1>
+  <p class="page-sub">Jeder Hauptbereich hat eine eigene Akzentfarbe.<br>Die Farbe zieht sich durch Bottom-Nav, Sub-Nav und aktive Zustände.</p>
+</div>
+
+<!-- ── Color legend ── -->
+<div class="legend">
+  <div class="legend-item">
+    <div class="legend-dot" style="background:var(--teal-700)"></div>
+    <span>Home</span>
+    <span style="color:rgba(255,255,255,0.3);font-size:11px">Teal (Primary)</span>
+  </div>
+  <div class="legend-item">
+    <div class="legend-dot" style="background:var(--geld)"></div>
+    <span>Geld</span>
+    <span style="color:rgba(255,255,255,0.3);font-size:11px">Amber</span>
+  </div>
+  <div class="legend-item">
+    <div class="legend-dot" style="background:var(--planen)"></div>
+    <span>Planen</span>
+    <span style="color:rgba(255,255,255,0.3);font-size:11px">Indigo</span>
+  </div>
+  <div class="legend-item">
+    <div class="legend-dot" style="background:var(--listen)"></div>
+    <span>Listen</span>
+    <span style="color:rgba(255,255,255,0.3);font-size:11px">Teal</span>
+  </div>
+</div>
+
+<!-- ── Hierarchy ── -->
+<div class="hierarchy-diagram">
+  <div class="hier-row" style="color:rgba(255,255,255,0.8);font-size:13px;font-weight:700;margin-bottom:6px">
+    Navigation-Hierarchie
+  </div>
+  <div class="hier-row">
+    <div class="hier-dot" style="background:var(--teal-700)"></div>
+    <span style="color:rgba(255,255,255,0.7)">Bottom Nav → Home</span>
+  </div>
+  <div class="hier-row">
+    <div class="hier-dot" style="background:var(--geld)"></div>
+    <span style="color:rgba(255,255,255,0.7)">Bottom Nav → Geld</span>
+    <span class="hier-arrow">→</span>
+    <span>GeldSubNav: Ausgaben · Abrechnung · Statistiken</span>
+    <span style="font-size:10px;color:var(--geld);margin-left:4px">(amber)</span>
+  </div>
+  <div class="hier-row">
+    <div class="hier-dot" style="background:var(--planen)"></div>
+    <span style="color:rgba(255,255,255,0.7)">Bottom Nav → Planen</span>
+    <span class="hier-arrow">→</span>
+    <span>TripSubNav: ✈️ Ausflüge · 🍽️ Essen</span>
+    <span style="font-size:10px;color:var(--planen-mid);margin-left:4px">(indigo)</span>
+  </div>
+  <div class="hier-row">
+    <div class="hier-dot" style="background:var(--listen)"></div>
+    <span style="color:rgba(255,255,255,0.7)">Bottom Nav → Listen</span>
+    <span class="hier-arrow">→</span>
+    <span>TripSubNav: 🎒 Packliste · 🛒 Einkauf</span>
+    <span style="font-size:10px;color:var(--listen-mid);margin-left:4px">(teal)</span>
+  </div>
+  <div class="hier-row hier-indent2" style="color:rgba(255,255,255,0.35)">
+    └─ Segment-Tabs: Ich bringe mit · Gruppenbedarfe
+  </div>
+</div>
+
+<!-- ═══════════════ SCREENS ═══════════════ -->
+<div class="section-title">Alle 4 Bereiche im Vergleich</div>
+
+<div class="screens-row">
+
+  <!-- ─── HOME (teal) ─── -->
+  <div class="screen-wrap">
+    <div class="screen-label">Home</div>
+    <div class="screen-label" style="color:var(--teal-500);margin-top:-6px">● Teal</div>
+    <div class="phone"><div class="phone-inner">
+      <div class="status-bar status-white" style="background:linear-gradient(150deg,#1b5c58,#134844)">
+        <span>9:41</span>
+        <div class="status-signals"><div class="sig" style="background:rgba(255,255,255,0.6)"></div><div class="sig" style="background:rgba(255,255,255,0.6)"></div><div class="sig" style="background:rgba(255,255,255,0.6)"></div></div>
+      </div>
+      <!-- Trip header (teal gradient) -->
+      <div class="trip-header" style="background:linear-gradient(150deg,#1b5c58,#134844)">
+        <div class="trip-header-inner">
+          <div class="trip-back">‹</div>
+          <div class="trip-emoji-badge">🏕️</div>
+          <div class="trip-name">
+            <div class="trip-name-text">Sommercamp 2025</div>
+            <div class="trip-date">14. – 20. Jun 2025</div>
+          </div>
+          <div class="trip-settings">⚙</div>
+        </div>
+      </div>
+      <div class="screen-content">
+        <div class="screen-scroll">
+          <div class="card">
+            <div class="card-row" style="flex-direction:column;align-items:flex-start;gap:3px">
+              <div style="font-size:10px;color:#9ca3a0;font-weight:700;text-transform:uppercase;letter-spacing:0.06em">Ausgaben gesamt</div>
+              <div style="font-size:22px;font-weight:800;color:#1a1a1a">€ 284,50</div>
+              <div style="font-size:11px;color:#0f766e;font-weight:600">Du bist ausgeglichen ✓</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-row" style="border-bottom:1px solid #f3f3f0">
+              <div style="font-size:12px;font-weight:700;color:#1a1a1a;flex:1">Letzte Aktivitäten</div>
+            </div>
+            <div class="card-row"><span>🏃</span><span class="row-name" style="font-size:12px">Wanderung geplant</span><span style="font-size:10px;color:#9ca3a0">2h</span></div>
+            <div class="card-row"><span>🍝</span><span class="row-name" style="font-size:12px">Pasta für Samstag</span><span style="font-size:10px;color:#9ca3a0">5h</span></div>
+          </div>
+        </div>
+        <div class="bottom-nav">
+          <div class="bnav-item">
+            <div class="bnav-icon" style="background:var(--listen-light)">🏠</div>
+            <div class="bnav-label" style="color:var(--listen)">Home</div>
+          </div>
+          <div class="bnav-item"><div class="bnav-icon">💰</div><div class="bnav-label">Geld</div></div>
+          <div class="bnav-item"><div class="bnav-icon">📅</div><div class="bnav-label">Planen</div></div>
+          <div class="bnav-item"><div class="bnav-icon">📋</div><div class="bnav-label">Listen</div></div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- ─── GELD (amber) ─── -->
+  <div class="screen-wrap">
+    <div class="screen-label">Geld → Ausgaben</div>
+    <div class="screen-label" style="color:#fbbf24;margin-top:-6px">● Amber</div>
+    <div class="phone"><div class="phone-inner">
+      <div class="status-bar status-dark"><span>9:41</span><div class="status-signals"><div class="sig" style="background:#555"></div><div class="sig" style="background:#555"></div><div class="sig" style="background:#555"></div></div></div>
+      <div class="trip-header" style="background:linear-gradient(150deg,#1b5c58,#134844)">
+        <div class="trip-header-inner">
+          <div class="trip-back">‹</div>
+          <div class="trip-emoji-badge">🏕️</div>
+          <div class="trip-name"><div class="trip-name-text">Sommercamp 2025</div><div class="trip-date">14. – 20. Jun 2025</div></div>
+          <div class="trip-settings">⚙</div>
+        </div>
+      </div>
+      <div class="screen-content">
+        <!-- GeldSubNav – amber track -->
+        <div class="sub-nav-track" style="background:var(--geld-muted)">
+          <div class="sub-nav-pill" style="background:var(--geld);color:white">Ausgaben</div>
+          <div class="sub-nav-pill">Abrechnung</div>
+          <div class="sub-nav-pill">Statistiken</div>
+        </div>
+        <div class="screen-scroll">
+          <div class="card">
+            <div class="expense-row">
+              <div class="expense-icon" style="background:#fffbeb">🛒</div>
+              <div class="expense-info"><div class="expense-name">Supermarkt</div><div class="expense-meta">Anna · heute</div></div>
+              <div class="expense-amount" style="color:var(--geld)">€ 47,20</div>
+            </div>
+            <div class="expense-row">
+              <div class="expense-icon" style="background:#fffbeb">⛽</div>
+              <div class="expense-info"><div class="expense-name">Benzin</div><div class="expense-meta">Max · gestern</div></div>
+              <div class="expense-amount" style="color:var(--geld)">€ 62,00</div>
+            </div>
+            <div class="expense-row">
+              <div class="expense-icon" style="background:#fffbeb">🏕️</div>
+              <div class="expense-info"><div class="expense-name">Campingplatz</div><div class="expense-meta">Lisa · Di</div></div>
+              <div class="expense-amount" style="color:var(--geld)">€ 120,00</div>
+            </div>
+          </div>
+        </div>
+        <div class="bottom-nav">
+          <div class="bnav-item"><div class="bnav-icon">🏠</div><div class="bnav-label">Home</div></div>
+          <div class="bnav-item">
+            <div class="bnav-icon" style="background:var(--geld-light)">💰</div>
+            <div class="bnav-label" style="color:var(--geld)">Geld</div>
+          </div>
+          <div class="bnav-item"><div class="bnav-icon">📅</div><div class="bnav-label">Planen</div></div>
+          <div class="bnav-item"><div class="bnav-icon">📋</div><div class="bnav-label">Listen</div></div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- ─── PLANEN / ESSEN (indigo) ─── -->
+  <div class="screen-wrap">
+    <div class="screen-label">Planen → Essen</div>
+    <div class="screen-label" style="color:#818cf8;margin-top:-6px">● Indigo</div>
+    <div class="phone"><div class="phone-inner">
+      <div class="status-bar status-dark"><span>9:41</span><div class="status-signals"><div class="sig" style="background:#555"></div><div class="sig" style="background:#555"></div><div class="sig" style="background:#555"></div></div></div>
+      <div class="trip-header" style="background:linear-gradient(150deg,#1b5c58,#134844)">
+        <div class="trip-header-inner">
+          <div class="trip-back">‹</div>
+          <div class="trip-emoji-badge">🏕️</div>
+          <div class="trip-name"><div class="trip-name-text">Sommercamp 2025</div><div class="trip-date">14. – 20. Jun 2025</div></div>
+          <div class="trip-settings">⚙</div>
+        </div>
+      </div>
+      <div class="screen-content">
+        <!-- TripSubNav – indigo track, variant="planen" -->
+        <div class="sub-nav-track" style="background:var(--planen-muted)">
+          <div class="sub-nav-pill">✈️ Ausflüge</div>
+          <div class="sub-nav-pill" style="background:var(--planen);color:white">🍽️ Essen</div>
+        </div>
+        <div class="screen-scroll">
+          <div class="meal-card">
+            <div class="meal-date">Sa 14. Jun · Abend</div>
+            <div class="meal-name">Pasta mit Tomatensoße</div>
+            <div class="chip" style="background:#eef2ff;color:var(--planen)">Anna kocht</div>
+          </div>
+          <div class="meal-card">
+            <div class="meal-date">So 15. Jun · Mittag</div>
+            <div class="meal-name">Grillabend</div>
+            <div class="chip" style="background:#fef3c7;color:#92400e">Idee – offen</div>
+          </div>
+          <div class="meal-card">
+            <div class="meal-date">Mo 16. Jun · Morgen</div>
+            <div class="meal-name">Pfannkuchen</div>
+            <div class="chip" style="background:#eef2ff;color:var(--planen)">Max kocht</div>
+          </div>
+        </div>
+        <div class="bottom-nav">
+          <div class="bnav-item"><div class="bnav-icon">🏠</div><div class="bnav-label">Home</div></div>
+          <div class="bnav-item"><div class="bnav-icon">💰</div><div class="bnav-label">Geld</div></div>
+          <div class="bnav-item">
+            <div class="bnav-icon" style="background:var(--planen-light)">📅</div>
+            <div class="bnav-label" style="color:var(--planen)">Planen</div>
+          </div>
+          <div class="bnav-item"><div class="bnav-icon">📋</div><div class="bnav-label">Listen</div></div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- ─── LISTEN / PACKLISTE (teal) ─── -->
+  <div class="screen-wrap">
+    <div class="screen-label">Listen → Packliste</div>
+    <div class="screen-label" style="color:var(--teal-500);margin-top:-6px">● Teal</div>
+    <div class="phone"><div class="phone-inner">
+      <div class="status-bar status-dark"><span>9:41</span><div class="status-signals"><div class="sig" style="background:#555"></div><div class="sig" style="background:#555"></div><div class="sig" style="background:#555"></div></div></div>
+      <div class="trip-header" style="background:linear-gradient(150deg,#1b5c58,#134844)">
+        <div class="trip-header-inner">
+          <div class="trip-back">‹</div>
+          <div class="trip-emoji-badge">🏕️</div>
+          <div class="trip-name"><div class="trip-name-text">Sommercamp 2025</div><div class="trip-date">14. – 20. Jun 2025</div></div>
+          <div class="trip-settings">⚙</div>
+        </div>
+      </div>
+      <div class="screen-content">
+        <!-- TripSubNav – teal track, variant="listen" -->
+        <div class="sub-nav-track" style="background:var(--listen-muted)">
+          <div class="sub-nav-pill" style="background:var(--listen);color:white">🎒 Packliste</div>
+          <div class="sub-nav-pill">🛒 Einkaufszettel</div>
+        </div>
+        <!-- Segment tabs (Ich bringe mit / Gruppenbedarfe) – unchanged, shown below sub-nav -->
+        <div style="display:flex;gap:0;background:#ececea;margin:0 12px 10px;border-radius:10px;overflow:hidden">
+          <div style="flex:1;text-align:center;padding:7px;font-size:11px;font-weight:700;background:white;color:#0f766e;border-bottom:2px solid #0f766e">👤 Ich bringe mit</div>
+          <div style="flex:1;text-align:center;padding:7px;font-size:11px;font-weight:600;color:#9ca3a0">👥 Gruppenbedarfe</div>
+        </div>
+        <div class="screen-scroll" style="padding-top:0">
+          <div class="card">
+            <div class="card-row">
+              <div class="check" style="background:var(--listen);border-color:var(--listen)">✓</div>
+              <div class="row-name done">Zelt</div>
+            </div>
+            <div class="card-row">
+              <div class="check"></div>
+              <div class="row-name">Schlafsack</div>
+            </div>
+            <div class="card-row">
+              <div class="check"></div>
+              <div class="row-name">Isomatte</div>
+            </div>
+            <div class="card-row">
+              <div class="check"></div>
+              <div class="row-name">Regenjacke</div>
+            </div>
+          </div>
+        </div>
+        <div class="bottom-nav">
+          <div class="bnav-item"><div class="bnav-icon">🏠</div><div class="bnav-label">Home</div></div>
+          <div class="bnav-item"><div class="bnav-icon">💰</div><div class="bnav-label">Geld</div></div>
+          <div class="bnav-item"><div class="bnav-icon">📅</div><div class="bnav-label">Planen</div></div>
+          <div class="bnav-item">
+            <div class="bnav-icon" style="background:var(--listen-light)">📋</div>
+            <div class="bnav-label" style="color:var(--listen)">Listen</div>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+
+</div>
+
+<hr class="divider">
+
+<!-- ── Implementation note ── -->
+<div class="section-title">Implementierungs-Übersicht</div>
+<div style="max-width:640px;margin:0 auto">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+
+    <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:16px 18px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:rgba(255,255,255,0.3);margin-bottom:8px">Geänderte Dateien</div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.65);line-height:2;font-family:'DM Mono',monospace">
+        globals.css<br>
+        TripBottomNav.tsx<br>
+        TripSubNav.tsx<br>
+        GeldSubNav.tsx<br>
+        ListenSubNav.tsx<br>
+        planen/page.tsx<br>
+        essen/page.tsx<br>
+        einkauf/page.tsx<br>
+        PacklistClient.tsx
+      </div>
+    </div>
+
+    <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:16px 18px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:rgba(255,255,255,0.3);margin-bottom:8px">Unverändert</div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.65);line-height:2">
+        ✓ Gesamte Seitenlogik<br>
+        ✓ Routing & Prefetch<br>
+        ✓ Alle Seitenkomponenten<br>
+        ✓ Datenbank-Queries<br>
+        ✓ Dark-Mode-Kompatibel<br>
+        ✓ CSS-Variable-System<br>
+        ✓ Segment-Tabs (Packliste)
+      </div>
+    </div>
+
+  </div>
+
+  <div style="margin-top:16px;background:rgba(20,184,166,0.08);border:1px solid rgba(20,184,166,0.18);border-radius:14px;padding:14px 18px;font-size:12.5px;color:rgba(255,255,255,0.65);line-height:1.8">
+    <strong style="color:#2dd4bf">CSS-Variablen-System:</strong>
+    Die Farben sind über <code style="background:rgba(255,255,255,0.08);padding:1px 5px;border-radius:4px">--section-geld/planen/listen</code> und
+    <code style="background:rgba(255,255,255,0.08);padding:1px 5px;border-radius:4px">--section-*-muted</code> in der <code style="background:rgba(255,255,255,0.08);padding:1px 5px;border-radius:4px">globals.css</code> definiert und haben Dark-Mode-Varianten.
+    <code style="background:rgba(255,255,255,0.08);padding:1px 5px;border-radius:4px">TripSubNav</code> erhält über den <code style="background:rgba(255,255,255,0.08);padding:1px 5px;border-radius:4px">variant</code>-Prop die Sektion mitgeteilt.
+  </div>
+</div>
+
+</body>
+</html>

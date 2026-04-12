@@ -608,7 +608,7 @@ export default function PacklistClient({
 
   return (
     <div>
-      <TripSubNav tripId={tripId} tabs={[
+      <TripSubNav tripId={tripId} variant="listen" tabs={[
         { href: '/packlist', label: '🎒 Packliste' },
         { href: '/einkauf',  label: '🛒 Einkaufszettel' },
       ]} />
