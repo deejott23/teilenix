@@ -3,9 +3,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 
 const updateParticipantSchema = z.object({
-  name:     z.string().min(1).max(80).trim().optional(),
-  shares:   z.number().int().min(1).max(20).optional(),
-  group_id: z.string().uuid().nullable().optional(),
+  name:        z.string().min(1).max(80).trim().optional(),
+  shares:      z.number().int().min(1).max(20).optional(),
+  group_id:    z.string().uuid().nullable().optional(),
+  recalculate: z.boolean().optional(),
 })
 
 async function verifyMember(supabase: Awaited<ReturnType<typeof createClient>>, tripId: string) {
@@ -52,6 +53,24 @@ export async function PATCH(
     .single()
 
   if (error) return NextResponse.json({ error: 'Aktualisierung fehlgeschlagen' }, { status: 500 })
+
+  // Retroactively update all proportional expense splits for this participant
+  if (parsed.data.recalculate && parsed.data.shares !== undefined) {
+    const { data: expenses } = await admin
+      .from('expenses')
+      .select('id')
+      .eq('trip_id', tripId)
+      .eq('split_mode', 'proportional')
+
+    if (expenses && expenses.length > 0) {
+      await admin
+        .from('expense_splits')
+        .update({ shares: parsed.data.shares })
+        .eq('participant_id', participantId)
+        .in('expense_id', expenses.map((e: { id: string }) => e.id))
+    }
+  }
+
   return NextResponse.json({ participant: data })
 }
 

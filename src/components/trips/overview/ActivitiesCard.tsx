@@ -20,8 +20,29 @@ export default async function ActivitiesCard({ tripId }: { tripId: string }) {
     status: string; created_at: string; activity_date: string | null
   }[]
 
+  // Find which ideas the current user has already voted on
+  const { data: { user } } = await supabase.auth.getUser()
+  let votedActivityIds: string[] = []
+  if (user) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: myParticipant } = await (supabase as any)
+      .from('trip_participants')
+      .select('id')
+      .eq('trip_id', tripId)
+      .eq('user_id', user.id)
+      .maybeSingle()
+    if (myParticipant) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: myVotes } = await (supabase as any)
+        .from('trip_activity_votes')
+        .select('activity_id')
+        .eq('participant_id', myParticipant.id)
+      votedActivityIds = (myVotes ?? []).map((v: { activity_id: string }) => v.activity_id)
+    }
+  }
+
   const confirmedActivities = allActivities.filter(a => a.status === 'confirmed').slice(0, 2)
-  const ideaCount = allActivities.filter(a => a.status === 'idea').length
+  const ideaCount = allActivities.filter(a => a.status === 'idea' && !votedActivityIds.includes(a.id)).length
 
   if (allActivities.length === 0) return null
 

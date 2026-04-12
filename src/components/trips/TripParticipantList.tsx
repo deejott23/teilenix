@@ -53,7 +53,9 @@ export default function TripParticipantList({
 
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editState, setEditState] = useState<EditState>({ name: '', shares: 1 })
+  const [originalShares, setOriginalShares] = useState(1)
   const [saving, setSaving] = useState(false)
+  const [sharesDialog, setSharesDialog] = useState<{ participantId: string } | null>(null)
 
   // Which group is expanded to show member assignment
   const [expandedGroupId, setExpandedGroupId] = useState<string | null>(null)
@@ -138,15 +140,26 @@ export default function TripParticipantList({
   const startEdit = (p: TripParticipant) => {
     setEditingId(p.id)
     setEditState({ name: p.name, shares: p.shares })
+    setOriginalShares(p.shares)
   }
 
-  const handleSaveEdit = async (participantId: string) => {
+  const handleSaveEdit = (participantId: string) => {
+    // If shares changed, ask whether to recalculate retroactively
+    if (editState.shares !== originalShares) {
+      setSharesDialog({ participantId })
+    } else {
+      doSaveEdit(participantId, false)
+    }
+  }
+
+  const doSaveEdit = async (participantId: string, recalculate: boolean) => {
     setSaving(true)
+    setSharesDialog(null)
     try {
       const res = await fetch(`/api/trips/${tripId}/participants/${participantId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: editState.name.trim(), shares: editState.shares }),
+        body: JSON.stringify({ name: editState.name.trim(), shares: editState.shares, recalculate }),
       })
       if (!res.ok) throw new Error((await res.json()).error ?? 'Fehler')
       toast.success('Gespeichert')
@@ -548,6 +561,45 @@ export default function TripParticipantList({
           })}
         </div>
       </div>
+
+      {/* Retroactive recalculation dialog */}
+      {sharesDialog && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-end md:items-center justify-center p-4">
+          <div className="bg-card rounded-2xl w-full max-w-sm p-5 space-y-4">
+            <h3 className="font-bold text-foreground text-[15px]">Anteile geändert</h3>
+            <p className="text-sm text-muted-foreground">
+              Soll die Änderung rückwirkend auf alle bisherigen Ausgaben angewendet werden?
+            </p>
+            <div className="space-y-2.5">
+              <button
+                type="button"
+                onClick={() => doSaveEdit(sharesDialog.participantId, false)}
+                disabled={saving}
+                className="w-full text-left bg-muted rounded-xl p-3.5 hover:bg-muted/70 transition-colors disabled:opacity-50"
+              >
+                <p className="font-semibold text-sm text-foreground">Nur für neue Ausgaben</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Bisherige Ausgaben bleiben unverändert</p>
+              </button>
+              <button
+                type="button"
+                onClick={() => doSaveEdit(sharesDialog.participantId, true)}
+                disabled={saving}
+                className="w-full text-left bg-primary/5 border border-primary/20 rounded-xl p-3.5 hover:bg-primary/10 transition-colors disabled:opacity-50"
+              >
+                <p className="font-semibold text-sm text-primary">Alle proportionalen Ausgaben anpassen</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Individuell aufgeteilte Ausgaben bleiben unverändert</p>
+              </button>
+            </div>
+            <button
+              type="button"
+              onClick={() => { setSharesDialog(null); setEditingId(null) }}
+              className="w-full py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Abbrechen
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
