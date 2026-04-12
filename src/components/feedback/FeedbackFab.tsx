@@ -27,6 +27,8 @@ export default function FeedbackFab() {
         page_path: pathname,
         feature_label: featureLabel,
         comment,
+        category: null,
+        detail_text: null,
       }),
     })
     setLoading(false)

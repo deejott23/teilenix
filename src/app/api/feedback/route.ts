@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
   }
 
-  const { page_path, feature_label, comment } = await req.json()
+  const { page_path, feature_label, comment, category, detail_text } = await req.json()
 
   if (!comment?.trim()) {
     return NextResponse.json({ error: 'Kommentar darf nicht leer sein' }, { status: 400 })
@@ -22,6 +22,8 @@ export async function POST(req: NextRequest) {
       page_path,
       feature_label,
       comment: comment.trim(),
+      category: category ?? null,
+      detail_text: detail_text ?? null,
       tester_email: user.email,
       tester_name: (user.user_metadata?.full_name as string | undefined)
         ?? (user.user_metadata?.name as string | undefined)
