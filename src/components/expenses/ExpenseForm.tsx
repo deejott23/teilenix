@@ -8,6 +8,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/query/queryKeys'
 import { toast } from 'sonner'
 import { z } from 'zod'
+import { ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import SplitOverrideEditor from './SplitOverrideEditor'
@@ -147,6 +148,14 @@ export default function ExpenseForm({
   }
   const [splitMode, setSplitMode] = useState<'all' | 'custom'>(
     initialData?.splitMode === 'custom' ? 'custom' : 'all'
+  )
+
+  // Erweiterte Optionen: beim Erstellen eingeklappt, beim Bearbeiten mit nicht-Standard-Einstellungen aufgeklappt
+  const [showAdvanced, setShowAdvanced] = useState(
+    isEdit && (
+      (initialData?.splitMode === 'custom') ||
+      ((initialData?.coPayers?.length ?? 0) > 0)
+    )
   )
   const [splits, setSplits] = useState<ExpenseSplitInput[]>(() => {
     if (initialData?.splits && initialData.splits.length > 0) {
@@ -442,56 +451,81 @@ export default function ExpenseForm({
       {/* CARD 2: Bezahlt von + Aufteilung */}
       <div className="bg-card rounded-2xl p-4 space-y-4 border border-border">
 
-        {/* Paid by — multi-select */}
+        {/* Paid by */}
         <div>
-          <label className={fieldLabel}>Bezahlt von</label>
-          <div className="flex flex-wrap gap-2">
-            {payerOptions.map(p => {
-              const isSelected = payerIds.includes(p.id)
-              return (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => togglePayer(p.id)}
-                  className={`px-3 py-1.5 rounded-xl border text-sm font-semibold transition-[colors,transform] duration-100 active:scale-95 ${
-                    isSelected
-                      ? 'border-primary bg-primary/10 text-primary'
-                      : 'border-border text-muted-foreground hover:border-primary/40'
-                  }`}
-                >
-                  {p.name}
-                </button>
-              )
-            })}
-          </div>
+          <label className={fieldLabel}>
+            Bezahlt von
+            {showAdvanced && (
+              <span className="ml-1.5 font-normal normal-case tracking-normal text-muted-foreground/60">
+                · mehrere möglich
+              </span>
+            )}
+          </label>
 
-          {/* Multi-payer amount split — only shown when >1 payer selected */}
-          {payerIds.length > 1 && (() => {
+          {/* Einfach-Modus: einzelne Auswahl */}
+          {!showAdvanced && (
+            <div className="flex flex-wrap gap-2">
+              {payerOptions.map(p => {
+                const isSelected = payerIds[0] === p.id
+                return (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => setPayerIds([p.id])}
+                    className={`px-3 py-1.5 rounded-xl border text-sm font-semibold transition-[colors,transform] duration-100 active:scale-95 ${
+                      isSelected
+                        ? 'border-primary bg-primary/10 text-primary'
+                        : 'border-border text-muted-foreground hover:border-primary/40'
+                    }`}
+                  >
+                    {p.name}
+                  </button>
+                )
+              })}
+            </div>
+          )}
+
+          {/* Erweitert: Mehrfach-Auswahl */}
+          {showAdvanced && (
+            <div className="flex flex-wrap gap-2">
+              {payerOptions.map(p => {
+                const isSelected = payerIds.includes(p.id)
+                return (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => togglePayer(p.id)}
+                    className={`px-3 py-1.5 rounded-xl border text-sm font-semibold transition-[colors,transform] duration-100 active:scale-95 ${
+                      isSelected
+                        ? 'border-primary bg-primary/10 text-primary'
+                        : 'border-border text-muted-foreground hover:border-primary/40'
+                    }`}
+                  >
+                    {p.name}
+                  </button>
+                )
+              })}
+            </div>
+          )}
+
+          {/* Multi-Zahler-Beträge — nur in erweitert + >1 Zahler */}
+          {showAdvanced && payerIds.length > 1 && (() => {
             const PAYER_COLORS = ['#1b5c58', '#2d8a84', '#4ab5ae', '#7dd1cc', '#b2e8e5']
             const remainder = totalCents - payerTotal
             return (
               <div className="mt-3 space-y-2">
-                {/* Proportion bar */}
                 {totalCents > 0 && (
                   <div className="flex h-1.5 rounded-full overflow-hidden gap-px">
                     {payerIds.map((id, i) => {
                       const cents = parseToCents(payerAmounts[id] ?? '0')
                       const pct = Math.max(0, cents / totalCents * 100)
                       return (
-                        <div
-                          key={id}
-                          style={{ width: `${pct}%`, background: PAYER_COLORS[i % PAYER_COLORS.length], transition: 'width 0.2s' }}
-                        />
+                        <div key={id} style={{ width: `${pct}%`, background: PAYER_COLORS[i % PAYER_COLORS.length], transition: 'width 0.2s' }} />
                       )
                     })}
-                    {/* Unassigned portion */}
-                    {remainder > 0 && (
-                      <div style={{ flex: 1, background: 'hsl(var(--muted))' }} />
-                    )}
+                    {remainder > 0 && <div style={{ flex: 1, background: 'hsl(var(--muted))' }} />}
                   </div>
                 )}
-
-                {/* Payer rows */}
                 <div className="bg-muted/50 rounded-xl overflow-hidden divide-y divide-border/40">
                   {payerIds.map((id, i) => {
                     const p = participantLookup.get(id)
@@ -500,14 +534,9 @@ export default function ExpenseForm({
                     const pct = totalCents > 0 && cents > 0 ? Math.round(cents / totalCents * 100) : 0
                     return (
                       <div key={id} className="flex items-center gap-2.5 px-3 py-2.5">
-                        <div
-                          className="w-2 h-2 rounded-full flex-shrink-0"
-                          style={{ background: PAYER_COLORS[i % PAYER_COLORS.length] }}
-                        />
+                        <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: PAYER_COLORS[i % PAYER_COLORS.length] }} />
                         <span className="flex-1 text-sm font-medium text-foreground truncate">{p.name}</span>
-                        <span className="text-[11px] text-muted-foreground w-8 text-right tabular-nums flex-shrink-0">
-                          {pct > 0 ? `${pct}%` : ''}
-                        </span>
+                        <span className="text-[11px] text-muted-foreground w-8 text-right tabular-nums flex-shrink-0">{pct > 0 ? `${pct}%` : ''}</span>
                         <div className="relative flex-shrink-0">
                           <input
                             type="text"
@@ -523,14 +552,8 @@ export default function ExpenseForm({
                     )
                   })}
                 </div>
-
-                {/* Footer: quick action + status */}
                 <div className="flex items-center justify-between px-0.5">
-                  <button
-                    type="button"
-                    onClick={splitEqually}
-                    className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors"
-                  >
+                  <button type="button" onClick={splitEqually} className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors">
                     Gleich aufteilen
                   </button>
                   {payerTotalOk ? (
@@ -546,53 +569,82 @@ export default function ExpenseForm({
           })()}
         </div>
 
-        <div className="border-t border-border" />
-
-        {/* Split mode */}
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <label className={fieldLabel + ' mb-0'}>Aufteilung</label>
-            <div className="flex gap-0.5 bg-muted rounded-lg p-0.5">
-              {(['all', 'custom'] as const).map(mode => (
-                <button
-                  key={mode}
-                  type="button"
-                  onClick={() => setSplitMode(mode)}
-                  className={`px-3 py-1 rounded-md text-xs font-semibold transition-[colors,transform] duration-100 active:scale-90 ${
-                    splitMode === mode ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'
-                  }`}
-                >
-                  {mode === 'all' ? 'Alle' : 'Individuell'}
-                </button>
-              ))}
-            </div>
+        {/* Einfach-Modus: Aufteilungs-Zusammenfassung */}
+        {!showAdvanced && (
+          <div className="flex items-center gap-2 rounded-xl bg-muted/60 px-3 py-2.5">
+            <span className="text-sm leading-none">🔀</span>
+            <span className="text-xs text-muted-foreground">
+              Wird gleichmäßig auf alle {billableParticipants.length} Personen aufgeteilt
+            </span>
           </div>
+        )}
 
-          {splitMode === 'all' ? (
-            <div className="bg-muted rounded-xl px-3 py-2 space-y-1.5">
-              {splits.map(split => {
-                const amt = totalShares > 0 && totalCents > 0
-                  ? Math.round(totalCents * split.shares / totalShares)
-                  : 0
-                return (
-                  <div key={split.participantId} className="flex items-center justify-between text-sm">
-                    <span className="text-foreground font-medium">{split.participantName}</span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-muted-foreground">{split.shares} Anteile</span>
-                      {amt > 0 && (
-                        <span className="text-xs font-semibold text-foreground font-mono w-16 text-right">
-                          {formatCurrency(amt)}
-                        </span>
-                      )}
-                    </div>
+        {/* Erweitert: Aufteilungs-Sektion */}
+        {showAdvanced && (
+          <>
+            <div className="border-t border-border" />
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className={fieldLabel + ' mb-0'}>Aufteilung</label>
+                <div className="flex gap-0.5 bg-muted rounded-lg p-0.5">
+                  {(['all', 'custom'] as const).map(mode => (
+                    <button
+                      key={mode}
+                      type="button"
+                      onClick={() => setSplitMode(mode)}
+                      className={`px-3 py-1 rounded-md text-xs font-semibold transition-[colors,transform] duration-100 active:scale-90 ${
+                        splitMode === mode ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'
+                      }`}
+                    >
+                      {mode === 'all' ? 'Alle' : 'Individuell'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {splitMode === 'all' ? (
+                <>
+                  <p className="text-xs text-muted-foreground/75 mb-2.5 flex items-center gap-1.5">
+                    <span>💡</span>
+                    Gleichmäßige Aufteilung reicht für die meisten Fälle aus
+                  </p>
+                  <div className="bg-muted rounded-xl px-3 py-2 space-y-1.5">
+                    {splits.map(split => {
+                      const amt = totalShares > 0 && totalCents > 0
+                        ? Math.round(totalCents * split.shares / totalShares)
+                        : 0
+                      return (
+                        <div key={split.participantId} className="flex items-center justify-between text-sm">
+                          <span className="text-foreground font-medium">{split.participantName}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-muted-foreground">{split.shares} Anteile</span>
+                            {amt > 0 && (
+                              <span className="text-xs font-semibold text-foreground font-mono w-16 text-right">
+                                {formatCurrency(amt)}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )
+                    })}
                   </div>
-                )
-              })}
+                </>
+              ) : (
+                <SplitOverrideEditor splits={splits} onChange={setSplits} totalCents={totalCents} />
+              )}
             </div>
-          ) : (
-            <SplitOverrideEditor splits={splits} onChange={setSplits} totalCents={totalCents} />
-          )}
-        </div>
+          </>
+        )}
+
+        {/* Erweiterte Optionen: Auf-/Zuklappen */}
+        <button
+          type="button"
+          onClick={() => setShowAdvanced(v => !v)}
+          className="w-full flex items-center justify-center gap-1.5 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors rounded-xl hover:bg-muted/80"
+        >
+          <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showAdvanced ? 'rotate-180' : ''}`} />
+          {showAdvanced ? 'Weniger Optionen' : 'Erweiterte Optionen'}
+        </button>
 
       </div>
 
