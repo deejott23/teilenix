@@ -8,6 +8,7 @@ import ActivitiesCard, { ActivitiesCardSkeleton } from '@/components/trips/overv
 import PacklistShoppingCards, { PacklistShoppingCardsSkeleton } from '@/components/trips/overview/PacklistShoppingCards'
 import ActivityStream, { ActivityStreamSkeleton } from '@/components/trips/overview/ActivityStream'
 import EssenCard, { EssenCardSkeleton } from '@/components/trips/overview/EssenCard'
+import HeuteCard, { HeuteCardSkeleton } from '@/components/trips/overview/HeuteCard'
 
 export default async function TripOverviewPage({
   params,
@@ -42,6 +43,11 @@ export default async function TripOverviewPage({
     <div className="space-y-3">
       <RealtimeQueryRefresher tripId={tripId} tables={['expenses', 'packlist_items', 'activities', 'shopping_items']} />
       <RealtimePageRefresher tripId={tripId} tables={['trip_meal_ideas', 'trip_meal_slots']} />
+
+      {/* Heute Card — zeigt heutige Mahlzeiten und Ausflüge */}
+      <Suspense fallback={<HeuteCardSkeleton />}>
+        <HeuteCard tripId={tripId} />
+      </Suspense>
 
       {/* Balance Card — streamt nach den Expense-Queries */}
       <Suspense fallback={<BalanceCardSkeleton />}>
