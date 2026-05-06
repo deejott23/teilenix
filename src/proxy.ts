@@ -30,11 +30,15 @@ export async function proxy(request: NextRequest) {
 
   const { pathname } = request.nextUrl
 
+  // Root: redirect based on session
+  if (pathname === '/') {
+    return NextResponse.redirect(new URL(user ? '/dashboard' : '/login', request.url))
+  }
+
   // Public paths that don't require auth
   const isPublicPath =
     pathname.startsWith('/login') ||
-    pathname.startsWith('/auth/') ||
-    pathname === '/'
+    pathname.startsWith('/auth/')
 
   // Redirect unauthenticated users to login
   if (!user && !isPublicPath) {
