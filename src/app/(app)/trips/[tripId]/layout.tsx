@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
-import { notFound, redirect } from 'next/navigation'
+import { notFound } from 'next/navigation'
+import { getUser } from '@/lib/supabase/user'
 import TripBottomNav from '@/components/layout/TripBottomNav'
 import AddExpenseFab from '@/components/trips/AddExpenseFab'
 import TripEmojiPicker from '@/components/trips/TripEmojiPicker'
@@ -17,29 +18,30 @@ export default async function TripLayout({
   params: Promise<{ tripId: string }>
 }) {
   const { tripId } = await params
+  // getUser() is cached — no extra network call (shared with AppLayout)
+  const user = await getUser()
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
 
-  const { data: trip } = await supabase
-    .from('trips')
-    .select('id, status, name, cover_emoji, cover_image_url, start_date, end_date')
-    .eq('id', tripId)
-    .maybeSingle()
+  // Fetch trip data and participant status in parallel
+  const [{ data: trip }, { data: myParticipant }] = await Promise.all([
+    supabase
+      .from('trips')
+      .select('id, status, name, cover_emoji, cover_image_url, start_date, end_date')
+      .eq('id', tripId)
+      .maybeSingle(),
+    supabase
+      .from('trip_participants')
+      .select('id')
+      .eq('trip_id', tripId)
+      .eq('user_id', user!.id)
+      .maybeSingle(),
+  ])
 
   if (!trip) notFound()
 
   const isActive = trip.status === 'active'
   const coverEmoji = (trip.cover_emoji as string | null) ?? pickFallbackEmoji(trip.name as string)
   const coverImageUrl = (trip.cover_image_url as string | null) ?? null
-
-  const { data: myParticipant } = await supabase
-    .from('trip_participants')
-    .select('id')
-    .eq('trip_id', tripId)
-    .eq('user_id', user.id)
-    .maybeSingle()
-
   const isParticipant = !!myParticipant
 
   const dateRange = trip.start_date && trip.end_date

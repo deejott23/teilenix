@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+import { getUser } from '@/lib/supabase/user'
 import Link from 'next/link'
 import { Plus } from 'lucide-react'
 import TripCard from '@/components/trips/TripCard'
@@ -8,30 +8,36 @@ import CollapsibleEndedTrips from '@/components/trips/CollapsibleEndedTrips'
 import type { Trip } from '@/types/app'
 
 export default async function DashboardPage() {
+  // getUser() is cached — no extra network call (shared with AppLayout)
+  const user = await getUser()
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
 
-  const [{ data: participantRows }, { data: profile }] = await Promise.all([
-    supabase.from('trip_participants').select('trip_id').eq('user_id', user.id).order('joined_at', { ascending: false }),
-    supabase.from('profiles').select('display_name').eq('id', user.id).single(),
+  // Single query via FK join — replaces the old 3-step waterfall
+  const [{ data: participantData }, { data: profile }] = await Promise.all([
+    supabase
+      .from('trip_participants')
+      .select('joined_at, trips(*)')
+      .eq('user_id', user!.id)
+      .order('joined_at', { ascending: false }),
+    supabase
+      .from('profiles')
+      .select('display_name')
+      .eq('id', user!.id)
+      .single(),
   ])
 
-  const tripIds = (participantRows ?? []).map((p: { trip_id: string }) => p.trip_id)
-  const firstName = (profile?.display_name as string)?.split(' ')[0] ?? 'du'
+  const trips = (participantData ?? [])
+    .map((r: { trips: unknown }) => r.trips)
+    .filter((t): t is Trip => t !== null && t !== undefined)
 
-  const { data: tripsRaw } = tripIds.length > 0
-    ? await supabase.from('trips').select('*').in('id', tripIds).order('created_at', { ascending: false })
-    : { data: [] }
-
-  const trips       = (tripsRaw ?? []) as Trip[]
+  const firstName = (profile?.display_name as string | undefined)?.split(' ')[0] ?? 'du'
   const activeTrips = trips.filter(t => t.status === 'active')
   const endedTrips  = trips.filter(t => t.status === 'ended')
 
   return (
     <div>
 
-      {/* Teal header — greeting only, no buttons → no wrapping issue */}
+      {/* Teal header */}
       <div
         className="-mx-4 -mt-7 mb-6 px-6 pt-8 pb-7 rounded-b-3xl"
         style={{ background: 'linear-gradient(150deg, #1b5c58 0%, #134844 100%)' }}

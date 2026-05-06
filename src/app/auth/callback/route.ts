@@ -10,6 +10,29 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient()
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error) {
+      // Run first-time setup here (only on login), not on every page load
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data: existingProfile } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('id', user.id)
+          .maybeSingle()
+
+        if (!existingProfile) {
+          const displayName =
+            (user.user_metadata?.full_name as string | undefined) ??
+            (user.user_metadata?.name as string | undefined) ??
+            user.email?.split('@')[0] ??
+            ''
+          await supabase.rpc('auto_setup_user', {
+            p_display_name: displayName,
+            p_email: user.email ?? '',
+            p_avatar_url: (user.user_metadata?.avatar_url as string | undefined) ?? '',
+          })
+        }
+      }
+
       return NextResponse.redirect(`${origin}${next}`)
     }
   }
