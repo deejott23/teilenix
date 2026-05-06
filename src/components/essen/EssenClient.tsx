@@ -1,11 +1,9 @@
 'use client'
 import { useState, useMemo } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { cn } from '@/lib/utils'
 import { queryKeys } from '@/lib/query/queryKeys'
 import dynamic from 'next/dynamic'
 import MealZettel from './MealZettel'
-import KochplanView from './KochplanView'
 
 const AddMealSheet = dynamic(() => import('./AddMealSheet'), { ssr: false })
 import { toast } from 'sonner'
@@ -20,8 +18,6 @@ interface EssenClientProps {
   isActive: boolean
 }
 
-type Tab = 'ideen' | 'kochplan'
-
 async function fetchMeals(tripId: string): Promise<{ ideas: MealIdea[]; slots: MealSlot[] }> {
   const res = await fetch(`/api/trips/${tripId}/meals`)
   if (!res.ok) throw new Error('Failed to fetch meals')
@@ -31,11 +27,8 @@ async function fetchMeals(tripId: string): Promise<{ ideas: MealIdea[]; slots: M
 export default function EssenClient({
   tripId,
   myParticipantId,
-  tripStartDate,
-  tripEndDate,
   isActive,
 }: EssenClientProps) {
-  const [activeTab, setActiveTab] = useState<Tab>('ideen')
   const [showAddSheet, setShowAddSheet] = useState(false)
   const queryClient = useQueryClient()
 
@@ -52,7 +45,6 @@ export default function EssenClient({
     [slots]
   )
 
-  // Sort by lecker (yes) vote count desc
   const sortByVotes = (list: MealIdea[]) =>
     [...list].sort((a, b) => b.vote_count - a.vote_count)
 
@@ -71,10 +63,6 @@ export default function EssenClient({
     setShowAddSheet(false)
   }
 
-  const handleRefresh = () => {
-    queryClient.invalidateQueries({ queryKey: queryKeys.meals.byTrip(tripId) })
-  }
-
   const getSlotLabel = (mealId: string): string | undefined => {
     const slot = slots.find(s => s.meal_idea_id === mealId)
     if (!slot) return undefined
@@ -87,102 +75,62 @@ export default function EssenClient({
 
   return (
     <div className="space-y-4 pb-[90px] md:pb-6">
-      {/* Tab switcher */}
-      <div className="flex gap-1.5 bg-muted p-1 rounded-[14px]">
-        {([
-          { key: 'ideen', label: '📌 Ideen' },
-          { key: 'kochplan', label: '📅 Kochplan' },
-        ] as { key: Tab; label: string }[]).map(({ key, label }) => (
-          <button
-            key={key}
-            type="button"
-            onClick={() => setActiveTab(key)}
-            className={cn(
-              'flex-1 py-2 text-center text-[12px] font-bold rounded-[10px] transition-all',
-              activeTab === key
-                ? 'bg-card text-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
-            )}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-
-      {activeTab === 'ideen' && (
-        <>
-          {/* Cork board */}
-          <div className="rounded-[16px] p-3 min-h-[200px]" style={{ background: '#c8b89a' }}>
-            {ideas.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-center">
-                <span className="text-[48px] block mb-3">🍽️</span>
-                <p className="text-[15px] font-bold text-amber-900 mb-1">Noch keine Ideen</p>
-                <p className="text-[13px] text-amber-800/70">Schlage das erste Essen vor!</p>
+      {/* Cork board */}
+      <div className="rounded-[16px] p-3 min-h-[200px]" style={{ background: '#c8b89a' }}>
+        {ideas.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <span className="text-[48px] block mb-3">🍽️</span>
+            <p className="text-[15px] font-bold text-amber-900 mb-1">Noch keine Ideen</p>
+            <p className="text-[13px] text-amber-800/70">Schlage das erste Essen vor!</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {assignedIdeas.length > 0 && (
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-amber-900/70 mb-2 px-1">
+                  📌 Bereits eingeplant
+                </p>
+                <div className="grid grid-cols-2 gap-3">
+                  {assignedIdeas.map(meal => (
+                    <MealZettel
+                      key={meal.id}
+                      meal={meal}
+                      tripId={tripId}
+                      slotLabel={getSlotLabel(meal.id)}
+                    />
+                  ))}
+                </div>
               </div>
-            ) : (
-              <div className="space-y-4">
-                {assignedIdeas.length > 0 && (
-                  <div>
-                    <p className="text-[11px] font-bold uppercase tracking-wider text-amber-900/70 mb-2 px-1">
-                      📌 Bereits eingeplant
-                    </p>
-                    <div className="grid grid-cols-2 gap-3">
-                      {assignedIdeas.map(meal => (
-                        <MealZettel
-                          key={meal.id}
-                          meal={meal}
-                          tripId={tripId}
-                          slotLabel={getSlotLabel(meal.id)}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {unassignedIdeas.length > 0 && (
-                  <div>
-                    <p className="text-[11px] font-bold uppercase tracking-wider text-amber-900/70 mb-2 px-1">
-                      💡 Ideen · abstimmen!
-                    </p>
-                    <div className="grid grid-cols-2 gap-3">
-                      {unassignedIdeas.map(meal => (
-                        <MealZettel
-                          key={meal.id}
-                          meal={meal}
-                          tripId={tripId}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
+            )}
+            {unassignedIdeas.length > 0 && (
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-amber-900/70 mb-2 px-1">
+                  💡 Ideen · abstimmen!
+                </p>
+                <div className="grid grid-cols-2 gap-3">
+                  {unassignedIdeas.map(meal => (
+                    <MealZettel
+                      key={meal.id}
+                      meal={meal}
+                      tripId={tripId}
+                    />
+                  ))}
+                </div>
               </div>
             )}
           </div>
+        )}
+      </div>
 
-          {/* FAB */}
-          {isActive && myParticipantId && (
-            <button
-              type="button"
-              onClick={() => setShowAddSheet(true)}
-              className="fixed bottom-[84px] md:bottom-6 right-4 z-40 flex items-center gap-2 px-4 py-3 rounded-2xl bg-amber-500 text-white font-bold text-[14px] shadow-lg hover:bg-amber-600 active:scale-95 transition-all"
-            >
-              <span className="text-[18px] leading-none">+</span>
-              Idee
-            </button>
-          )}
-        </>
-      )}
-
-      {activeTab === 'kochplan' && (
-        <KochplanView
-          tripId={tripId}
-          tripStartDate={tripStartDate}
-          tripEndDate={tripEndDate}
-          ideas={ideas}
-          slots={slots}
-          myParticipantId={myParticipantId}
-          isActive={isActive}
-          onRefresh={handleRefresh}
-        />
+      {isActive && myParticipantId && (
+        <button
+          type="button"
+          onClick={() => setShowAddSheet(true)}
+          className="fixed bottom-[84px] md:bottom-6 right-4 z-40 flex items-center gap-2 px-4 py-3 rounded-2xl bg-amber-500 text-white font-bold text-[14px] shadow-lg hover:bg-amber-600 active:scale-95 transition-all"
+        >
+          <span className="text-[18px] leading-none">+</span>
+          Idee
+        </button>
       )}
 
       {showAddSheet && (
