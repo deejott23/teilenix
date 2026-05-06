@@ -562,6 +562,7 @@ export default function PacklistClient({
 
   const [tab, setTab] = useState<TabKey>('group_need')
   const [showSheet, setShowSheet] = useState(false)
+  const [hideDone, setHideDone] = useState(true)
 
   const myParticipantName = participants.find(p => p.id === myParticipantId)?.name ?? ''
 
@@ -650,11 +651,39 @@ export default function PacklistClient({
 
       {/* Tab description */}
       {tab === 'bringing' && (
-        <p className="text-[11px] text-muted-foreground mb-3 px-0.5">
-          {isGroup
-            ? `Was ${myGroupName ?? 'ihr'} mitbringt — hake ab, was bereits eingepackt ist.`
-            : 'Was du mitbringst — hake ab, was bereits eingepackt ist.'}
-        </p>
+        <div className="mb-3 space-y-2">
+          <p className="text-[11px] text-muted-foreground px-0.5">
+            {isGroup
+              ? `Was ${myGroupName ?? 'ihr'} mitbringt — hake ab, was bereits eingepackt ist.`
+              : 'Was du mitbringst — hake ab, was bereits eingepackt ist.'}
+          </p>
+          {bringItems.length > 0 && (
+            <>
+              {/* Progress bar */}
+              <div className="flex items-center gap-2.5 px-0.5">
+                <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-500"
+                    style={{
+                      width: `${bringItems.length > 0 ? Math.round((bringItems.filter(i => i.checked).length / bringItems.length) * 100) : 0}%`,
+                      background: bringItems.every(i => i.checked) ? '#2d7a4f' : '#1b5c58',
+                    }}
+                  />
+                </div>
+                <span className="text-[11px] font-bold text-muted-foreground flex-shrink-0 tabular-nums">
+                  {bringItems.filter(i => i.checked).length}/{bringItems.length}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setHideDone(h => !h)}
+                  className="text-[11px] font-semibold text-primary flex-shrink-0"
+                >
+                  {hideDone ? 'Erledigte anzeigen' : 'Erledigte ausblenden'}
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       )}
       {tab === 'group_need' && (
         <p className="text-[11px] text-muted-foreground mb-3 px-0.5">
@@ -670,6 +699,14 @@ export default function PacklistClient({
             <p className="text-[13px] font-semibold text-foreground mb-1">Noch nichts auf der Liste</p>
             <p className="text-[12px] text-muted-foreground">Füge hinzu, was du mitbringst.</p>
           </div>
+        ) : tab === 'bringing' && hideDone && bringItems.length > 0 && bringItems.every(i => i.checked) && myClaimedNeedItems.length === 0 ? (
+          <div className="py-10 text-center">
+            <span className="text-[40px] block mb-2">🎉</span>
+            <p className="text-[13px] font-semibold text-foreground mb-1">Alles eingepackt!</p>
+            <p className="text-[12px] text-muted-foreground">
+              <button type="button" onClick={() => setHideDone(false)} className="underline">Alle anzeigen</button>
+            </p>
+          </div>
         ) : tab === 'group_need' && needItems.length === 0 ? (
           <div className="py-10 text-center">
             <span className="text-[40px] block mb-2">🛍️</span>
@@ -678,7 +715,7 @@ export default function PacklistClient({
           </div>
         ) : tab === 'bringing' ? (
           <>
-            {bringItems.map(item => (
+            {(hideDone ? bringItems.filter(i => !i.checked) : bringItems).map(item => (
               <BringingRow
                 key={item.id}
                 item={item}
@@ -732,12 +769,6 @@ export default function PacklistClient({
         )}
       </div>
 
-      {/* Done summary for bringing tab */}
-      {tab === 'bringing' && bringItems.length > 0 && (
-        <p className="text-[11px] text-muted-foreground text-center">
-          {bringItems.filter(i => i.checked).length} von {bringItems.length} eingepackt
-        </p>
-      )}
 
       {/* FAB — nur bei Gruppenbedarfe-Tab */}
       {isActive && tab === 'group_need' && (

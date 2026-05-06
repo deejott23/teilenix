@@ -34,16 +34,17 @@ interface AddActivitySheetProps {
   myParticipantId: string
   tripStartDate: string | null
   tripEndDate: string | null
+  defaultDate?: string | null
   onClose: () => void
   onAdd: (data: object) => Promise<void>
 }
 
 export default function AddActivitySheet({
-  tripStartDate, tripEndDate, onClose, onAdd,
+  tripStartDate, tripEndDate, defaultDate, onClose, onAdd,
 }: AddActivitySheetProps) {
   const [title, setTitle] = useState('')
   const [activityType, setActivityType] = useState<ActivityType>('activity')
-  const [selectedDate, setSelectedDate] = useState<string | null>(null)
+  const [selectedDate, setSelectedDate] = useState<string | null>(defaultDate ?? null)
   const [description, setDescription] = useState('')
   const [link, setLink] = useState('')
   const [departureTime, setDepartureTime] = useState('')

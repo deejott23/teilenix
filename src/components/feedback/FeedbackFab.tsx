@@ -48,7 +48,8 @@ export default function FeedbackFab() {
       {/* FAB Button */}
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-[84px] left-4 md:bottom-6 md:left-6 z-40 w-12 h-12 rounded-full bg-slate-700 text-white shadow-lg flex items-center justify-center hover:bg-slate-600 active:scale-95 transition-all"
+        className="fixed left-4 md:left-6 z-40 w-12 h-12 rounded-full bg-slate-700 text-white shadow-lg flex items-center justify-center hover:bg-slate-600 active:scale-95 transition-all md:bottom-6"
+        style={{ bottom: 'calc(84px + env(safe-area-inset-bottom, 0px))' }}
         aria-label="Feedback hinterlassen"
       >
         <MessageCircle className="w-5 h-5" />

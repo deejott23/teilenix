@@ -49,8 +49,10 @@ export function getQueueLength(): number {
 }
 
 export async function processQueue(): Promise<{ succeeded: number; failed: number }> {
+  if (_processing) return { succeeded: 0, failed: 0 }
+  _processing = true
   const queue = loadQueue()
-  if (queue.length === 0) return { succeeded: 0, failed: 0 }
+  if (queue.length === 0) { _processing = false; return { succeeded: 0, failed: 0 } }
 
   let succeeded = 0
   let failed = 0
@@ -78,8 +80,12 @@ export async function processQueue(): Promise<{ succeeded: number; failed: numbe
   }
 
   saveQueue(remaining)
+  _processing = false
   return { succeeded, failed }
 }
+
+/** Prevent concurrent processQueue calls (race between ExpenseForm + OfflineIndicator) */
+let _processing = false
 
 /** Register a one-time online event listener to drain the queue */
 export function registerOnlineQueueProcessor(
