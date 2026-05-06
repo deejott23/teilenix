@@ -6,50 +6,58 @@ export async function POST(
   { params }: { params: Promise<{ tripId: string; mealId: string }> }
 ) {
   const { tripId, mealId } = await params
+  void tripId
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { data: participant } = await supabase
-    .from('trip_participants')
-    .select('id')
-    .eq('trip_id', tripId)
-    .eq('user_id', user.id)
-    .eq('is_group', false)
-    .maybeSingle()
+  const body = await req.json()
+  const vote: string = body.vote ?? 'yes'
+  const participantIdParam: string | undefined = body.participantId
+
+  if (!['yes', 'maybe', 'no'].includes(vote)) {
+    return NextResponse.json({ error: 'Invalid vote value' }, { status: 400 })
+  }
+
+  // Resolve participant
+  const query = supabase.from('trip_participants').select('id').eq('user_id', user.id).eq('is_group', false)
+  if (participantIdParam) query.eq('id', participantIdParam)
+  const { data: participant } = await query.maybeSingle()
 
   if (!participant) return NextResponse.json({ error: 'Not a participant' }, { status: 403 })
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const db = supabase as any
 
-  // Check if vote exists
   const { data: existing } = await db.from('trip_meal_votes')
-    .select('id')
+    .select('id, vote')
     .eq('meal_idea_id', mealId)
     .eq('participant_id', participant.id)
     .maybeSingle()
 
   if (existing) {
-    // Delete vote (toggle off)
-    await db.from('trip_meal_votes')
-      .delete()
-      .eq('id', existing.id)
+    if (existing.vote === vote) {
+      // Toggle off — same vote clicked again
+      await db.from('trip_meal_votes').delete().eq('id', existing.id)
+    } else {
+      // Change vote
+      await db.from('trip_meal_votes').update({ vote }).eq('id', existing.id)
+    }
   } else {
-    // Insert vote (toggle on)
     await db.from('trip_meal_votes').insert({
       meal_idea_id: mealId,
       participant_id: participant.id,
+      vote,
     })
   }
 
-  // Return updated counts
   const { data: allVotes } = await db.from('trip_meal_votes')
-    .select('participant_id')
+    .select('id, meal_idea_id, participant_id, vote, created_at')
     .eq('meal_idea_id', mealId)
 
-  const vote_count = (allVotes ?? []).length
-  const my_vote = (allVotes ?? []).some((v: { participant_id: string }) => v.participant_id === participant.id)
+  const votes = allVotes ?? []
+  const vote_count = votes.filter((v: { vote: string }) => v.vote === 'yes').length
+  const my_vote_value = votes.find((v: { participant_id: string }) => v.participant_id === participant.id)?.vote ?? null
 
-  return NextResponse.json({ vote_count, my_vote })
+  return NextResponse.json({ votes, vote_count, my_vote_value })
 }

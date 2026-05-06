@@ -45,8 +45,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ trip
     return {
       ...raw,
       creator_name: participantMap.get(raw.created_by_participant_id as string) ?? 'Unbekannt',
-      vote_count: ideaVotes.length,
-      my_vote: myParticipantId ? ideaVotes.some((v: { participant_id: string }) => v.participant_id === myParticipantId) : false,
+      vote_count: ideaVotes.filter((v: { vote: string }) => v.vote === 'yes').length,
+      my_vote_value: myParticipantId
+        ? (ideaVotes.find((v: { participant_id: string }) => v.participant_id === myParticipantId)?.vote ?? null)
+        : null,
     }
   })
 

@@ -20,17 +20,14 @@ function formatShortDate(dateStr: string): string {
 }
 
 // ── Single activity card ──────────────────────────────────────────────────────
-function AusflugZettel({
-  activity, tripId,
-}: {
-  activity: ActivityWithVotes
-  tripId: string
-}) {
+function AusflugZettel({ activity, tripId }: { activity: ActivityWithVotes; tripId: string }) {
   const emoji = activity.cover_emoji ?? activityTypeEmoji[activity.activity_type]
   const isConfirmed = activity.status === 'confirmed'
   const bgColor = COLORS[hashId(activity.created_by_participant_id) % COLORS.length]
   const rotation = ROTATIONS[hashId(activity.id) % ROTATIONS.length]
   const yesCount = activity.votes.filter(v => v.vote === 'yes').length
+  const maybeCount = activity.votes.filter(v => v.vote === 'maybe').length
+  const noCount = activity.votes.filter(v => v.vote === 'no').length
 
   return (
     <Link href={`/trips/${tripId}/planen/${activity.id}`}>
@@ -63,17 +60,31 @@ function AusflugZettel({
           </span>
         )}
 
-        {/* Footer: creator + votes */}
+        {/* Footer: creator + vote counts */}
         <div className="flex items-center justify-between mt-0.5">
-          <span className="text-[10px] text-gray-500 truncate max-w-[60%]">
+          <span className="text-[10px] text-gray-500 truncate max-w-[50%]">
             {activity.creator_name}
           </span>
-          <span className={cn(
-            'flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[11px] font-bold',
-            yesCount > 0 ? 'bg-black/10 text-gray-700' : 'bg-black/6 text-gray-400'
-          )}>
-            👍 {yesCount}
-          </span>
+          <div className="flex items-center gap-1">
+            <span className={cn(
+              'text-[10px] font-bold px-1 py-0.5 rounded',
+              yesCount > 0 ? 'text-green-700' : 'text-gray-300'
+            )}>
+              😄{yesCount}
+            </span>
+            <span className={cn(
+              'text-[10px] font-bold px-1 py-0.5 rounded',
+              maybeCount > 0 ? 'text-amber-600' : 'text-gray-300'
+            )}>
+              🤷{maybeCount}
+            </span>
+            <span className={cn(
+              'text-[10px] font-bold px-1 py-0.5 rounded',
+              noCount > 0 ? 'text-red-500' : 'text-gray-300'
+            )}>
+              😴{noCount}
+            </span>
+          </div>
         </div>
       </div>
     </Link>
@@ -86,19 +97,24 @@ interface AusflugPinwandProps {
   tripId: string
 }
 
+function sortByYesVotes(list: ActivityWithVotes[]): ActivityWithVotes[] {
+  return [...list].sort((a, b) => {
+    const aYes = a.votes.filter(v => v.vote === 'yes').length
+    const bYes = b.votes.filter(v => v.vote === 'yes').length
+    return bYes - aYes
+  })
+}
+
 export default function AusflugPinwand({ activities, tripId }: AusflugPinwandProps) {
-  const confirmed = activities.filter(a => a.status === 'confirmed')
-  const ideas     = activities.filter(a => a.status === 'idea')
+  const confirmed = sortByYesVotes(activities.filter(a => a.status === 'confirmed'))
+  const ideas = sortByYesVotes(activities.filter(a => a.status === 'idea'))
 
   return (
-    <div
-      className="rounded-[16px] p-3 min-h-[200px]"
-      style={{ background: '#c8b89a' }}
-    >
+    <div className="rounded-[16px] p-3 min-h-[200px]" style={{ background: '#c8b89a' }}>
       {activities.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 text-center">
           <span className="text-[48px] block mb-3">🗺️</span>
-          <p className="text-[15px] font-bold text-amber-900 mb-1">Noch keine Ausflüge</p>
+          <p className="text-[15px] font-bold text-amber-900 mb-1">Noch keine Ausfluege</p>
           <p className="text-[13px] text-amber-800/70">Schlage den ersten Ausflug vor!</p>
         </div>
       ) : (
@@ -106,12 +122,10 @@ export default function AusflugPinwand({ activities, tripId }: AusflugPinwandPro
           {confirmed.length > 0 && (
             <div>
               <p className="text-[11px] font-bold uppercase tracking-wider text-amber-900/70 mb-2 px-1">
-                📌 Bestätigt
+                📌 Bestatigt
               </p>
               <div className="grid grid-cols-2 gap-3">
-                {confirmed.map(a => (
-                  <AusflugZettel key={a.id} activity={a} tripId={tripId} />
-                ))}
+                {confirmed.map(a => <AusflugZettel key={a.id} activity={a} tripId={tripId} />)}
               </div>
             </div>
           )}
@@ -121,9 +135,7 @@ export default function AusflugPinwand({ activities, tripId }: AusflugPinwandPro
                 💡 Ideen · abstimmen!
               </p>
               <div className="grid grid-cols-2 gap-3">
-                {ideas.map(a => (
-                  <AusflugZettel key={a.id} activity={a} tripId={tripId} />
-                ))}
+                {ideas.map(a => <AusflugZettel key={a.id} activity={a} tripId={tripId} />)}
               </div>
             </div>
           )}

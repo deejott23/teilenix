@@ -7,17 +7,21 @@ import { queryKeys } from '@/lib/query/queryKeys'
 
 // Mapping: Supabase-Tabelle → betroffener Query-Key (nur gezielt invalidieren, kein full-refresh)
 const TABLE_KEYS: Record<string, (tripId: string) => readonly unknown[]> = {
-  expenses:         (t) => queryKeys.expenses.withSplits(t),
-  expense_splits:   (t) => queryKeys.expenses.withSplits(t),
-  packlist_items:   (t) => queryKeys.packlist.byTrip(t),
-  packlist_checks:  (t) => queryKeys.packlist.byTrip(t),
-  packlist_claims:  (t) => queryKeys.packlist.byTrip(t),
-  shopping_items:   (t) => queryKeys.shopping.byTrip(t),
-  trip_activities:  (t) => queryKeys.activities.byTrip(t),
-  trip_meal_ideas:  (t) => queryKeys.meals.byTrip(t),
-  trip_meal_votes:  (t) => queryKeys.meals.byTrip(t),
-  trip_meal_slots:  (t) => queryKeys.meals.byTrip(t),
+  expenses:              (t) => queryKeys.expenses.withSplits(t),
+  expense_splits:        (t) => queryKeys.expenses.withSplits(t),
+  packlist_items:        (t) => queryKeys.packlist.byTrip(t),
+  packlist_checks:       (t) => queryKeys.packlist.byTrip(t),
+  packlist_claims:       (t) => queryKeys.packlist.byTrip(t),
+  shopping_items:        (t) => queryKeys.shopping.byTrip(t),
+  trip_activities:       (t) => queryKeys.activities.byTrip(t),
+  trip_meal_ideas:       (t) => queryKeys.meals.byTrip(t),
+  trip_meal_votes:       (t) => queryKeys.meals.byTrip(t),
+  trip_meal_slots:       (t) => queryKeys.meals.byTrip(t),
+  trip_activity_votes:   (t) => queryKeys.activities.byTrip(t),
 }
+
+// Diese Tabellen haben keine trip_id-Spalte — kein Filter, globale Subscription
+const TABLES_WITHOUT_TRIP_ID = new Set(['trip_meal_votes', 'trip_activity_votes'])
 
 interface Props {
   tripId: string
@@ -48,11 +52,12 @@ export default function RealtimeQueryRefresher({ tripId, tables }: Props) {
     const channels = tables.map(table => {
       const getKey = TABLE_KEYS[table]
       if (!getKey) return null
+      const pgConfig = TABLES_WITHOUT_TRIP_ID.has(table)
+        ? { event: '*' as const, schema: 'public', table }
+        : { event: '*' as const, schema: 'public', table, filter: `trip_id=eq.${tripId}` }
       return supabase
         .channel(`tq-${table}-${tripId}`)
-        .on('postgres_changes', { event: '*', schema: 'public', table, filter: `trip_id=eq.${tripId}` },
-          () => schedule(getKey(tripId))
-        )
+        .on('postgres_changes', pgConfig, () => schedule(getKey(tripId)))
         .subscribe()
     }).filter(Boolean)
 

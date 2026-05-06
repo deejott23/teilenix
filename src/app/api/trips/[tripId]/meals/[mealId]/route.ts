@@ -2,6 +2,59 @@ import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ tripId: string; mealId: string }> }
+) {
+  const { tripId, mealId } = await params
+  void req
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const db = supabase as any
+
+  const [{ data: idea }, { data: votesRaw }, { data: participantsRaw }, { data: commentsRaw }] = await Promise.all([
+    db.from('trip_meal_ideas').select('*').eq('id', mealId).eq('trip_id', tripId).single(),
+    db.from('trip_meal_votes').select('id, meal_idea_id, participant_id, vote, created_at').eq('meal_idea_id', mealId),
+    supabase.from('trip_participants').select('id, name').eq('trip_id', tripId),
+    db.from('trip_meal_comments').select('*, trip_participants(name)').eq('meal_idea_id', mealId).order('created_at', { ascending: true }),
+  ])
+
+  if (!idea) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+
+  const participantMap = new Map((participantsRaw ?? []).map((p: { id: string; name: string }) => [p.id, p.name]))
+
+  const { data: meRaw } = await supabase.from('trip_participants')
+    .select('id').eq('trip_id', tripId).eq('user_id', user.id).eq('is_group', false).maybeSingle()
+  const myParticipantId = meRaw?.id ?? null
+
+  const votes = votesRaw ?? []
+  const vote_count = votes.filter((v: { vote: string }) => v.vote === 'yes').length
+  const my_vote_value = myParticipantId
+    ? votes.find((v: { participant_id: string }) => v.participant_id === myParticipantId)?.vote ?? null
+    : null
+
+  const comments = (commentsRaw ?? []).map((c: Record<string, unknown> & { trip_participants: { name: string } | null }) => ({
+    id: c.id,
+    meal_idea_id: c.meal_idea_id,
+    participant_id: c.participant_id,
+    content: c.content,
+    created_at: c.created_at,
+    participant_name: c.trip_participants?.name ?? 'Unbekannt',
+  }))
+
+  return NextResponse.json({
+    ...idea,
+    creator_name: participantMap.get(idea.created_by_participant_id) ?? 'Unbekannt',
+    vote_count,
+    my_vote_value,
+    votes,
+    comments,
+  })
+}
+
 const patchSchema = z.object({
   title: z.string().min(1).max(120).optional(),
   emoji: z.string().min(1).optional(),

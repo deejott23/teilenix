@@ -1,7 +1,6 @@
 'use client'
 import { useState, useMemo } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { queryKeys } from '@/lib/query/queryKeys'
 import dynamic from 'next/dynamic'
@@ -9,6 +8,7 @@ import MealZettel from './MealZettel'
 import KochplanView from './KochplanView'
 
 const AddMealSheet = dynamic(() => import('./AddMealSheet'), { ssr: false })
+import { toast } from 'sonner'
 import type { MealIdea, MealSlot, TripParticipant } from '@/types/app'
 
 interface EssenClientProps {
@@ -52,8 +52,12 @@ export default function EssenClient({
     [slots]
   )
 
-  const assignedIdeas = useMemo(() => ideas.filter(i => assignedIdeaIds.has(i.id)), [ideas, assignedIdeaIds])
-  const unassignedIdeas = useMemo(() => ideas.filter(i => !assignedIdeaIds.has(i.id)), [ideas, assignedIdeaIds])
+  // Sort by lecker (yes) vote count desc
+  const sortByVotes = (list: MealIdea[]) =>
+    [...list].sort((a, b) => b.vote_count - a.vote_count)
+
+  const assignedIdeas = useMemo(() => sortByVotes(ideas.filter(i => assignedIdeaIds.has(i.id))), [ideas, assignedIdeaIds])
+  const unassignedIdeas = useMemo(() => sortByVotes(ideas.filter(i => !assignedIdeaIds.has(i.id))), [ideas, assignedIdeaIds])
 
   const handleAdd = async (formData: object) => {
     const res = await fetch(`/api/trips/${tripId}/meals`, {
@@ -62,56 +66,9 @@ export default function EssenClient({
       body: JSON.stringify(formData),
     })
     if (!res.ok) throw new Error('Failed to add meal idea')
-    toast.success('Idee hinzugefügt!')
+    toast.success('Idee hinzugefugt!')
     queryClient.invalidateQueries({ queryKey: queryKeys.meals.byTrip(tripId) })
     setShowAddSheet(false)
-  }
-
-  const handleVote = async (mealId: string) => {
-    // Optimistic update
-    const prev = queryClient.getQueryData<{ ideas: MealIdea[]; slots: MealSlot[] }>(queryKeys.meals.byTrip(tripId))
-    if (prev) {
-      queryClient.setQueryData(queryKeys.meals.byTrip(tripId), {
-        ...prev,
-        ideas: prev.ideas.map(i => {
-          if (i.id !== mealId) return i
-          const newMyVote = !i.my_vote
-          return {
-            ...i,
-            my_vote: newMyVote,
-            vote_count: newMyVote ? i.vote_count + 1 : i.vote_count - 1,
-          }
-        }),
-      })
-    }
-
-    try {
-      const res = await fetch(`/api/trips/${tripId}/meals/${mealId}/vote`, { method: 'POST' })
-      if (!res.ok) throw new Error()
-      const { vote_count, my_vote } = await res.json()
-      // Sync with server result
-      const current = queryClient.getQueryData<{ ideas: MealIdea[]; slots: MealSlot[] }>(queryKeys.meals.byTrip(tripId))
-      if (current) {
-        queryClient.setQueryData(queryKeys.meals.byTrip(tripId), {
-          ...current,
-          ideas: current.ideas.map(i => i.id === mealId ? { ...i, vote_count, my_vote } : i),
-        })
-      }
-    } catch {
-      // Rollback
-      if (prev) queryClient.setQueryData(queryKeys.meals.byTrip(tripId), prev)
-      toast.error('Abstimmung fehlgeschlagen')
-    }
-  }
-
-  const handleDelete = async (mealId: string) => {
-    const res = await fetch(`/api/trips/${tripId}/meals/${mealId}`, { method: 'DELETE' })
-    if (!res.ok) {
-      toast.error('Löschen fehlgeschlagen')
-      return
-    }
-    toast.success('Idee gelöscht')
-    queryClient.invalidateQueries({ queryKey: queryKeys.meals.byTrip(tripId) })
   }
 
   const handleRefresh = () => {
@@ -124,7 +81,7 @@ export default function EssenClient({
     const date = new Date(slot.slot_date + 'T00:00:00')
     const day = date.getDate()
     const month = date.toLocaleDateString('de-DE', { month: 'short' })
-    const typeLabel = slot.slot_type === 'lunch' ? 'Mittagessen' : 'Abendessen'
+    const typeLabel = slot.slot_type === 'lunch' ? 'Mittag' : 'Abend'
     return `${day}. ${month} · ${typeLabel}`
   }
 
@@ -155,17 +112,12 @@ export default function EssenClient({
       {activeTab === 'ideen' && (
         <>
           {/* Cork board */}
-          <div
-            className="rounded-[16px] p-3 min-h-[200px]"
-            style={{ background: '#c8b89a' }}
-          >
+          <div className="rounded-[16px] p-3 min-h-[200px]" style={{ background: '#c8b89a' }}>
             {ideas.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <span className="text-[48px] block mb-3">🍽️</span>
                 <p className="text-[15px] font-bold text-amber-900 mb-1">Noch keine Ideen</p>
-                <p className="text-[13px] text-amber-800/70">
-                  Schlage das erste Essen vor!
-                </p>
+                <p className="text-[13px] text-amber-800/70">Schlage das erste Essen vor!</p>
               </div>
             ) : (
               <div className="space-y-4">
@@ -179,12 +131,7 @@ export default function EssenClient({
                         <MealZettel
                           key={meal.id}
                           meal={meal}
-                          myParticipantId={myParticipantId}
                           tripId={tripId}
-                          onVote={() => handleVote(meal.id)}
-                          onDelete={() => handleDelete(meal.id)}
-                          isMyMeal={meal.created_by_participant_id === myParticipantId}
-                          isActive={isActive}
                           slotLabel={getSlotLabel(meal.id)}
                         />
                       ))}
@@ -201,12 +148,7 @@ export default function EssenClient({
                         <MealZettel
                           key={meal.id}
                           meal={meal}
-                          myParticipantId={myParticipantId}
                           tripId={tripId}
-                          onVote={() => handleVote(meal.id)}
-                          onDelete={() => handleDelete(meal.id)}
-                          isMyMeal={meal.created_by_participant_id === myParticipantId}
-                          isActive={isActive}
                         />
                       ))}
                     </div>

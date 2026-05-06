@@ -1,4 +1,5 @@
 'use client'
+import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import type { MealIdea } from '@/types/app'
 
@@ -14,35 +15,18 @@ function hashString(str: string): number {
 }
 
 function getInitials(name: string): string {
-  return name
-    .split(' ')
-    .map(w => w[0] ?? '')
-    .join('')
-    .toUpperCase()
-    .slice(0, 2)
+  return name.split(' ').map(w => w[0] ?? '').join('').toUpperCase().slice(0, 2)
 }
 
 const AVATAR_COLORS = ['#f87171', '#fb923c', '#facc15', '#4ade80', '#60a5fa', '#a78bfa', '#f472b6']
 
 interface MealZettelProps {
   meal: MealIdea
-  myParticipantId: string
   tripId: string
-  onVote: () => void
-  onDelete: () => void
-  isMyMeal: boolean
-  isActive: boolean
   slotLabel?: string
 }
 
-export default function MealZettel({
-  meal,
-  onVote,
-  onDelete,
-  isMyMeal,
-  isActive,
-  slotLabel,
-}: MealZettelProps) {
+export default function MealZettel({ meal, tripId, slotLabel }: MealZettelProps) {
   const colorIdx = hashString(meal.created_by_participant_id) % COLORS.length
   const rotIdx = hashString(meal.id) % ROTATIONS.length
   const avatarColor = AVATAR_COLORS[hashString(meal.created_by_participant_id) % AVATAR_COLORS.length]
@@ -51,102 +35,77 @@ export default function MealZettel({
   const rotation = ROTATIONS[rotIdx]
 
   return (
-    <div
-      className={cn(
-        'group relative rounded-[4px] p-3 flex flex-col gap-1.5 transition-transform hover:scale-[1.02] cursor-default',
-        rotation
-      )}
-      style={{
-        background: bgColor,
-        boxShadow: '2px 3px 8px rgba(0,0,0,0.18)',
-      }}
-    >
-      {/* Pushpin if assigned */}
-      {slotLabel && (
-        <span
-          className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-[18px] leading-none z-10"
-          aria-hidden
-        >
-          📌
-        </span>
-      )}
+    <Link href={`/trips/${tripId}/essen/${meal.id}`}>
+      <div
+        className={cn(
+          'relative rounded-[4px] p-3 flex flex-col gap-1.5 transition-transform hover:scale-[1.02] active:scale-[0.98]',
+          rotation
+        )}
+        style={{ background: bgColor, boxShadow: '2px 3px 8px rgba(0,0,0,0.18)' }}
+      >
+        {/* Pushpin if assigned */}
+        {slotLabel && (
+          <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-[18px] leading-none z-10" aria-hidden>
+            📌
+          </span>
+        )}
 
-      {/* Day badge */}
-      {slotLabel && (
-        <span className="absolute top-1 right-1 text-[9px] font-bold bg-amber-500 text-white rounded px-1 py-0.5 leading-none">
-          {slotLabel}
-        </span>
-      )}
+        {/* Day badge */}
+        {slotLabel && (
+          <span className="absolute top-1 right-1 text-[9px] font-bold bg-amber-500 text-white rounded px-1 py-0.5 leading-none">
+            {slotLabel}
+          </span>
+        )}
 
-      {/* Delete button — top-left, only for creator */}
-      {isMyMeal && isActive && (
-        <button
-          type="button"
-          onClick={onDelete}
-          className="absolute top-1 left-1 w-5 h-5 flex items-center justify-center rounded-full bg-black/10 text-[11px] font-bold text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-200 hover:text-red-700 z-10"
-          aria-label="Löschen"
-        >
-          ×
-        </button>
-      )}
+        {/* Emoji */}
+        <span className="text-2xl leading-tight">{meal.emoji}</span>
 
-      {/* Emoji */}
-      <span className="text-2xl leading-tight">{meal.emoji}</span>
-
-      {/* Title */}
-      <p className="font-bold text-[13px] text-gray-800 leading-snug break-words">
-        {meal.title}
-      </p>
-
-      {/* Description */}
-      {meal.description && (
-        <p className="text-[11px] text-gray-600 line-clamp-2 leading-snug">
-          {meal.description}
+        {/* Title */}
+        <p className="font-bold text-[13px] text-gray-800 leading-snug break-words line-clamp-2">
+          {meal.title}
         </p>
-      )}
 
-      {/* Tags */}
-      {meal.tags.length > 0 && (
-        <div className="flex flex-wrap gap-1">
-          {meal.tags.map(tag => (
-            <span
-              key={tag}
-              className="px-1.5 py-0.5 rounded-full text-[9px] font-semibold bg-black/8 text-gray-600"
-            >
-              {tag}
+        {/* Description */}
+        {meal.description && (
+          <p className="text-[11px] text-gray-600 line-clamp-2 leading-snug">
+            {meal.description}
+          </p>
+        )}
+
+        {/* Tags */}
+        {meal.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {meal.tags.map(tag => (
+              <span key={tag} className="px-1.5 py-0.5 rounded-full text-[9px] font-semibold bg-black/8 text-gray-600">
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Footer: avatar + vote summary */}
+        <div className="flex items-center justify-between mt-1">
+          <span
+            className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold text-white flex-shrink-0"
+            style={{ background: avatarColor }}
+            title={meal.creator_name}
+          >
+            {getInitials(meal.creator_name)}
+          </span>
+
+          {/* Compact vote indicator */}
+          {meal.vote_count > 0 ? (
+            <span className={cn(
+              'flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold',
+              meal.my_vote_value === 'yes' ? 'bg-green-200 text-green-800' : 'bg-black/10 text-gray-600'
+            )}>
+              😋 {meal.vote_count}
             </span>
-          ))}
-        </div>
-      )}
-
-      {/* Footer: avatar + vote */}
-      <div className="flex items-center justify-between mt-1">
-        {/* Avatar circle */}
-        <span
-          className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold text-white flex-shrink-0"
-          style={{ background: avatarColor }}
-          title={meal.creator_name}
-        >
-          {getInitials(meal.creator_name)}
-        </span>
-
-        {/* Vote pill */}
-        <button
-          type="button"
-          onClick={onVote}
-          className={cn(
-            'flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold transition-all active:scale-95',
-            meal.my_vote
-              ? 'bg-amber-400 text-amber-900'
-              : meal.vote_count === 0
-                ? 'bg-black/8 text-gray-500 animate-pulse-vote'
-                : 'bg-black/8 text-gray-500 hover:bg-amber-100'
+          ) : (
+            <span className="text-[10px] text-gray-400 italic">abstimmen →</span>
           )}
-        >
-          <span>🔥</span>
-          <span>{meal.vote_count}</span>
-        </button>
+        </div>
       </div>
-    </div>
+    </Link>
   )
 }

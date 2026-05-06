@@ -199,6 +199,25 @@ export type ActivityWithVotes = Activity & {
 }
 
 // ── Meals (Essen) ──
+export type MealVoteValue = 'yes' | 'maybe' | 'no'
+
+export type MealVote = {
+  id: string
+  meal_idea_id: string
+  participant_id: string
+  vote: MealVoteValue
+  created_at: string
+}
+
+export type MealComment = {
+  id: string
+  meal_idea_id: string
+  participant_id: string
+  content: string
+  created_at: string
+  participant_name: string
+}
+
 export type MealIdea = {
   id: string
   trip_id: string
@@ -212,8 +231,8 @@ export type MealIdea = {
   updated_at: string
   // resolved client-side
   creator_name: string
-  vote_count: number
-  my_vote: boolean
+  vote_count: number          // count of 'yes' (lecker) votes
+  my_vote_value: MealVoteValue | null  // current user's vote (replaces my_vote: boolean)
 }
 
 export type MealSlot = {

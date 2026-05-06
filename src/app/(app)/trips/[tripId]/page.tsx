@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import { Suspense } from 'react'
 import RealtimeQueryRefresher from '@/components/realtime/RealtimeQueryRefresher'
+import RealtimePageRefresher from '@/components/realtime/RealtimePageRefresher'
 import BalanceCard, { BalanceCardSkeleton } from '@/components/trips/overview/BalanceCard'
 import ActivitiesCard, { ActivitiesCardSkeleton } from '@/components/trips/overview/ActivitiesCard'
 import PacklistShoppingCards, { PacklistShoppingCardsSkeleton } from '@/components/trips/overview/PacklistShoppingCards'
@@ -40,6 +41,7 @@ export default async function TripOverviewPage({
   return (
     <div className="space-y-3">
       <RealtimeQueryRefresher tripId={tripId} tables={['expenses', 'packlist_items', 'activities', 'shopping_items']} />
+      <RealtimePageRefresher tripId={tripId} tables={['trip_meal_ideas', 'trip_meal_slots']} />
 
       {/* Balance Card — streamt nach den Expense-Queries */}
       <Suspense fallback={<BalanceCardSkeleton />}>
