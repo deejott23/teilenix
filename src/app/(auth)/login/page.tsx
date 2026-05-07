@@ -49,7 +49,7 @@ export default async function LoginPage() {
       <header className="relative z-10 flex items-center justify-between px-6 py-5 md:px-12">
         <div className="flex items-center gap-2.5">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/sharepa-symbol.svg" alt="share|pa" className="w-8 h-8" />
+          <img src="/sharepa-symbol-petrol.svg" alt="share|pa" className="w-8 h-8" />
           <span className="font-bold text-white/90 tracking-tight">
             share<span style={{ color: '#E94E1B' }}>|</span><span style={{ color: '#9AA0A6' }}>pa</span>
           </span>

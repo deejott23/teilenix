@@ -35,13 +35,13 @@ export const metadata: Metadata = {
     'mobile-web-app-capable': 'yes',
     'apple-mobile-web-app-capable': 'yes',
     'apple-mobile-web-app-status-bar-style': 'black-translucent',
-    'msapplication-TileColor': '#1E6FD9',
-    'msapplication-TileImage': '/sharepa-app-icon-192.png',
+    'msapplication-TileColor': '#1b5c58',
+    'msapplication-TileImage': '/sharepa-app-icon-petrol-192.png',
   },
 }
 
 export const viewport: Viewport = {
-  themeColor: '#1E6FD9',
+  themeColor: '#1b5c58',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,

@@ -60,7 +60,7 @@ export default function AppNav({ needsOnboarding }: AppNavProps) {
       <aside className="hidden md:fixed md:inset-y-0 md:left-0 md:w-60 md:flex md:flex-col bg-card border-r border-border z-40">
         <Link href="/dashboard" className="flex items-center gap-2.5 px-5 h-16 border-b border-border flex-shrink-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/sharepa-symbol.svg" alt="" className="w-7 h-7" />
+          <img src="/sharepa-symbol-petrol.svg" alt="" className="w-7 h-7" />
           <span className="font-bold text-foreground tracking-tight">
             share<span style={{ color: '#E94E1B' }}>|</span><span style={{ color: '#9AA0A6' }}>pa</span>
           </span>

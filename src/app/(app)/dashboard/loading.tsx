@@ -6,7 +6,7 @@ export default function DashboardLoading() {
       {/* Header skeleton */}
       <div
         className="-mx-4 -mt-7 mb-6 px-6 pt-8 pb-7 rounded-b-3xl"
-        style={{ background: 'linear-gradient(150deg, #1E6FD9 0%, #1558b0 100%)' }}
+        style={{ background: 'linear-gradient(150deg, #1b5c58 0%, #144442 100%)' }}
       >
         <Sk className="h-2.5 w-16 mb-3 bg-white/20" />
         <Sk className="h-8 w-48 mb-2 bg-white/20" />

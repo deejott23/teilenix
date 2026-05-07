@@ -40,7 +40,7 @@ export default async function DashboardPage() {
       {/* Header */}
       <div
         className="-mx-4 -mt-7 mb-6 px-6 pt-8 pb-7 rounded-b-3xl"
-        style={{ background: 'linear-gradient(150deg, #1E6FD9 0%, #1558b0 100%)' }}
+        style={{ background: 'linear-gradient(150deg, #1b5c58 0%, #144442 100%)' }}
       >
         <p className="text-[10px] font-bold tracking-[0.14em] uppercase mb-2.5" style={{ color: 'rgba(255,255,255,0.38)' }}>
           share|pa

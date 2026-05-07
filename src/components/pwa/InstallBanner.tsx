@@ -55,7 +55,7 @@ export default function InstallBanner() {
           <div className="flex items-center gap-2.5">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/sharepa-app-icon-192.png"
+              src="/sharepa-app-icon-petrol-192.png"
               alt="share|pa"
               className="w-10 h-10 rounded-[10px] flex-shrink-0"
             />

@@ -4,17 +4,17 @@
   "description": "Fair teilen. Entspannt reisen. Die Gruppenkasse, die einfach funktioniert.",
   "start_url": "/dashboard",
   "display": "standalone",
-  "background_color": "#FAFBFC",
-  "theme_color": "#1E6FD9",
+  "background_color": "#F7FAF9",
+  "theme_color": "#1b5c58",
   "orientation": "portrait-primary",
   "lang": "de",
   "scope": "/",
   "categories": ["finance", "travel", "utilities"],
   "icons": [
-    { "src": "/sharepa-symbol-192.png",   "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "/sharepa-symbol-512.png",   "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "/sharepa-app-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
-    { "src": "/sharepa-app-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    { "src": "/sharepa-symbol-petrol-192.png",   "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/sharepa-symbol-petrol-512.png",   "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/sharepa-app-icon-petrol-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/sharepa-app-icon-petrol-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ],
   "shortcuts": [
     {
@@ -22,7 +22,7 @@
       "short_name": "Neue Reise",
       "description": "Erstelle eine neue Reise",
       "url": "/trips/new",
-      "icons": [{ "src": "/sharepa-symbol-192.png", "sizes": "192x192" }]
+      "icons": [{ "src": "/sharepa-symbol-petrol-192.png", "sizes": "192x192" }]
     }
   ]
 }

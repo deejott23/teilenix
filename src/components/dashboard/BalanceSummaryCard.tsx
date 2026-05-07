@@ -11,7 +11,7 @@ export default function BalanceSummaryCard({ balance, totalSpentCents }: Balance
   const isNegative = balance.netBalanceCents < 0
 
   const gradient = isPositive
-    ? 'from-[#1E6FD9] to-[#1558b0]'
+    ? 'from-[#1b5c58] to-[#0d4440]'
     : isNegative
     ? 'from-[#1e3fa8] to-[#152d80]'
     : 'from-[#6b7280] to-[#4b5563]'
