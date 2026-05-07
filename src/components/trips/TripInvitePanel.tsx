@@ -18,7 +18,7 @@ export default function TripInvitePanel({ inviteCode, tripName }: TripInvitePane
 
   const emailSubject = encodeURIComponent(`Einladung zur Reise: ${tripName}`)
   const emailBody = encodeURIComponent(
-    `Hallo!\n\nIch lade dich ein, an unserer Reise "${tripName}" in TeileniX teilzunehmen.\n\nKlick einfach auf diesen Link:\n${joinUrl}\n\nOder gib den Code ${inviteCode} direkt in der App ein.\n\nBis bald!`
+    `Hallo!\n\nIch lade dich ein, an unserer Reise "${tripName}" in share|pa teilzunehmen.\n\nKlick einfach auf diesen Link:\n${joinUrl}\n\nOder gib den Code ${inviteCode} direkt in der App ein.\n\nBis bald!`
   )
   const whatsappText = encodeURIComponent(`Hey! Komm bei unserer Reise "${tripName}" mit 🗺️ Klick hier: ${joinUrl}`)
 

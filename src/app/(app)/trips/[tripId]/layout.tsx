@@ -50,10 +50,10 @@ export default async function TripLayout({
 
   return (
     <div>
-      {/* Teal header strip — NO overflow-hidden so emoji picker popover is visible */}
+      {/* Header strip — NO overflow-hidden so emoji picker popover is visible */}
       <div
         className="-mx-4 -mt-7 mb-5 px-4 pt-7 pb-4 rounded-b-3xl relative"
-        style={{ background: 'linear-gradient(150deg, #1b5c58 0%, #134844 100%)' }}
+        style={{ background: 'linear-gradient(150deg, #1E6FD9 0%, #1558b0 100%)' }}
       >
         {/* Cover image background */}
         {coverImageUrl && (

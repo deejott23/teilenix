@@ -55,12 +55,12 @@ export default function InstallBanner() {
           <div className="flex items-center gap-2.5">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/icons/icon-72x72.png"
-              alt="TeileniX"
+              src="/sharepa-app-icon-192.png"
+              alt="share|pa"
               className="w-10 h-10 rounded-[10px] flex-shrink-0"
             />
             <div>
-              <div className="text-[14px] font-bold text-foreground leading-tight">TeileniX installieren</div>
+              <div className="text-[14px] font-bold text-foreground leading-tight">share|pa installieren</div>
               <div className="text-[11px] text-muted-foreground mt-0.5">Zum Homescreen hinzufügen</div>
             </div>
           </div>
@@ -73,7 +73,7 @@ export default function InstallBanner() {
         </div>
 
         <p className="text-[12px] text-muted-foreground leading-relaxed mb-3">
-          Installiere TeileniX auf deinem Homescreen — kein App Store, öffnet wie eine echte App.
+          Installiere share|pa auf deinem Homescreen — kein App Store, öffnet wie eine echte App.
         </p>
 
         {/* Steps */}

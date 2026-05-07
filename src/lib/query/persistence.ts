@@ -3,7 +3,7 @@ import { persistQueryClient } from '@tanstack/query-persist-client-core'
 import { dehydrate } from '@tanstack/react-query'
 import type { QueryClient } from '@tanstack/react-query'
 
-const IDB_KEY = 'teilenix-query-cache'
+const IDB_KEY = 'sharepa-query-cache'
 
 const idbStorage = {
   getItem:    (key: string): Promise<string | null> => get(key).then(v => v ?? null),

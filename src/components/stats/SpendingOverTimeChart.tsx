@@ -41,9 +41,9 @@ export default function SpendingOverTimeChart({ data }: SpendingOverTimeChartPro
           <Line
             type="monotone"
             dataKey="cumulativeDisplay"
-            stroke="#1b5c58"
+            stroke="#1E6FD9"
             strokeWidth={2.5}
-            dot={{ fill: '#1b5c58', strokeWidth: 0, r: 3 }}
+            dot={{ fill: '#1E6FD9', strokeWidth: 0, r: 3 }}
             activeDot={{ r: 5 }}
           />
         </LineChart>

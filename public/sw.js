@@ -1,4 +1,4 @@
-// TeileniX Service Worker — native Cache API, no external CDN dependencies
+// share|pa Service Worker — native Cache API, no external CDN dependencies
 
 const CACHE_VERSION = 'v2'
 const STATIC_CACHE = `static-assets-${CACHE_VERSION}`

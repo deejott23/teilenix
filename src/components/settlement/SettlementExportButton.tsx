@@ -33,7 +33,7 @@ export default function SettlementExportButton({ tripName, settlement }: Settlem
     const text = shareText()
     if (navigator.share) {
       try {
-        await navigator.share({ title: `TeileniX – ${tripName}`, text })
+        await navigator.share({ title: `share|pa – ${tripName}`, text })
       } catch {
         // User cancelled
       }
@@ -70,7 +70,7 @@ export default function SettlementExportButton({ tripName, settlement }: Settlem
           `${b.netBalanceCents > 0 ? '+' : ''}${formatCurrency(b.netBalanceCents)}`,
         ].join('')),
         '',
-        `Erstellt mit TeileniX`,
+        `Erstellt mit share|pa`,
       ].join('\n')
 
       const blob = new Blob([text], { type: 'text/plain;charset=utf-8' })

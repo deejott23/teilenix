@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="share|pa Symbol">
+  <title>share|pa Symbol</title>
+  <defs>
+    <linearGradient id="gBlue" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#1E6FD9"/>
+      <stop offset="100%" stop-color="#2AA8C9"/>
+    </linearGradient>
+    <linearGradient id="gGreen" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#3DB36A"/>
+      <stop offset="100%" stop-color="#2AA8C9"/>
+    </linearGradient>
+    <linearGradient id="gOrange" x1="100%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#E94E1B"/>
+      <stop offset="100%" stop-color="#F39200"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(100,100)" fill="none" stroke-width="14" stroke-linecap="round" stroke-linejoin="round">
+    <g transform="rotate(150)">
+      <path d="M 0,-35 C -55,-35 -75,25 -35,55 C -10,72 25,55 25,25 C 25,5 10,-10 -8,-8" stroke="url(#gBlue)"/>
+    </g>
+    <g transform="rotate(-90)">
+      <path d="M 0,-35 C -55,-35 -75,25 -35,55 C -10,72 25,55 25,25 C 25,5 10,-10 -8,-8" stroke="url(#gGreen)"/>
+    </g>
+    <g transform="rotate(30)">
+      <path d="M 0,-35 C -55,-35 -75,25 -35,55 C -10,72 25,55 25,25 C 25,5 10,-10 -8,-8" stroke="url(#gOrange)"/>
+    </g>
+  </g>
+</svg>

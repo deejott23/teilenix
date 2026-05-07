@@ -59,10 +59,11 @@ export default function AppNav({ needsOnboarding }: AppNavProps) {
       {/* ── Desktop sidebar ── */}
       <aside className="hidden md:fixed md:inset-y-0 md:left-0 md:w-60 md:flex md:flex-col bg-card border-r border-border z-40">
         <Link href="/dashboard" className="flex items-center gap-2.5 px-5 h-16 border-b border-border flex-shrink-0">
-          <div className="w-7 h-7 bg-primary rounded-lg flex items-center justify-center">
-            <Plane className="w-3.5 h-3.5 text-primary-foreground" strokeWidth={2.2} />
-          </div>
-          <span className="font-bold text-foreground tracking-tight">TeileniX</span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/sharepa-symbol.svg" alt="" className="w-7 h-7" />
+          <span className="font-bold text-foreground tracking-tight">
+            share<span style={{ color: '#E94E1B' }}>|</span><span style={{ color: '#9AA0A6' }}>pa</span>
+          </span>
         </Link>
 
         <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
@@ -88,7 +89,7 @@ export default function AppNav({ needsOnboarding }: AppNavProps) {
         </nav>
 
         <div className="px-5 py-4 border-t border-border">
-          <p className="text-[11px] text-muted-foreground/40 font-medium">TeileniX v1.0</p>
+          <p className="text-[11px] text-muted-foreground/40 font-medium">share|pa v1.0</p>
         </div>
       </aside>
     </>

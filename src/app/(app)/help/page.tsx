@@ -83,7 +83,7 @@ export default function HelpPage() {
         <div>
           <h1 className="text-xl font-bold text-foreground">Hilfe & Anleitung</h1>
           <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-            Hier findest du alles, was du brauchst, um TeileniX optimal zu nutzen — von der ersten Reise bis zur fairen Abrechnung.
+            Hier findest du alles, was du brauchst, um share|pa optimal zu nutzen — von der ersten Reise bis zur fairen Abrechnung.
           </p>
         </div>
       </div>
@@ -111,7 +111,7 @@ export default function HelpPage() {
         {/* 1. Erste Schritte */}
         <Section id="start" icon={<Plane className="w-4 h-4" strokeWidth={2} />} title="Erste Schritte">
           <p className="text-sm text-muted-foreground leading-relaxed">
-            TeileniX ist dein Begleiter für faire Reisekostenaufteilung. In wenigen Minuten bist du startklar.
+            share|pa ist dein Begleiter für faire Reisekostenaufteilung. In wenigen Minuten bist du startklar.
           </p>
           <div className="space-y-3">
             <Step num={1} title="Mit Google anmelden" desc="Nutze deinen Google-Account für die schnelle und sichere Anmeldung — kein Passwort nötig." />
@@ -156,11 +156,11 @@ export default function HelpPage() {
         {/* 4. Teilnehmer & Gruppen */}
         <Section id="teilnehmer" icon={<Users className="w-4 h-4" strokeWidth={2} />} title="Teilnehmer & Gruppen">
           <p className="text-sm text-muted-foreground leading-relaxed">
-            TeileniX unterstützt sowohl Einzelpersonen als auch Gruppen (z.B. Familien) als Teilnehmer einer Reise.
+            share|pa unterstützt sowohl Einzelpersonen als auch Gruppen (z.B. Familien) als Teilnehmer einer Reise.
           </p>
           <div className="space-y-2">
             <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Teilnehmertypen</p>
-            <InfoRow label="Registrierter Nutzer" desc="Hat einen TeileniX-Account und ist der Reise selbst beigetreten. Kann Ausgaben erfassen." />
+            <InfoRow label="Registrierter Nutzer" desc="Hat einen share|pa-Account und ist der Reise selbst beigetreten. Kann Ausgaben erfassen." />
             <InfoRow label="Gast (+Gast)" desc="Wird manuell hinzugefügt — für Personen ohne Account (z.B. Kinder, Freunde ohne App)." />
             <InfoRow label="Gruppe (+Gruppe)" desc="Steht für eine Familie oder Personengruppe. Anteile werden gemeinsam gerechnet." />
           </div>
@@ -185,7 +185,7 @@ export default function HelpPage() {
         {/* 5. Ausgaben */}
         <Section id="ausgaben" icon={<Receipt className="w-4 h-4" strokeWidth={2} />} title="Ausgaben erfassen">
           <p className="text-sm text-muted-foreground leading-relaxed">
-            Ausgaben können von jedem Teilnehmer erfasst werden. TeileniX berechnet automatisch, wer wem wie viel schuldet.
+            Ausgaben können von jedem Teilnehmer erfasst werden. share|pa berechnet automatisch, wer wem wie viel schuldet.
           </p>
           <div className="space-y-3">
             <Step num={1} title="«Neue Ausgabe» tippen" desc="Im Tab «Ausgaben» auf den Button «Neue Ausgabe» oben tippen." />
@@ -342,7 +342,7 @@ export default function HelpPage() {
           </p>
           <div className="space-y-2">
             <InfoRow label="Salden-Übersicht" desc="Zeigt für jeden Teilnehmer: Gesamtbetrag bezahlt, Anteil laut Aufteilung und die Differenz (positiv = bekommt Geld zurück, negativ = schuldet noch)." />
-            <InfoRow label="Überweisungen" desc="TeileniX berechnet die minimale Anzahl an Zahlungen, um alle Schulden auszugleichen." />
+            <InfoRow label="Überweisungen" desc="share|pa berechnet die minimale Anzahl an Zahlungen, um alle Schulden auszugleichen." />
             <InfoRow label="Teilzahlungen" desc="Hat jemand bereits einen Teil seines Anteils direkt bezahlt? Mit «Teilzahlung erfassen» (Button neben «Wer zahlt wem?») kann diese Zahlung erfasst werden — sie wird automatisch in der Abrechnung berücksichtigt." />
             <InfoRow label="Statistiken" desc="Im Tab «Statistiken» gibt es eine Ausgabenübersicht nach Kategorien sowie Bestenlisten — inkl. Packliste-Spaßstatistiken." />
           </div>
@@ -373,7 +373,7 @@ export default function HelpPage() {
           </p>
           <div className="space-y-2">
             <InfoRow label="Name ändern" desc="Auf den Stift neben deinem Namen tippen, neuen Namen eingeben und mit Enter oder ✓ bestätigen. Der neue Name erscheint sofort in allen deinen Reisen." />
-            <InfoRow label="E-Mail-Adresse" desc="Wird über deinen Google-Account verwaltet und kann in TeileniX nicht geändert werden." />
+            <InfoRow label="E-Mail-Adresse" desc="Wird über deinen Google-Account verwaltet und kann in share|pa nicht geändert werden." />
             <InfoRow label="Profilbild" desc="Wird automatisch von Google übernommen." />
           </div>
           <Tip>Dein Anzeigename ist für alle Mitreisenden in gemeinsamen Reisen sichtbar — und wird auch in der Packliste und Abrechnung angezeigt.</Tip>
@@ -401,7 +401,7 @@ export default function HelpPage() {
         <div className="bg-card card-shadow rounded-2xl p-5 text-center">
           <p className="text-sm font-semibold text-foreground mb-1">Noch Fragen?</p>
           <p className="text-xs text-muted-foreground leading-relaxed">
-            TeileniX · Entwickelt für stressfreie Reisen und faire Abrechnungen.
+            share|pa · Entwickelt für stressfreie Reisen und faire Abrechnungen.
           </p>
         </div>
 

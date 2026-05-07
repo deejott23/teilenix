@@ -4,7 +4,7 @@ export default function OfflinePage() {
   return (
     <div
       className="min-h-screen flex flex-col items-center justify-center px-6 text-center"
-      style={{ background: 'linear-gradient(150deg, #1b5c58 0%, #134844 100%)' }}
+      style={{ background: 'linear-gradient(150deg, #1E6FD9 0%, #1558b0 100%)' }}
     >
       <div className="text-6xl mb-6">✈️</div>
       <h1 className="text-2xl font-bold text-white mb-3">Kein Internet</h1>

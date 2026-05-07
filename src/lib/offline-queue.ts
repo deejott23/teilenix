@@ -3,7 +3,7 @@
  * Stores POST/PATCH requests and replays them when the device comes back online.
  */
 
-const QUEUE_KEY = 'teilenix-offline-queue'
+const QUEUE_KEY = 'sharepa-offline-queue'
 
 export interface QueuedRequest {
   id: string

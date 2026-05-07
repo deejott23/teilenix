@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import GoogleSignInButton from '@/components/auth/GoogleSignInButton'
-import { Plane } from 'lucide-react'
 
 export default async function LoginPage() {
   const supabase = await createClient()
@@ -49,13 +48,14 @@ export default async function LoginPage() {
       {/* ── Top nav bar ── */}
       <header className="relative z-10 flex items-center justify-between px-6 py-5 md:px-12">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: 'oklch(0.68 0.16 68)' }}>
-            <Plane className="w-4 h-4" style={{ color: 'oklch(0.14 0.03 50)' }} strokeWidth={2.2} />
-          </div>
-          <span className="font-bold text-white/90 tracking-tight">TeileniX</span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/sharepa-symbol.svg" alt="share|pa" className="w-8 h-8" />
+          <span className="font-bold text-white/90 tracking-tight">
+            share<span style={{ color: '#E94E1B' }}>|</span><span style={{ color: '#9AA0A6' }}>pa</span>
+          </span>
         </div>
         <div className="text-[12px] font-medium text-white/30 tracking-widest uppercase">
-          Reisekosten-App
+          Fair teilen
         </div>
       </header>
 
@@ -82,12 +82,12 @@ export default async function LoginPage() {
                   color: 'oklch(0.96 0.015 80)',
                 }}
               >
-                Teile{' '}
-                <span style={{ color: '#6ee8d8' }}>
-                  Abenteuer
+                Fair{' '}
+                <span style={{ color: '#2AA8C9' }}>
+                  teilen.
                 </span>
                 <br />
-                und die Kosten.
+                Entspannt reisen.
               </h1>
 
               {/* Subline */}
@@ -141,8 +141,8 @@ export default async function LoginPage() {
 
       {/* ── Bottom bar ── */}
       <footer className="relative z-10 px-6 py-5 md:px-12 flex items-center justify-between">
-        <p className="text-[11px] text-white/20">© 2026 TeileniX</p>
-        <p className="text-[11px] text-white/20">Reisekosten fair teilen</p>
+        <p className="text-[11px] text-white/20">© 2026 share|pa</p>
+        <p className="text-[11px] text-white/20">Fair teilen. Entspannt reisen.</p>
       </footer>
 
     </div>

@@ -37,13 +37,13 @@ export default async function DashboardPage() {
   return (
     <div>
 
-      {/* Teal header */}
+      {/* Header */}
       <div
         className="-mx-4 -mt-7 mb-6 px-6 pt-8 pb-7 rounded-b-3xl"
-        style={{ background: 'linear-gradient(150deg, #1b5c58 0%, #134844 100%)' }}
+        style={{ background: 'linear-gradient(150deg, #1E6FD9 0%, #1558b0 100%)' }}
       >
         <p className="text-[10px] font-bold tracking-[0.14em] uppercase mb-2.5" style={{ color: 'rgba(255,255,255,0.38)' }}>
-          TeileniX
+          share|pa
         </p>
         <h1 className="text-[26px] font-extrabold tracking-tight text-white leading-tight">
           Hallo, {firstName} 👋
