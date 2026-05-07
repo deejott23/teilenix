@@ -37,8 +37,11 @@ export default async function ActivitiesCard({ tripId }: { tripId: string }) {
     votedActivityIds = (myVotes ?? []).map((v: { activity_id: string }) => v.activity_id)
   }
 
-  const confirmedActivities = allActivities.filter(a => a.status === 'confirmed').slice(0, 2)
-  const ideaCount = allActivities.filter(a => a.status === 'idea' && !votedActivityIds.includes(a.id)).length
+  const confirmedActivities = allActivities.filter(a => a.status === 'confirmed' || a.activity_date).slice(0, 2)
+  const ideaActivities = allActivities.filter(a => a.status === 'idea' && !a.activity_date)
+  const unvotedIdeas = ideaActivities.filter(a => !votedActivityIds.includes(a.id))
+  const ideaCount = unvotedIdeas.length
+  const hasIdeas = ideaActivities.length > 0
 
   if (allActivities.length === 0) return null
 
@@ -77,16 +80,25 @@ export default async function ActivitiesCard({ tripId }: { tripId: string }) {
         </div>
       )}
 
-      {ideaCount > 0 && (
-        <Link
-          href={`/trips/${tripId}/planen`}
-          className="mx-4 mb-3.5 mt-2 px-3 py-2.5 bg-amber-50 rounded-[12px] border border-amber-100 flex items-center gap-2 cursor-pointer"
-        >
-          <span className="text-[12px] font-bold text-amber-700 flex-1">
-            💡 {ideaCount} {ideaCount === 1 ? 'Idee wartet' : 'Ideen warten'} auf deine Stimme
-          </span>
-          <ChevronRight className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" strokeWidth={2.5} />
-        </Link>
+      {hasIdeas && (
+        ideaCount > 0 ? (
+          <Link
+            href={`/trips/${tripId}/planen`}
+            className="mx-4 mb-3.5 mt-2 px-3 py-2.5 bg-amber-50 rounded-[12px] border border-amber-100 flex items-center gap-2 cursor-pointer"
+          >
+            <span className="text-[12px] font-bold text-amber-700 flex-1">
+              💡 {ideaCount} {ideaCount === 1 ? 'Idee wartet' : 'Ideen warten'} auf deine Stimme
+            </span>
+            <ChevronRight className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" strokeWidth={2.5} />
+          </Link>
+        ) : (
+          <div className="mx-4 mb-3.5 mt-2 px-3 py-2.5 bg-green-50 rounded-[12px] border border-green-100 flex items-center gap-2">
+            <span className="text-[16px]">🎉</span>
+            <span className="text-[12px] font-bold text-green-700 flex-1">
+              Alle Ausflüge bewertet – super!
+            </span>
+          </div>
+        )
       )}
     </div>
   )

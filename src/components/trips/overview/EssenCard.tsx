@@ -9,17 +9,17 @@ export default async function EssenCard({ tripId }: { tripId: string }) {
 
   const today = new Date().toISOString().slice(0, 10)
 
-  const [{ data: todaySlotsRaw }, { data: recentIdeasRaw }] = await Promise.all([
+  const [{ data: todaySlotsRaw }, { data: allIdeasRaw }, { data: { user } }] = await Promise.all([
     db.from('trip_meal_slots')
       .select('slot_type, meal_idea_id, trip_meal_ideas(title, emoji)')
       .eq('trip_id', tripId)
       .eq('slot_date', today)
       .not('meal_idea_id', 'is', null),
     db.from('trip_meal_ideas')
-      .select('id, title, emoji, description')
+      .select('id, title, emoji')
       .eq('trip_id', tripId)
-      .order('created_at', { ascending: false })
-      .limit(3),
+      .order('created_at', { ascending: false }),
+    supabase.auth.getUser(),
   ])
 
   const todaySlots = (todaySlotsRaw ?? []) as {
@@ -28,14 +28,24 @@ export default async function EssenCard({ tripId }: { tripId: string }) {
     trip_meal_ideas: { title: string; emoji: string } | null
   }[]
 
-  const recentIdeas = (recentIdeasRaw ?? []) as {
-    id: string
-    title: string
-    emoji: string
-    description: string | null
-  }[]
+  const allIdeas = (allIdeasRaw ?? []) as { id: string; title: string; emoji: string }[]
 
-  if (todaySlots.length === 0 && recentIdeas.length === 0) return null
+  if (todaySlots.length === 0 && allIdeas.length === 0) return null
+
+  // Find which meal ideas the current user has already voted on
+  let votedMealIds: string[] = []
+  if (user) {
+    const { data: myVotes } = await db
+      .from('trip_meal_votes')
+      .select('meal_idea_id, trip_participants!inner(trip_id, user_id)')
+      .eq('trip_participants.trip_id', tripId)
+      .eq('trip_participants.user_id', user.id)
+    votedMealIds = (myVotes ?? []).map((v: { meal_idea_id: string }) => v.meal_idea_id)
+  }
+
+  const unvotedIdeas = allIdeas.filter(i => !votedMealIds.includes(i.id))
+  const ideaCount = unvotedIdeas.length
+  const hasIdeas = allIdeas.length > 0
 
   const lunchSlot = todaySlots.find(s => s.slot_type === 'lunch')
   const dinnerSlot = todaySlots.find(s => s.slot_type === 'dinner')
@@ -79,24 +89,33 @@ export default async function EssenCard({ tripId }: { tripId: string }) {
         </div>
       )}
 
-      {/* Recent ideas CTA */}
-      {recentIdeas.length > 0 && (
-        <Link
-          href={`/trips/${tripId}/essen`}
-          className="mx-4 mb-3.5 mt-2 px-3 py-2.5 bg-orange-50 rounded-[12px] border border-orange-100 flex items-center gap-2 cursor-pointer"
-        >
-          <div className="flex -space-x-1 flex-shrink-0">
-            {recentIdeas.slice(0, 3).map(idea => (
-              <span key={idea.id} className="text-[16px]">{idea.emoji}</span>
-            ))}
+      {/* Voting CTA or all-done message */}
+      {hasIdeas && (
+        ideaCount > 0 ? (
+          <Link
+            href={`/trips/${tripId}/essen`}
+            className="mx-4 mb-3.5 mt-2 px-3 py-2.5 bg-orange-50 rounded-[12px] border border-orange-100 flex items-center gap-2 cursor-pointer"
+          >
+            <div className="flex -space-x-1 flex-shrink-0">
+              {unvotedIdeas.slice(0, 3).map(idea => (
+                <span key={idea.id} className="text-[16px]">{idea.emoji}</span>
+              ))}
+            </div>
+            <span className="text-[12px] font-bold text-orange-700 flex-1 truncate">
+              {ideaCount === 1
+                ? `"${unvotedIdeas[0].title}" – jetzt abstimmen`
+                : `${ideaCount} Ideen warten auf deine Stimme`}
+            </span>
+            <Flame className="w-3.5 h-3.5 text-orange-500 flex-shrink-0" strokeWidth={2.5} />
+          </Link>
+        ) : (
+          <div className="mx-4 mb-3.5 mt-2 px-3 py-2.5 bg-green-50 rounded-[12px] border border-green-100 flex items-center gap-2">
+            <span className="text-[16px]">🎉</span>
+            <span className="text-[12px] font-bold text-green-700 flex-1">
+              Du hast alles bewertet – danke!
+            </span>
           </div>
-          <span className="text-[12px] font-bold text-orange-700 flex-1 truncate">
-            {recentIdeas.length === 1
-              ? `"${recentIdeas[0].title}" – jetzt abstimmen`
-              : `${recentIdeas.length} Ideen warten auf deine Stimme`}
-          </span>
-          <Flame className="w-3.5 h-3.5 text-orange-500 flex-shrink-0" strokeWidth={2.5} />
-        </Link>
+        )
       )}
     </div>
   )
