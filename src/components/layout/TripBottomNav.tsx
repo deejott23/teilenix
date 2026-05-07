@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useQueryClient } from '@tanstack/react-query'
-import { Home, Calendar, ClipboardList, Wallet } from 'lucide-react'
+import { Home, Calendar, ClipboardList, Wallet, Newspaper } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { queryKeys } from '@/lib/query/queryKeys'
 import { fetchers } from '@/lib/query/fetchers'
@@ -69,6 +69,14 @@ export default function TripBottomNav({ tripId, isEnded }: TripBottomNavProps) {
       isActive: pathname.startsWith(`${base}/packlist`) || pathname.startsWith(`${base}/einkauf`) || pathname.startsWith(`${base}/listen`),
       color: { fg: 'var(--section-listen)', bg: 'var(--section-listen-muted)' },
       onPrefetch: prefetchLists,
+    },
+    {
+      href: `${base}/facts`,
+      label: 'ReiseBlatt',
+      icon: Newspaper,
+      isActive: pathname.startsWith(`${base}/facts`),
+      color: { fg: 'var(--section-facts)', bg: 'var(--section-facts-muted)' },
+      onPrefetch: undefined,
     },
   ]
 
