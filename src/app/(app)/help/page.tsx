@@ -1,4 +1,4 @@
-import { HelpCircle, Plane, Users, Receipt, BarChart2, CreditCard, Tag, LogOut, QrCode, UserCircle, ChevronRight, ListChecks, Settings } from 'lucide-react'
+import { HelpCircle, Plane, Users, Receipt, CreditCard, Tag, LogOut, QrCode, UserCircle, ChevronRight, ListChecks, Settings, MapPin, Utensils, CalendarDays, Newspaper } from 'lucide-react'
 
 interface SectionProps {
   id: string
@@ -60,6 +60,10 @@ export default function HelpPage() {
     { id: 'invite',      label: 'Einladen & Beitreten' },
     { id: 'teilnehmer',  label: 'Teilnehmer & Gruppen' },
     { id: 'ausgaben',    label: 'Ausgaben'              },
+    { id: 'planen',      label: 'Ausflüge planen'       },
+    { id: 'essen',       label: 'Essen'                 },
+    { id: 'kalender',    label: 'Kalender'              },
+    { id: 'reiseblatt',  label: 'ReiseBlatt'            },
     { id: 'packlist',    label: 'Packliste'             },
     { id: 'kategorien',  label: 'Kategorien'            },
     { id: 'einstellungen', label: 'Einstellungen'       },
@@ -197,7 +201,79 @@ export default function HelpPage() {
           <Tip>Ausgaben können nachträglich bearbeitet oder gelöscht werden — solange die Reise aktiv ist.</Tip>
         </Section>
 
-        {/* 6. Packliste */}
+        {/* 6. Ausflüge planen */}
+        <Section id="planen" icon={<MapPin className="w-4 h-4" strokeWidth={2} />} title="Ausflüge planen">
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Im Tab «Planen» → «✈️ Ausflüge» kann die Gruppe gemeinsam Ausflugideen sammeln, darüber abstimmen und die besten Ideen einplanen.
+          </p>
+          <div className="space-y-2">
+            <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Die drei Bereiche</p>
+            <InfoRow label="📌 Eingeplant" desc="Ausflüge mit einem festen Datum oder bestätigtem Status — diese sind fest im Programm." />
+            <InfoRow label="💡 Ideen · abstimmen!" desc="Vorschläge ohne Datum — hier stimmt die Gruppe ab, welche Ausflüge umgesetzt werden sollen." />
+            <InfoRow label="✅ Gemacht" desc="Ausflüge, deren Datum in der Vergangenheit liegt. Werden automatisch hierher verschoben." />
+          </div>
+          <div className="space-y-3 mt-2">
+            <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">So geht&apos;s</p>
+            <Step num={1} title="Ausflug vorschlagen" desc="«Ausflug vorschlagen»-Button unten rechts tippen → Titel, Typ, optionale Beschreibung, Link, Treffpunkt, Dauer, Kosten eingeben." />
+            <Step num={2} title="Abstimmen" desc="Auf einen Ausflug tippen → mit 😄 (dabei), 🤷 (vielleicht) oder 😴 (nein) abstimmen. Die Ergebnisse sieht die ganze Gruppe." />
+            <Step num={3} title="Datum einplanen" desc="In der Detailansicht kann ein Datum aus dem Reisezeitraum gewählt werden. Der Ausflug wandert dann in «Eingeplant»." />
+            <Step num={4} title="Kommentieren" desc="Unter jedem Ausflug können Kommentare hinterlassen werden — für Rückfragen, Hinweise oder Infos." />
+            <Step num={5} title="Löschen" desc="Eigene Vorschläge können in der Detailansicht mit dem roten Löschen-Button entfernt werden." />
+          </div>
+          <Tip>Die Karte zeigt Abstimmungs-Emojis direkt auf der Übersicht — so sieht man auf einen Blick, was beliebt ist.</Tip>
+        </Section>
+
+        {/* 7. Essen */}
+        <Section id="essen" icon={<Utensils className="w-4 h-4" strokeWidth={2} />} title="Essen">
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Im Tab «Planen» → «🍽️ Essen» sammelt die Gruppe Essen-Ideen, stimmt darüber ab und plant Mahlzeiten auf bestimmte Tage und Tageszeiten ein.
+          </p>
+          <div className="space-y-2">
+            <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Die drei Bereiche</p>
+            <InfoRow label="📌 Bereits eingeplant" desc="Essensideen, die einem konkreten Tag und einer Tageszeit (Mittag oder Abend) zugewiesen wurden." />
+            <InfoRow label="💡 Ideen · abstimmen!" desc="Noch nicht eingeplante Vorschläge — hier stimmt die Gruppe ab." />
+            <InfoRow label="✅ Gemacht" desc="Mahlzeiten, deren geplanter Tag in der Vergangenheit liegt." />
+          </div>
+          <div className="space-y-3 mt-2">
+            <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">So geht&apos;s</p>
+            <Step num={1} title="Essensidee vorschlagen" desc="«Essen vorschlagen»-Button tippen → Emoji, Titel, Beschreibung, Tags und optionalen Link (z.B. Rezept) eingeben." />
+            <Step num={2} title="Abstimmen" desc="Auf eine Idee tippen → mit 😋 (lecker!), 🤷 (egal) oder 🙅 (nein) abstimmen." />
+            <Step num={3} title="Mahlzeit einplanen" desc="In der Detailansicht einen Tag und Mittag/Abend auswählen — die Idee erscheint dann im Kalender." />
+            <Step num={4} title="Kommentieren" desc="Kommentare für Rezepthinweise, Allergien oder Anmerkungen direkt unter der Idee." />
+            <Step num={5} title="Löschen" desc="Eigene Essen-Ideen können in der Detailansicht gelöscht werden." />
+          </div>
+          <Tip>Im Kalender-Tab sind Essen und Ausflüge tageweise nebeneinander sichtbar — so hat die Gruppe immer den Überblick.</Tip>
+        </Section>
+
+        {/* 8. Kalender */}
+        <Section id="kalender" icon={<CalendarDays className="w-4 h-4" strokeWidth={2} />} title="Kalender">
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Der Kalender-Tab zeigt den gesamten Reisezeitraum tageweise — links die eingeplanten Mahlzeiten, rechts die Ausflüge für den jeweiligen Tag.
+          </p>
+          <div className="space-y-2">
+            <InfoRow label="Zwei Spalten pro Tag" desc="Links (🍽️) zeigt Mittag und Abendessen. Rechts (✈️) zeigt eingeplante Ausflüge des Tages." />
+            <InfoRow label="Mahlzeit belegen" desc="Auf «belegen» tippen → Essen-Idee aus der Liste auswählen und Mittag oder Abend zuweisen." />
+            <InfoRow label="Ausflug zuweisen" desc="Auf «belegen» in der Ausflüge-Spalte tippen → vorhandene Ausflugidee aus der Liste auswählen und dem Tag zuweisen." />
+            <InfoRow label="Heute-Markierung" desc="Der aktuelle Tag ist besonders hervorgehoben — praktisch während der Reise." />
+          </div>
+          <Tip>Der Kalender ist der schnellste Weg, um den Tagesplan auf einen Blick zu sehen und spontan Lücken zu füllen.</Tip>
+        </Section>
+
+        {/* 9. ReiseBlatt */}
+        <Section id="reiseblatt" icon={<Newspaper className="w-4 h-4" strokeWidth={2} />} title="ReiseBlatt">
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Das ReiseBlatt ist euer persönliches Reise-Klatschblatt — alle Facts, Highlights und Ranglisten aus der Reise, aufbereitet als dramatische Schlagzeilen.
+          </p>
+          <div className="space-y-2">
+            <InfoRow label="Schlagzeilen" desc="Wer hat am meisten gezahlt? Welcher Ausflug war der Favorit? Wer hat die meisten Ideen eingebracht? Das ReiseBlatt weiß es." />
+            <InfoRow label="Ranglisten" desc="Zahler, Ideengeber und beliebteste Ausflüge und Gerichte werden als Rangliste mit Prozentstäben dargestellt." />
+            <InfoRow label="Fun Facts" desc="Gesamtausgaben, Anzahl Votes, Ideen und Packlisten-Fortschritt als witzige Statistiken." />
+            <InfoRow label="Daten wachsen mit" desc="Je mehr die Gruppe einträgt, desto mehr Schlagzeilen entstehen. Abstimmen, Vorschläge machen und Ausgaben erfassen lohnt sich!" />
+          </div>
+          <Tip>Das ReiseBlatt ist über den «📰 ReiseBlatt»-Tab in der unteren Navigation erreichbar — und liefert auch eine Vorschau-Karte auf der Reise-Übersicht.</Tip>
+        </Section>
+
+        {/* 10. Packliste */}
         <Section id="packlist" icon={<ListChecks className="w-4 h-4" strokeWidth={2} />} title="Packliste">
           <p className="text-sm text-muted-foreground leading-relaxed">
             Im Tab «Packliste» hat jede Reise eine gemeinsame Packliste — für persönliches Gepäck, Gruppenartikel und alles, was noch jemand mitbringen muss.
