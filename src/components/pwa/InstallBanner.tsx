@@ -7,6 +7,11 @@ const VISIT_KEY = 'pwa-visit-count'
 const DISMISSED_KEY = 'pwa-install-dismissed'
 const SHOW_AFTER_VISITS = 3
 
+interface BeforeInstallPromptEvent extends Event {
+  prompt(): Promise<void>
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
+}
+
 function isIOS() {
   if (typeof navigator === 'undefined') return false
   return /iphone|ipad|ipod/i.test(navigator.userAgent)
@@ -20,27 +25,49 @@ function isInStandaloneMode() {
 
 export default function InstallBanner() {
   const [visible, setVisible] = useState(false)
+  const [mode, setMode] = useState<'ios' | 'android'>('ios')
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
 
   useEffect(() => {
-    // Only show on iOS Safari, not in standalone mode
-    if (!isIOS() || isInStandaloneMode()) return
-
+    if (isInStandaloneMode()) return
     const dismissed = localStorage.getItem(DISMISSED_KEY)
     if (dismissed) return
 
-    // Increment visit counter
     const visits = parseInt(localStorage.getItem(VISIT_KEY) ?? '0', 10) + 1
     localStorage.setItem(VISIT_KEY, String(visits))
 
-    if (visits >= SHOW_AFTER_VISITS) {
+    // Android Chrome: beforeinstallprompt event
+    const handler = (e: Event) => {
+      e.preventDefault()
+      setDeferredPrompt(e as BeforeInstallPromptEvent)
+      if (visits >= SHOW_AFTER_VISITS) {
+        setMode('android')
+        setVisible(true)
+      }
+    }
+    window.addEventListener('beforeinstallprompt', handler)
+
+    // iOS Safari: manual instructions
+    if (isIOS() && visits >= SHOW_AFTER_VISITS) {
+      setMode('ios')
       setVisible(true)
     }
+
+    return () => window.removeEventListener('beforeinstallprompt', handler)
   }, [])
 
   if (!visible) return null
 
   function dismiss() {
     localStorage.setItem(DISMISSED_KEY, '1')
+    setVisible(false)
+  }
+
+  async function installAndroid() {
+    if (!deferredPrompt) return
+    await deferredPrompt.prompt()
+    const { outcome } = await deferredPrompt.userChoice
+    if (outcome === 'accepted') localStorage.setItem(DISMISSED_KEY, '1')
     setVisible(false)
   }
 
@@ -76,34 +103,44 @@ export default function InstallBanner() {
           Installiere share|pa auf deinem Homescreen — kein App Store, öffnet wie eine echte App.
         </p>
 
-        {/* Steps */}
-        <div className="space-y-2">
-          <div className="flex items-center gap-2.5 bg-muted/60 rounded-[12px] px-3 py-2.5">
-            <div className="w-6 h-6 rounded-full bg-primary/15 flex items-center justify-center flex-shrink-0">
-              <span className="text-[11px] font-bold text-primary">1</span>
+        {mode === 'android' ? (
+          /* Android: nativer Install-Button */
+          <button
+            onClick={installAndroid}
+            className="w-full py-3 rounded-[14px] text-[14px] font-semibold text-white transition-all active:scale-[0.98]"
+            style={{ background: 'linear-gradient(135deg, #1b5c58 0%, #144442 100%)' }}
+          >
+            Jetzt installieren
+          </button>
+        ) : (
+          /* iOS: Schritt-für-Schritt Anleitung */
+          <div className="space-y-2">
+            <div className="flex items-center gap-2.5 bg-muted/60 rounded-[12px] px-3 py-2.5">
+              <div className="w-6 h-6 rounded-full bg-primary/15 flex items-center justify-center flex-shrink-0">
+                <span className="text-[11px] font-bold text-primary">1</span>
+              </div>
+              <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                <span className="text-[12px] text-foreground">Tippe auf</span>
+                <span className="inline-flex items-center justify-center w-6 h-6 bg-blue-500 rounded-[6px] flex-shrink-0">
+                  <Share className="w-3.5 h-3.5 text-white" />
+                </span>
+                <span className="text-[12px] text-foreground">in Safari</span>
+              </div>
             </div>
-            <div className="flex items-center gap-1.5 flex-1 min-w-0">
-              <span className="text-[12px] text-foreground">Tippe auf</span>
-              <span className="inline-flex items-center justify-center w-6 h-6 bg-blue-500 rounded-[6px] flex-shrink-0">
-                <Share className="w-3.5 h-3.5 text-white" />
-              </span>
-              <span className="text-[12px] text-foreground">in Safari</span>
+            <div className="flex items-center gap-2.5 bg-muted/60 rounded-[12px] px-3 py-2.5">
+              <div className="w-6 h-6 rounded-full bg-primary/15 flex items-center justify-center flex-shrink-0">
+                <span className="text-[11px] font-bold text-primary">2</span>
+              </div>
+              <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                <span className="text-[12px] text-foreground">Wähle</span>
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-muted border border-border rounded-[6px]">
+                  <Plus className="w-3 h-3 text-foreground" />
+                  <span className="text-[11px] font-semibold text-foreground whitespace-nowrap">Zum Home-Bildschirm</span>
+                </span>
+              </div>
             </div>
           </div>
-
-          <div className="flex items-center gap-2.5 bg-muted/60 rounded-[12px] px-3 py-2.5">
-            <div className="w-6 h-6 rounded-full bg-primary/15 flex items-center justify-center flex-shrink-0">
-              <span className="text-[11px] font-bold text-primary">2</span>
-            </div>
-            <div className="flex items-center gap-1.5 flex-1 min-w-0">
-              <span className="text-[12px] text-foreground">Wähle</span>
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-muted border border-border rounded-[6px]">
-                <Plus className="w-3 h-3 text-foreground" />
-                <span className="text-[11px] font-semibold text-foreground whitespace-nowrap">Zum Home-Bildschirm</span>
-              </span>
-            </div>
-          </div>
-        </div>
+        )}
 
         <button
           onClick={dismiss}

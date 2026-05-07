@@ -14,10 +14,35 @@ const inter = Inter({
   display: 'swap',
 })
 
+const siteUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
+  ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+  : process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : 'http://localhost:3000'
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: 'share|pa – Fair teilen. Entspannt reisen.',
   description: 'Fair teilen. Entspannt reisen. Die Gruppenkasse, die einfach funktioniert.',
   manifest: '/manifest.json',
+  openGraph: {
+    title: 'share|pa – Fair teilen. Entspannt reisen.',
+    description: 'Gruppenkasse für Reisen: Ausgaben erfassen, fair aufteilen, stressfrei abrechnen.',
+    siteName: 'share|pa',
+    type: 'website',
+    images: [{
+      url: '/sharepa-app-icon-petrol-512.png',
+      width: 512,
+      height: 512,
+      alt: 'share|pa',
+    }],
+  },
+  twitter: {
+    card: 'summary',
+    title: 'share|pa – Fair teilen. Entspannt reisen.',
+    description: 'Gruppenkasse für Reisen: Ausgaben erfassen, fair aufteilen, stressfrei abrechnen.',
+    images: ['/sharepa-app-icon-petrol-512.png'],
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',

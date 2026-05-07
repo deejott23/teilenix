@@ -1,6 +1,6 @@
 {
   "name": "share|pa",
-  "short_name": "sharepa",
+  "short_name": "share|pa",
   "description": "Fair teilen. Entspannt reisen. Die Gruppenkasse, die einfach funktioniert.",
   "start_url": "/dashboard",
   "display": "standalone",
