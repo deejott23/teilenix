@@ -3,7 +3,7 @@ import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ChevronLeft, ExternalLink, ShoppingCart } from 'lucide-react'
 import type { MealVote, MealComment, TripParticipant } from '@/types/app'
-import MealVoteButtons from '@/components/essen/MealVoteButtons'
+import MealDetailActions from '@/components/essen/MealDetailActions'
 import MealComments from '@/components/essen/MealComments'
 import MealSlotAssigner from '@/components/essen/MealSlotAssigner'
 
@@ -170,14 +170,13 @@ export default async function MealDetailPage({
           </div>
         )}
 
-        {myParticipantId && (
-          <MealVoteButtons
-            mealId={mealId}
-            tripId={tripId}
-            participantId={myParticipantId}
-            initialVotes={votes}
-          />
-        )}
+        <MealDetailActions
+          mealId={mealId}
+          tripId={tripId}
+          myParticipantId={myParticipantId}
+          initialVotes={votes}
+          isMyMeal={idea.created_by_participant_id === myParticipantId}
+        />
       </div>
 
       {/* Comments */}

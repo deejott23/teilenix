@@ -14,12 +14,19 @@ export async function PATCH(
   }
 
   const { id } = await params
-  const { status, developer_note } = await req.json()
+  const body = await req.json()
+
+  const updateData: Record<string, unknown> = {}
+  if (body.status !== undefined) updateData.status = body.status
+  if (body.developer_note !== undefined) updateData.developer_note = body.developer_note
+  if (Object.keys(updateData).length === 0) {
+    return NextResponse.json({ error: 'No fields to update' }, { status: 400 })
+  }
 
   const admin = createAdminClient()
   const { error } = await admin
     .from('feedback_comments')
-    .update({ status, developer_note })
+    .update(updateData)
     .eq('id', id)
 
   if (error) {

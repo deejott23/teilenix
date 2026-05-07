@@ -205,12 +205,16 @@ export default function FeedbackAdminList({
   const [archivedOpen, setArchivedOpen] = useState(false)
 
   async function updateStatus(id: string, status: string) {
-    setComments(prev => prev.map(c => c.id === id ? { ...c, status } : c))
-    await fetch(`/api/feedback/${id}`, {
+    const prev = comments.find(c => c.id === id)?.status
+    setComments(cs => cs.map(c => c.id === id ? { ...c, status } : c))
+    const res = await fetch(`/api/feedback/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status }),
     })
+    if (!res.ok && prev !== undefined) {
+      setComments(cs => cs.map(c => c.id === id ? { ...c, status: prev } : c))
+    }
   }
 
   async function toggleLike(id: string, currentlyLiked: boolean) {
