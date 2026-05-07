@@ -29,7 +29,7 @@ function formatShortDate(dateStr: string): string {
 // ── Single activity card ──────────────────────────────────────────────────────
 function AusflugZettel({ activity, tripId }: { activity: ActivityWithVotes; tripId: string }) {
   const emoji = activity.cover_emoji ?? activityTypeEmoji[activity.activity_type]
-  const isConfirmed = activity.status === 'confirmed'
+  const isEingeplant = !!activity.activity_date || activity.status === 'confirmed'
   const bgColor = COLORS[hashId(activity.created_by_participant_id) % COLORS.length]
   const rotation = ROTATIONS[hashId(activity.id) % ROTATIONS.length]
   const avatarColor = AVATAR_COLORS[hashId(activity.created_by_participant_id) % AVATAR_COLORS.length]
@@ -48,7 +48,7 @@ function AusflugZettel({ activity, tripId }: { activity: ActivityWithVotes; trip
         style={{ background: bgColor, boxShadow: '2px 3px 8px rgba(0,0,0,0.18)' }}
       >
         {/* Status badge */}
-        {isConfirmed && (
+        {isEingeplant && !activity.activity_date && (
           <span className="absolute top-1.5 right-1.5 text-[9px] font-bold bg-green-500 text-white rounded px-1.5 py-0.5 leading-none">
             ✓ Fest
           </span>
@@ -142,8 +142,9 @@ export default function AusflugPinwand({ activities, tripId }: AusflugPinwandPro
     activities.filter(a => a.activity_date && a.activity_date < today)
   )
   const active = activities.filter(a => !a.activity_date || a.activity_date >= today)
-  const confirmed = sortByYesVotes(active.filter(a => a.status === 'confirmed'))
-  const ideas = sortByYesVotes(active.filter(a => a.status === 'idea'))
+  // "Eingeplant" = has a date (future) OR explicitly confirmed
+  const confirmed = sortByYesVotes(active.filter(a => !!a.activity_date || a.status === 'confirmed'))
+  const ideas = sortByYesVotes(active.filter(a => !a.activity_date && a.status !== 'confirmed'))
 
   const [showConfirmed, setShowConfirmed] = useState(true)
   const [showIdeas, setShowIdeas] = useState(true)
@@ -163,7 +164,7 @@ export default function AusflugPinwand({ activities, tripId }: AusflugPinwandPro
           {confirmed.length > 0 && (
             <div>
               <SectionHeader
-                label="📌 Bestätigt"
+                label="📌 Eingeplant"
                 count={confirmed.length}
                 open={showConfirmed}
                 onToggle={() => setShowConfirmed(v => !v)}

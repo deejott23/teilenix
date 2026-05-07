@@ -64,18 +64,6 @@ export default function ActivityDetailActions({
         />
       )}
 
-      {isActive && isMyActivity && currentStatus === 'idea' && (
-        <button
-          type="button"
-          onClick={handleConfirm}
-          disabled={loading}
-          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-[12px] bg-green-600 text-white font-semibold text-[13px] hover:bg-green-700 active:scale-[0.98] transition-all"
-        >
-          <CheckCircle className="w-4 h-4" strokeWidth={2} />
-          Als bestätigt markieren
-        </button>
-      )}
-
       {isMyActivity && (
         <button
           type="button"

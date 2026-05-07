@@ -187,7 +187,7 @@ export default function EssenClient({
           className="fixed bottom-[84px] md:bottom-6 right-4 z-40 flex items-center gap-2 px-4 py-3 rounded-2xl bg-amber-500 text-white font-bold text-[14px] shadow-lg hover:bg-amber-600 active:scale-95 transition-all"
         >
           <span className="text-[18px] leading-none">+</span>
-          Idee
+          Essen vorschlagen
         </button>
       )}
 

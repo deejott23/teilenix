@@ -88,10 +88,11 @@ export default async function ActivityDetailPage({
       <div className={`rounded-[20px] overflow-hidden bg-gradient-to-br ${gradient} h-[100px] flex items-center justify-center relative`}>
         <span className="text-[64px] leading-none drop-shadow-lg">{emoji}</span>
         <div className="absolute top-3 right-3 flex gap-2">
-          {activity.status === 'confirmed' && (
+          {activity.activity_date ? (
+            <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-green-500 text-white">📅 Eingeplant</span>
+          ) : activity.status === 'confirmed' ? (
             <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-green-500 text-white">✓ Bestätigt</span>
-          )}
-          {activity.status === 'idea' && (
+          ) : (
             <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-white/30 text-white backdrop-blur-sm">💡 Idee</span>
           )}
         </div>
