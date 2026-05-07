@@ -43,7 +43,8 @@ export default function ActivityFeed({
       body: JSON.stringify(data),
     })
     if (!res.ok) throw new Error()
-    const newActivity: ActivityWithVotes = await res.json()
+    const raw = await res.json()
+    const newActivity: ActivityWithVotes = { ...raw, votes: [], creator_name: '' }
     setActivities(prev => [...prev, newActivity])
     toast.success('Ausflug vorgeschlagen!')
     queryClient.invalidateQueries({ queryKey: queryKeys.activities.byTrip(tripId) })
