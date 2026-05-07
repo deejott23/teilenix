@@ -3,229 +3,253 @@ import { redirect } from 'next/navigation'
 import GoogleSignInButton from '@/components/auth/GoogleSignInButton'
 import { Icon } from '@/components/ui/icon'
 
+// ── Typ-Alias für Sprite-Icon-Namen ──────────────────────────────────────────
+type IconName = 'trip' | 'expense' | 'settle' | 'calendar' | 'cat-food' | 'balance' | 'group' | 'add' | 'paid'
+
 export default async function LoginPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (user) redirect('/dashboard')
 
+  const features: { icon: IconName; color: string; bg: string; title: string; desc: string }[] = [
+    {
+      icon: 'expense', color: '#F39200', bg: 'rgba(243,146,0,0.15)',
+      title: 'Kosten gerecht teilen',
+      desc: 'Ausgaben in Sekunden erfassen. Wer hat was bezahlt — share|pa rechnet alles automatisch auf.',
+    },
+    {
+      icon: 'calendar', color: '#2AA8C9', bg: 'rgba(42,168,201,0.15)',
+      title: 'Ausflüge planen & abstimmen',
+      desc: 'Ideen sammeln, alle abstimmen lassen. Die beliebtesten Ausflüge landen automatisch im Kalender.',
+    },
+    {
+      icon: 'cat-food', color: '#E94E1B', bg: 'rgba(233,78,27,0.15)',
+      title: 'Essen planen',
+      desc: 'Mahlzeiten für jeden Tag festlegen. Aus dem Plan wird automatisch eine Einkaufsliste.',
+    },
+    {
+      icon: 'trip', color: '#3DB36A', bg: 'rgba(61,179,106,0.15)',
+      title: 'Gemeinsame Packliste',
+      desc: 'Was muss mit? Jeder sieht was schon gepackt ist. Nichts wird vergessen.',
+    },
+    {
+      icon: 'balance', color: '#9B6FE0', bg: 'rgba(155,111,224,0.15)',
+      title: 'Statistiken & Auswertungen',
+      desc: 'Am Ende der Reise: wer hat wie viel ausgegeben, welche Kategorie war am teuersten?',
+    },
+    {
+      icon: 'group', color: '#1b5c58', bg: 'rgba(27,92,88,0.25)',
+      title: 'Gruppen & Familien',
+      desc: 'Familie Müller, Familie Schmidt — jede Gruppe zahlt ihren eigenen Anteil, fair und transparent.',
+    },
+  ]
+
   return (
-    <div className="min-h-screen relative overflow-hidden flex flex-col" style={{
-      background: 'linear-gradient(145deg, oklch(0.13 0.04 265) 0%, oklch(0.17 0.05 280) 40%, oklch(0.20 0.06 290) 100%)',
-    }}>
+    <div
+      className="min-h-screen relative flex flex-col"
+      style={{ background: 'linear-gradient(160deg, #0d1a19 0%, #111b2a 50%, #0f1520 100%)' }}
+    >
+      {/* ── Atmospheric glows ── */}
+      <div className="absolute pointer-events-none" style={{
+        top: '-5%', right: '-10%', width: '60vw', height: '60vw',
+        maxWidth: 600, maxHeight: 600, borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(27,92,88,0.22) 0%, transparent 70%)',
+        filter: 'blur(80px)',
+      }} />
+      <div className="absolute pointer-events-none" style={{
+        bottom: '20%', left: '-15%', width: '50vw', height: '50vw',
+        maxWidth: 500, maxHeight: 500, borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(42,168,201,0.10) 0%, transparent 70%)',
+        filter: 'blur(100px)',
+      }} />
 
-      {/* ── Atmospheric background glows ── */}
-      <div
-        className="absolute pointer-events-none"
-        style={{
-          top: '-10%', right: '-5%',
-          width: '55vw', height: '55vw',
-          maxWidth: 700, maxHeight: 700,
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, oklch(0.68 0.16 68 / 0.18) 0%, transparent 70%)',
-          filter: 'blur(60px)',
-        }}
-      />
-      <div
-        className="absolute pointer-events-none"
-        style={{
-          bottom: '-5%', left: '-10%',
-          width: '45vw', height: '45vw',
-          maxWidth: 550, maxHeight: 550,
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, oklch(0.58 0.15 25 / 0.14) 0%, transparent 70%)',
-          filter: 'blur(80px)',
-        }}
-      />
-
-      {/* ── Noise texture ── */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.70' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='250' height='250' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E")`,
-          opacity: 0.04,
-        }}
-      />
-
-      {/* ── Top nav bar ── */}
-      <header className="relative z-10 flex items-center justify-between px-6 py-5 md:px-12">
+      {/* ── Nav ── */}
+      <header className="relative z-10 flex items-center justify-between px-6 pt-6 pb-2 md:px-10">
         <div className="flex items-center gap-2.5">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/sharepa-symbol-petrol.svg" alt="share|pa" className="w-8 h-8" />
-          <span className="font-bold text-white/90 tracking-tight">
+          <img src="/sharepa-symbol-petrol.svg" alt="share|pa" className="w-7 h-7" />
+          <span className="font-bold text-white/90 tracking-tight text-[15px]">
             share<span style={{ color: '#E94E1B' }}>|</span><span style={{ color: '#9AA0A6' }}>pa</span>
           </span>
         </div>
-        <div className="text-[12px] font-medium text-white/30 tracking-widest uppercase">
-          Fair teilen
-        </div>
+        <span className="text-[11px] font-medium text-white/25 tracking-widest uppercase hidden sm:block">
+          Kostenlos · Kein App Store
+        </span>
       </header>
 
-      {/* ── Hero ── */}
-      <main className="relative z-10 flex-1 flex items-center">
-        <div className="w-full max-w-6xl mx-auto px-6 md:px-12 py-12 md:py-0">
-          <div className="grid md:grid-cols-2 gap-12 md:gap-8 items-center">
+      <main className="relative z-10 flex-1 px-5 md:px-10 pb-12">
 
-            {/* Left column: copy + CTA */}
-            <div>
-              {/* Eyebrow */}
-              <div className="inline-flex items-center gap-2 mb-6 px-3 py-1.5 rounded-full border border-white/10 bg-white/5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-[11px] font-semibold tracking-widest uppercase text-white/50">
-                  Kostenlos · Kein Stress
-                </span>
-              </div>
+        {/* ── Hero ── */}
+        <div className="max-w-2xl mx-auto pt-10 pb-12 text-center md:text-left">
+          <div className="inline-flex items-center gap-2 mb-5 px-3 py-1.5 rounded-full"
+            style={{ background: 'rgba(27,92,88,0.25)', border: '1px solid rgba(27,92,88,0.4)' }}>
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="text-[11px] font-semibold tracking-widest uppercase text-emerald-400/80">
+              Die Reise-App für Gruppen
+            </span>
+          </div>
 
-              <h1
-                className="mb-6 leading-[1.05] tracking-tight"
-                style={{
-                  fontSize: 'clamp(3rem, 7vw, 5.5rem)',
-                  fontWeight: 800,
-                  color: 'oklch(0.96 0.015 80)',
-                }}
-              >
-                Fair{' '}
-                <span style={{ color: '#2AA8C9' }}>
-                  teilen.
-                </span>
-                <br />
-                Entspannt reisen.
-              </h1>
+          <h1
+            className="leading-[1.08] tracking-tight mb-5"
+            style={{ fontSize: 'clamp(2.4rem, 6vw, 4.5rem)', fontWeight: 800, color: '#f0ede6' }}
+          >
+            Alles für eure{' '}
+            <span style={{
+              background: 'linear-gradient(135deg, #1b5c58 0%, #2AA8C9 100%)',
+              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+            }}>
+              Reisegruppe.
+            </span>
+            <br />
+            <span style={{ color: 'rgba(240,237,230,0.55)' }}>An einem Ort.</span>
+          </h1>
 
-              {/* Subline */}
-              <p className="text-base text-white/45 mb-9 max-w-md leading-relaxed">
-                Verbinde deine Reisegruppe, erfasst Ausgaben in Sekunden und berechnet am Ende wer wem was schuldet — fair und stressfrei.
-              </p>
+          <p className="text-[15px] leading-relaxed mb-8 max-w-lg mx-auto md:mx-0"
+            style={{ color: 'rgba(255,255,255,0.45)' }}>
+            Ausgaben teilen, Ausflüge abstimmen, Essen planen, Einkaufen organisieren —
+            share|pa ist die Kommandozentrale für entspannte Gruppenreisen.
+          </p>
 
-              {/* CTA */}
-              <div className="space-y-4">
-                <GoogleSignInButton />
-
-                {/* Social proof */}
-                <p className="text-[11px] text-white/25 pl-1">
-                  Keine Kreditkarte · Sofort loslegen
-                </p>
-              </div>
-
-              {/* Feature pills */}
-              <div className="flex flex-wrap gap-2 mt-10">
-                {[
-                  { icon: 'trip' as const,    text: 'Reisen planen' },
-                  { icon: 'expense' as const, text: 'Ausgaben teilen' },
-                  { icon: 'settle' as const,  text: 'Fair abrechnen' },
-                ].map(f => (
-                  <div
-                    key={f.text}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium"
-                    style={{
-                      background: 'oklch(1 0 0 / 0.06)',
-                      border: '1px solid oklch(1 0 0 / 0.08)',
-                      color: 'oklch(1 0 0 / 0.55)',
-                    }}
-                  >
-                    <Icon name={f.icon} size={13} />
-                    {f.text}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Right column: app preview mockup */}
-            <div className="hidden md:flex justify-center items-center">
-              <div style={{ transform: 'rotate(2deg) translateY(-8px)' }}>
-                <AppPreviewMockup />
-              </div>
-            </div>
-
+          <div className="flex flex-col items-center md:items-start gap-3">
+            <GoogleSignInButton />
+            <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.22)' }}>
+              Kostenlos · Keine Kreditkarte · Sofort loslegen
+            </p>
           </div>
         </div>
+
+        {/* ── Feature-Grid ── */}
+        <div className="max-w-3xl mx-auto">
+          <p className="text-center text-[11px] font-bold tracking-[0.18em] uppercase mb-6"
+            style={{ color: 'rgba(255,255,255,0.25)' }}>
+            Was share|pa kann
+          </p>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {features.map(f => (
+              <div
+                key={f.title}
+                className="rounded-[18px] p-4 flex flex-col gap-2.5"
+                style={{
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.07)',
+                  backdropFilter: 'blur(12px)',
+                }}
+              >
+                <div
+                  className="w-9 h-9 rounded-[10px] flex items-center justify-center flex-shrink-0"
+                  style={{ background: f.bg, color: f.color }}
+                >
+                  <Icon name={f.icon} size={18} />
+                </div>
+                <div>
+                  <p className="text-[13px] font-bold leading-tight mb-1" style={{ color: '#f0ede6' }}>
+                    {f.title}
+                  </p>
+                  <p className="text-[11px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.38)' }}>
+                    {f.desc}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* ── Mockup-Strip ── */}
+          <div className="mt-8 rounded-[20px] overflow-hidden"
+            style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+            <MiniMockup />
+          </div>
+        </div>
+
       </main>
 
-      {/* ── Bottom bar ── */}
-      <footer className="relative z-10 px-6 py-5 md:px-12 flex items-center justify-between">
-        <p className="text-[11px] text-white/20">© 2026 share|pa</p>
-        <p className="text-[11px] text-white/20">Fair teilen. Entspannt reisen.</p>
+      <footer className="relative z-10 px-6 py-5 text-center">
+        <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.15)' }}>
+          © 2026 share|pa · Fair teilen. Entspannt reisen.
+        </p>
       </footer>
-
     </div>
   )
 }
 
-/* ── App preview as inline component ── */
-function AppPreviewMockup() {
+/* ── Inline mini-mockup strip ─────────────────────────────────────────────── */
+function MiniMockup() {
+  const glass = {
+    background: 'rgba(255,255,255,0.06)',
+    border: '1px solid rgba(255,255,255,0.09)',
+  }
+
   return (
-    <div className="w-72 space-y-3" style={{ filter: 'drop-shadow(0 24px 60px oklch(0 0 0 / 0.5))' }}>
+    <div className="p-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
 
-      {/* Trip card */}
-      <div className="rounded-2xl p-4 flex items-center gap-3" style={{
-        background: 'oklch(1 0 0 / 0.08)',
-        border: '1px solid oklch(1 0 0 / 0.10)',
-        backdropFilter: 'blur(20px)',
+      {/* Saldo-Karte */}
+      <div className="rounded-[14px] p-4" style={{
+        background: 'linear-gradient(135deg, #1b5c58 0%, #144442 100%)',
+        border: '1px solid rgba(27,92,88,0.5)',
       }}>
-        <div className="w-11 h-11 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
-          style={{ background: 'oklch(0.68 0.16 68 / 0.20)' }}>
-          🌴
-        </div>
-        <div className="flex-1">
-          <p className="text-white/90 font-semibold text-sm">Mallorca 2025</p>
-          <p className="text-white/40 text-xs">3 Gruppen · Aktiv</p>
-        </div>
-        <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold"
-          style={{ background: 'oklch(0.58 0.18 160 / 0.2)', color: 'oklch(0.70 0.15 160)' }}>
-          Aktiv
-        </span>
-      </div>
-
-      {/* Balance card */}
-      <div className="rounded-2xl p-5" style={{
-        background: 'linear-gradient(135deg, oklch(0.68 0.16 68 / 0.90) 0%, oklch(0.62 0.18 52 / 0.90) 100%)',
-        border: '1px solid oklch(0.68 0.16 68 / 0.3)',
-        backdropFilter: 'blur(20px)',
-      }}>
-        <p className="text-[10px] font-bold uppercase tracking-widest mb-2"
-          style={{ color: 'oklch(0.14 0.03 50 / 0.60)' }}>
+        <p className="text-[9px] font-bold uppercase tracking-widest mb-1" style={{ color: 'rgba(255,255,255,0.45)' }}>
           Dein Saldo
         </p>
-        <p className="text-3xl font-extrabold tracking-tight mb-0.5"
-          style={{ color: 'oklch(0.14 0.03 50)' }}>
-          +€ 34,50
-        </p>
-        <p className="text-xs" style={{ color: 'oklch(0.14 0.03 50 / 0.55)' }}>
-          🎉 Du bekommst Geld zurück
-        </p>
-        <div className="grid grid-cols-3 gap-1.5 mt-4">
-          {[['Gesamt', '€ 420'], ['Dein Anteil', '€ 140'], ['Bezahlt', '€ 174,50']].map(([l, v]) => (
-            <div key={l} className="rounded-xl p-2 text-center"
-              style={{ background: 'oklch(0.14 0.03 50 / 0.12)' }}>
-              <p className="text-[8px] uppercase tracking-wide mb-0.5"
-                style={{ color: 'oklch(0.14 0.03 50 / 0.45)' }}>{l}</p>
-              <p className="text-[11px] font-bold"
-                style={{ color: 'oklch(0.14 0.03 50)' }}>{v}</p>
+        <p className="text-2xl font-extrabold text-white">+€ 34,50</p>
+        <p className="text-[10px] mt-0.5" style={{ color: 'rgba(255,255,255,0.5)' }}>Du bekommst Geld zurück</p>
+        <div className="grid grid-cols-3 gap-1 mt-3">
+          {[['Gesamt', '€ 420'], ['Anteil', '€ 140'], ['Bezahlt', '€ 175']].map(([l, v]) => (
+            <div key={l} className="rounded-lg p-1.5 text-center" style={{ background: 'rgba(0,0,0,0.2)' }}>
+              <p className="text-[7px] uppercase tracking-wide mb-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>{l}</p>
+              <p className="text-[10px] font-bold text-white">{v}</p>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Expense items */}
-      {[
-        { emoji: '🍽️', title: 'Abendessen', by: 'Familie Müller', amount: '€ 89,00' },
-        { emoji: '🏨', title: 'Hotel Nacht 2', by: 'Familie Schmidt', amount: '€ 210,00' },
-      ].map(e => (
-        <div key={e.title} className="rounded-2xl p-3.5 flex items-center gap-3" style={{
-          background: 'oklch(1 0 0 / 0.06)',
-          border: '1px solid oklch(1 0 0 / 0.08)',
-          backdropFilter: 'blur(16px)',
-        }}>
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center text-base"
-            style={{ background: 'oklch(1 0 0 / 0.08)' }}>
-            {e.emoji}
+      {/* Ausflüge / Abstimmung */}
+      <div className="rounded-[14px] p-4 space-y-2" style={glass}>
+        <p className="text-[9px] font-bold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.35)' }}>
+          Ausflüge abstimmen
+        </p>
+        {[
+          { emoji: '🏔️', title: 'Wanderung Tramuntana', yes: 4, total: 5 },
+          { emoji: '🏖️', title: 'Strandtag Cala d\'Or', yes: 3, total: 5 },
+          { emoji: '🍷', title: 'Weingut-Tour', yes: 5, total: 5 },
+        ].map(a => (
+          <div key={a.title} className="flex items-center gap-2">
+            <span className="text-base flex-shrink-0">{a.emoji}</span>
+            <div className="flex-1 min-w-0">
+              <p className="text-[11px] font-semibold truncate" style={{ color: 'rgba(255,255,255,0.80)' }}>{a.title}</p>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <div className="flex-1 h-1 rounded-full" style={{ background: 'rgba(255,255,255,0.1)' }}>
+                  <div className="h-full rounded-full" style={{ width: `${(a.yes / a.total) * 100}%`, background: '#3DB36A' }} />
+                </div>
+                <span className="text-[9px] font-bold" style={{ color: '#3DB36A' }}>{a.yes}/{a.total}</span>
+              </div>
+            </div>
           </div>
-          <div className="flex-1">
-            <p className="text-white/85 text-xs font-semibold">{e.title}</p>
-            <p className="text-white/35 text-[10px]">{e.by}</p>
+        ))}
+      </div>
+
+      {/* Essensplan */}
+      <div className="rounded-[14px] p-4 space-y-2" style={glass}>
+        <p className="text-[9px] font-bold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.35)' }}>
+          Essensplan & Einkauf
+        </p>
+        {[
+          { slot: 'Montag Abend', meal: 'Pasta Arrabiata', icon: '🍝' },
+          { slot: 'Dienstag Mittag', meal: 'Tapas & Salat', icon: '🥗' },
+          { slot: 'Dienstag Abend', meal: 'Grill am Strand', icon: '🔥' },
+        ].map(m => (
+          <div key={m.meal} className="flex items-center gap-2">
+            <span className="text-base flex-shrink-0">{m.icon}</span>
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold truncate" style={{ color: 'rgba(255,255,255,0.80)' }}>{m.meal}</p>
+              <p className="text-[9px]" style={{ color: 'rgba(255,255,255,0.35)' }}>{m.slot}</p>
+            </div>
           </div>
-          <p className="text-white/75 text-xs font-bold">{e.amount}</p>
+        ))}
+        <div className="flex items-center gap-1.5 mt-1 pt-2" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+          <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>→</span>
+          <p className="text-[10px] font-semibold" style={{ color: '#F39200' }}>Einkaufsliste: 14 Artikel</p>
         </div>
-      ))}
+      </div>
 
     </div>
   )
