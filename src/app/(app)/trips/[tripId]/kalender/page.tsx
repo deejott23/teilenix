@@ -9,8 +9,8 @@ import { queryKeys } from '@/lib/query/queryKeys'
 import type { ActivityWithVotes, MealIdea, MealSlot, TripParticipant } from '@/types/app'
 
 const PLANEN_TABS = [
-  { href: '/planen', label: '✈️ Ausflüge' },
-  { href: '/essen',  label: '🍽️ Essen' },
+  { href: '/essen',    label: '🍽️ Essen' },
+  { href: '/planen',   label: '✈️ Ausflüge' },
   { href: '/kalender', label: '📅 Kalender' },
 ]
 
@@ -71,6 +71,8 @@ export default async function KalenderPage({ params }: { params: Promise<{ tripI
       ...raw,
       creator_name: participantMap.get(raw.created_by_participant_id as string) ?? 'Unbekannt',
       vote_count: ideaVotes.filter((v: { vote: string }) => v.vote === 'yes').length,
+      maybe_count: ideaVotes.filter((v: { vote: string }) => v.vote === 'maybe').length,
+      no_count: ideaVotes.filter((v: { vote: string }) => v.vote === 'no').length,
       my_vote_value: myParticipantId
         ? (ideaVotes.find((v: { participant_id: string }) => v.participant_id === myParticipantId)?.vote ?? null)
         : null,

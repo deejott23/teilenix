@@ -1,17 +1,13 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft, Calendar, Clock, MapPin, Euro, Timer, ExternalLink } from 'lucide-react'
+import { ChevronLeft, Clock, MapPin, Euro, Timer, ExternalLink } from 'lucide-react'
 import { activityTypeEmoji, activityTypeGradient, activityTypeLabel, formatDepartureTime } from '@/lib/activities'
 import { formatCurrency } from '@/lib/formatting'
 import ActivityDetailActions from '@/components/activities/ActivityDetailActions'
 import ActivityComments from '@/components/activities/ActivityComments'
+import ActivityDateAssigner from '@/components/activities/ActivityDateAssigner'
 import type { ActivityComment, ActivityWithVotes, TripParticipant } from '@/types/app'
-
-function formatActivityDate(dateStr: string): string {
-  const d = new Date(dateStr + 'T00:00:00')
-  return d.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' })
-}
 
 function extractHostname(url: string): string {
   try {
@@ -38,7 +34,7 @@ export default async function ActivityDetailPage({
     db.from('trip_activities').select('*').eq('id', activityId).single(),
     db.from('trip_activity_votes').select('*').eq('activity_id', activityId),
     supabase.from('trip_participants').select('*').eq('trip_id', tripId),
-    supabase.from('trips').select('status, created_by').eq('id', tripId).single(),
+    supabase.from('trips').select('status, created_by, start_date, end_date').eq('id', tripId).single(),
     db.from('trip_activity_comments').select('*, trip_participants(name)').eq('activity_id', activityId).order('created_at', { ascending: true }),
   ])
 
@@ -49,6 +45,7 @@ export default async function ActivityDetailPage({
 
   const me = participants.find(p => p.user_id === user.id && !p.is_group)
   const myParticipantId = me?.id ?? ''
+  const myName = me?.name ?? ''
 
   const activity: ActivityWithVotes = {
     ...(activityRaw as Record<string, unknown>),
@@ -87,7 +84,7 @@ export default async function ActivityDetailPage({
         Ausflüge
       </Link>
 
-      {/* Hero — compact emoji banner */}
+      {/* Hero */}
       <div className={`rounded-[20px] overflow-hidden bg-gradient-to-br ${gradient} h-[100px] flex items-center justify-center relative`}>
         <span className="text-[64px] leading-none drop-shadow-lg">{emoji}</span>
         <div className="absolute top-3 right-3 flex gap-2">
@@ -98,14 +95,6 @@ export default async function ActivityDetailPage({
             <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-white/30 text-white backdrop-blur-sm">💡 Idee</span>
           )}
         </div>
-        {activity.activity_date && (
-          <div className="absolute bottom-3 left-3">
-            <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-black/30 text-white backdrop-blur-sm flex items-center gap-1">
-              <Calendar className="w-3 h-3" />
-              {formatActivityDate(activity.activity_date)}
-            </span>
-          </div>
-        )}
       </div>
 
       {/* Title + meta */}
@@ -115,7 +104,6 @@ export default async function ActivityDetailPage({
           {activityTypeLabel[activity.activity_type]} · Vorschlag von {activity.creator_name}
         </p>
 
-        {/* Link */}
         {activity.link && (
           <a
             href={activity.link}
@@ -170,6 +158,15 @@ export default async function ActivityDetailPage({
         </div>
       )}
 
+      {/* Date assigner */}
+      <ActivityDateAssigner
+        tripId={tripId}
+        activityId={activityId}
+        currentDate={activity.activity_date}
+        tripStartDate={(trip?.start_date as string | null) ?? null}
+        tripEndDate={(trip?.end_date as string | null) ?? null}
+      />
+
       {/* Voting card */}
       <div className="bg-card rounded-[18px] card-shadow p-4">
         <div className="flex items-center justify-between mb-3">
@@ -181,29 +178,22 @@ export default async function ActivityDetailPage({
           </div>
         </div>
 
-        {/* Consensus bar */}
         {totalVotes > 0 && (
           <div className="flex h-2 rounded-full overflow-hidden gap-0.5 mb-3">
             {yesCount > 0 && <div className="bg-green-400 transition-all" style={{ flex: yesCount }} />}
             {maybeCount > 0 && <div className="bg-amber-400 transition-all" style={{ flex: maybeCount }} />}
             {noCount > 0 && <div className="bg-red-300 transition-all" style={{ flex: noCount }} />}
-            {totalVotes < realParticipants.length && (
-              <div className="bg-muted flex-1" />
-            )}
+            {totalVotes < realParticipants.length && <div className="bg-muted flex-1" />}
           </div>
         )}
 
-        {/* Voter avatars */}
         {totalVotes > 0 && (
           <div className="flex flex-wrap gap-1.5 mb-3">
             {activity.votes.map(vote => {
               const p = participantMap.get(vote.participant_id)
               if (!p) return null
               return (
-                <span
-                  key={vote.id}
-                  className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted text-[11px] font-semibold"
-                >
+                <span key={vote.id} className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted text-[11px] font-semibold">
                   {vote.vote === 'yes' ? '😄' : vote.vote === 'maybe' ? '🤷' : '😴'}
                   {p.name}
                 </span>
@@ -212,7 +202,6 @@ export default async function ActivityDetailPage({
           </div>
         )}
 
-        {/* Interactive vote buttons */}
         <ActivityDetailActions
           activityId={activity.id}
           tripId={tripId}
@@ -229,6 +218,7 @@ export default async function ActivityDetailPage({
         activityId={activityId}
         tripId={tripId}
         myParticipantId={myParticipantId}
+        myName={myName}
         initialComments={comments}
       />
 

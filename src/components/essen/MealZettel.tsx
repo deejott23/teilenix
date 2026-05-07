@@ -34,6 +34,11 @@ export default function MealZettel({ meal, tripId, slotLabel }: MealZettelProps)
   const bgColor = COLORS[colorIdx]
   const rotation = ROTATIONS[rotIdx]
 
+  const yesCount = meal.vote_count
+  const maybeCount = meal.maybe_count ?? 0
+  const noCount = meal.no_count ?? 0
+  const hasVotes = yesCount > 0 || maybeCount > 0 || noCount > 0
+
   return (
     <Link href={`/trips/${tripId}/essen/${meal.id}`}>
       <div
@@ -83,7 +88,7 @@ export default function MealZettel({ meal, tripId, slotLabel }: MealZettelProps)
           </div>
         )}
 
-        {/* Footer: avatar + vote summary */}
+        {/* Footer: avatar + vote counts */}
         <div className="flex items-center justify-between mt-1">
           <span
             className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold text-white flex-shrink-0"
@@ -93,14 +98,18 @@ export default function MealZettel({ meal, tripId, slotLabel }: MealZettelProps)
             {getInitials(meal.creator_name)}
           </span>
 
-          {/* Compact vote indicator */}
-          {meal.vote_count > 0 ? (
-            <span className={cn(
-              'flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold',
-              meal.my_vote_value === 'yes' ? 'bg-green-200 text-green-800' : 'bg-black/10 text-gray-600'
-            )}>
-              😋 {meal.vote_count}
-            </span>
+          {hasVotes ? (
+            <div className="flex items-center gap-1">
+              <span className={cn('text-[10px] font-bold px-1 py-0.5 rounded', yesCount > 0 ? 'text-green-700' : 'text-gray-300')}>
+                😋{yesCount}
+              </span>
+              <span className={cn('text-[10px] font-bold px-1 py-0.5 rounded', maybeCount > 0 ? 'text-amber-600' : 'text-gray-300')}>
+                🤷{maybeCount}
+              </span>
+              <span className={cn('text-[10px] font-bold px-1 py-0.5 rounded', noCount > 0 ? 'text-red-500' : 'text-gray-300')}>
+                🙅{noCount}
+              </span>
+            </div>
           ) : (
             <span className="text-[10px] text-gray-400 italic">abstimmen →</span>
           )}

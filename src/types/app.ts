@@ -232,6 +232,8 @@ export type MealIdea = {
   // resolved client-side
   creator_name: string
   vote_count: number          // count of 'yes' (lecker) votes
+  maybe_count: number         // count of 'maybe' votes
+  no_count: number            // count of 'no' votes
   my_vote_value: MealVoteValue | null  // current user's vote (replaces my_vote: boolean)
 }
 

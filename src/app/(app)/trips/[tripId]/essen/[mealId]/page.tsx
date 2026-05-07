@@ -5,6 +5,7 @@ import { ChevronLeft, ExternalLink, ShoppingCart } from 'lucide-react'
 import type { MealVote, MealComment, TripParticipant } from '@/types/app'
 import MealVoteButtons from '@/components/essen/MealVoteButtons'
 import MealComments from '@/components/essen/MealComments'
+import MealSlotAssigner from '@/components/essen/MealSlotAssigner'
 
 function extractHostname(url: string): string {
   try { return new URL(url).hostname.replace(/^www\./, '') } catch { return url }
@@ -23,11 +24,13 @@ export default async function MealDetailPage({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const db = supabase as any
 
-  const [{ data: idea }, { data: votesRaw }, { data: participantsRaw }, { data: commentsRaw }] = await Promise.all([
+  const [{ data: idea }, { data: votesRaw }, { data: participantsRaw }, { data: commentsRaw }, { data: trip }, { data: currentSlotRaw }] = await Promise.all([
     db.from('trip_meal_ideas').select('*').eq('id', mealId).eq('trip_id', tripId).single(),
     db.from('trip_meal_votes').select('id, meal_idea_id, participant_id, vote, created_at').eq('meal_idea_id', mealId),
     supabase.from('trip_participants').select('*').eq('trip_id', tripId),
     db.from('trip_meal_comments').select('*, trip_participants(name)').eq('meal_idea_id', mealId).order('created_at', { ascending: true }),
+    supabase.from('trips').select('start_date, end_date, status').eq('id', tripId).single(),
+    db.from('trip_meal_slots').select('slot_date, slot_type').eq('meal_idea_id', mealId).maybeSingle(),
   ])
 
   if (!idea) notFound()
@@ -37,6 +40,7 @@ export default async function MealDetailPage({
 
   const me = participants.find(p => p.user_id === user.id && !p.is_group)
   const myParticipantId = me?.id ?? ''
+  const myName = me?.name ?? ''
 
   const votes = (votesRaw ?? []) as MealVote[]
   const yesCount = votes.filter(v => v.vote === 'yes').length
@@ -57,6 +61,10 @@ export default async function MealDetailPage({
     })
   )
 
+  const currentSlot = currentSlotRaw
+    ? { slot_date: currentSlotRaw.slot_date as string, slot_type: currentSlotRaw.slot_type as 'lunch' | 'dinner' }
+    : null
+
   return (
     <div className="space-y-4 pb-6">
       {/* Back */}
@@ -71,6 +79,13 @@ export default async function MealDetailPage({
       {/* Hero */}
       <div className="rounded-[20px] overflow-hidden bg-gradient-to-br from-amber-100 to-orange-200 h-[100px] flex items-center justify-center relative">
         <span className="text-[64px] leading-none drop-shadow-lg">{idea.emoji}</span>
+        {currentSlot && (
+          <div className="absolute top-3 right-3">
+            <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-500 text-white">
+              📌 Eingeplant
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Title + meta */}
@@ -111,6 +126,15 @@ export default async function MealDetailPage({
         </div>
       )}
 
+      {/* Slot assigner */}
+      <MealSlotAssigner
+        tripId={tripId}
+        mealId={mealId}
+        currentSlot={currentSlot}
+        tripStartDate={(trip?.start_date as string | null) ?? null}
+        tripEndDate={(trip?.end_date as string | null) ?? null}
+      />
+
       {/* Voting card */}
       <div className="bg-card rounded-[18px] card-shadow p-4">
         <div className="flex items-center justify-between mb-3">
@@ -122,7 +146,6 @@ export default async function MealDetailPage({
           </div>
         </div>
 
-        {/* Consensus bar */}
         {totalVotes > 0 && (
           <div className="flex h-2 rounded-full overflow-hidden gap-0.5 mb-3">
             {yesCount > 0 && <div className="bg-green-400 transition-all" style={{ flex: yesCount }} />}
@@ -132,7 +155,6 @@ export default async function MealDetailPage({
           </div>
         )}
 
-        {/* Voter avatars */}
         {totalVotes > 0 && (
           <div className="flex flex-wrap gap-1.5 mb-3">
             {votes.map(vote => {
@@ -148,7 +170,6 @@ export default async function MealDetailPage({
           </div>
         )}
 
-        {/* Interactive vote buttons */}
         {myParticipantId && (
           <MealVoteButtons
             mealId={mealId}
@@ -164,6 +185,7 @@ export default async function MealDetailPage({
         mealId={mealId}
         tripId={tripId}
         myParticipantId={myParticipantId}
+        myName={myName}
         initialComments={comments}
       />
 

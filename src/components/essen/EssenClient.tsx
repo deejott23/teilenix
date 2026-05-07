@@ -1,6 +1,7 @@
 'use client'
 import { useState, useMemo } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { ChevronDown, ChevronUp } from 'lucide-react'
 import { queryKeys } from '@/lib/query/queryKeys'
 import dynamic from 'next/dynamic'
 import MealZettel from './MealZettel'
@@ -24,12 +25,36 @@ async function fetchMeals(tripId: string): Promise<{ ideas: MealIdea[]; slots: M
   return res.json()
 }
 
+function SectionHeader({
+  label, count, open, onToggle,
+}: {
+  label: string; count: number; open: boolean; onToggle: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      className="w-full flex items-center justify-between px-1 mb-2"
+    >
+      <span className="text-[11px] font-bold uppercase tracking-wider text-amber-900/70">
+        {label} <span className="text-amber-900/40">({count})</span>
+      </span>
+      {open
+        ? <ChevronUp className="w-3.5 h-3.5 text-amber-900/40" strokeWidth={2.5} />
+        : <ChevronDown className="w-3.5 h-3.5 text-amber-900/40" strokeWidth={2.5} />}
+    </button>
+  )
+}
+
 export default function EssenClient({
   tripId,
   myParticipantId,
   isActive,
 }: EssenClientProps) {
   const [showAddSheet, setShowAddSheet] = useState(false)
+  const [showAssigned, setShowAssigned] = useState(true)
+  const [showIdeas, setShowIdeas] = useState(true)
+  const [showPast, setShowPast] = useState(false)
   const queryClient = useQueryClient()
 
   const { data } = useQuery({
@@ -40,16 +65,26 @@ export default function EssenClient({
   const ideas = data?.ideas ?? []
   const slots = data?.slots ?? []
 
-  const assignedIdeaIds = useMemo(
-    () => new Set(slots.filter(s => s.meal_idea_id).map(s => s.meal_idea_id!)),
-    [slots]
-  )
+  const today = new Date().toISOString().slice(0, 10)
+
+  // Categorize by slot assignment + date
+  const { pastIds, futureAssignedIds } = useMemo(() => {
+    const past = new Set<string>()
+    const future = new Set<string>()
+    for (const s of slots) {
+      if (!s.meal_idea_id) continue
+      if (s.slot_date < today) past.add(s.meal_idea_id)
+      else future.add(s.meal_idea_id)
+    }
+    return { pastIds: past, futureAssignedIds: future }
+  }, [slots, today])
 
   const sortByVotes = (list: MealIdea[]) =>
     [...list].sort((a, b) => b.vote_count - a.vote_count)
 
-  const assignedIdeas = useMemo(() => sortByVotes(ideas.filter(i => assignedIdeaIds.has(i.id))), [ideas, assignedIdeaIds])
-  const unassignedIdeas = useMemo(() => sortByVotes(ideas.filter(i => !assignedIdeaIds.has(i.id))), [ideas, assignedIdeaIds])
+  const assignedIdeas = useMemo(() => sortByVotes(ideas.filter(i => futureAssignedIds.has(i.id))), [ideas, futureAssignedIds])
+  const unassignedIdeas = useMemo(() => sortByVotes(ideas.filter(i => !futureAssignedIds.has(i.id) && !pastIds.has(i.id))), [ideas, futureAssignedIds, pastIds])
+  const pastIdeas = useMemo(() => sortByVotes(ideas.filter(i => pastIds.has(i.id))), [ideas, pastIds])
 
   const handleAdd = async (formData: object) => {
     const res = await fetch(`/api/trips/${tripId}/meals`, {
@@ -85,37 +120,60 @@ export default function EssenClient({
           </div>
         ) : (
           <div className="space-y-4">
+            {/* Assigned to future date */}
             {assignedIdeas.length > 0 && (
               <div>
-                <p className="text-[11px] font-bold uppercase tracking-wider text-amber-900/70 mb-2 px-1">
-                  📌 Bereits eingeplant
-                </p>
-                <div className="grid grid-cols-2 gap-3">
-                  {assignedIdeas.map(meal => (
-                    <MealZettel
-                      key={meal.id}
-                      meal={meal}
-                      tripId={tripId}
-                      slotLabel={getSlotLabel(meal.id)}
-                    />
-                  ))}
-                </div>
+                <SectionHeader
+                  label="📌 Bereits eingeplant"
+                  count={assignedIdeas.length}
+                  open={showAssigned}
+                  onToggle={() => setShowAssigned(v => !v)}
+                />
+                {showAssigned && (
+                  <div className="grid grid-cols-2 gap-3">
+                    {assignedIdeas.map(meal => (
+                      <MealZettel key={meal.id} meal={meal} tripId={tripId} slotLabel={getSlotLabel(meal.id)} />
+                    ))}
+                  </div>
+                )}
               </div>
             )}
+
+            {/* Unassigned ideas */}
             {unassignedIdeas.length > 0 && (
               <div>
-                <p className="text-[11px] font-bold uppercase tracking-wider text-amber-900/70 mb-2 px-1">
-                  💡 Ideen · abstimmen!
-                </p>
-                <div className="grid grid-cols-2 gap-3">
-                  {unassignedIdeas.map(meal => (
-                    <MealZettel
-                      key={meal.id}
-                      meal={meal}
-                      tripId={tripId}
-                    />
-                  ))}
-                </div>
+                <SectionHeader
+                  label="💡 Ideen · abstimmen!"
+                  count={unassignedIdeas.length}
+                  open={showIdeas}
+                  onToggle={() => setShowIdeas(v => !v)}
+                />
+                {showIdeas && (
+                  <div className="grid grid-cols-2 gap-3">
+                    {unassignedIdeas.map(meal => (
+                      <MealZettel key={meal.id} meal={meal} tripId={tripId} />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Past meals */}
+            {pastIdeas.length > 0 && (
+              <div>
+                <SectionHeader
+                  label="✅ Gemacht"
+                  count={pastIdeas.length}
+                  open={showPast}
+                  onToggle={() => setShowPast(v => !v)}
+                />
+                {showPast && (
+                  <div className="grid grid-cols-2 gap-3 opacity-70">
+                    {pastIdeas.map(meal => (
+                      <MealZettel key={meal.id} meal={meal} tripId={tripId} slotLabel={getSlotLabel(meal.id)} />
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>

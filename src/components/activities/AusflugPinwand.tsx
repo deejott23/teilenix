@@ -1,5 +1,7 @@
 'use client'
+import { useState } from 'react'
 import Link from 'next/link'
+import { ChevronDown, ChevronUp } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { activityTypeEmoji } from '@/lib/activities'
 import type { ActivityWithVotes } from '@/types/app'
@@ -7,11 +9,16 @@ import type { ActivityWithVotes } from '@/types/app'
 // ── Visual helpers ────────────────────────────────────────────────────────────
 const COLORS = ['#fff9c4', '#fce4ec', '#dcedc8', '#e3f2fd', '#ffe0b2', '#ede7f6']
 const ROTATIONS = ['-rotate-2', '-rotate-1', 'rotate-0', 'rotate-1', 'rotate-2']
+const AVATAR_COLORS = ['#f87171', '#fb923c', '#facc15', '#4ade80', '#60a5fa', '#a78bfa', '#f472b6']
 
 function hashId(id: string): number {
   let h = 0
   for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0
   return h
+}
+
+function getInitials(name: string): string {
+  return name.split(' ').map(w => w[0] ?? '').join('').toUpperCase().slice(0, 2)
 }
 
 function formatShortDate(dateStr: string): string {
@@ -25,9 +32,11 @@ function AusflugZettel({ activity, tripId }: { activity: ActivityWithVotes; trip
   const isConfirmed = activity.status === 'confirmed'
   const bgColor = COLORS[hashId(activity.created_by_participant_id) % COLORS.length]
   const rotation = ROTATIONS[hashId(activity.id) % ROTATIONS.length]
+  const avatarColor = AVATAR_COLORS[hashId(activity.created_by_participant_id) % AVATAR_COLORS.length]
   const yesCount = activity.votes.filter(v => v.vote === 'yes').length
   const maybeCount = activity.votes.filter(v => v.vote === 'maybe').length
   const noCount = activity.votes.filter(v => v.vote === 'no').length
+  const hasVotes = yesCount > 0 || maybeCount > 0 || noCount > 0
 
   return (
     <Link href={`/trips/${tripId}/planen/${activity.id}`}>
@@ -60,34 +69,55 @@ function AusflugZettel({ activity, tripId }: { activity: ActivityWithVotes; trip
           </span>
         )}
 
-        {/* Footer: creator + vote counts */}
+        {/* Footer: avatar + vote counts */}
         <div className="flex items-center justify-between mt-0.5">
-          <span className="text-[10px] text-gray-500 truncate max-w-[50%]">
-            {activity.creator_name}
+          <span
+            className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold text-white flex-shrink-0"
+            style={{ background: avatarColor }}
+            title={activity.creator_name}
+          >
+            {getInitials(activity.creator_name)}
           </span>
-          <div className="flex items-center gap-1">
-            <span className={cn(
-              'text-[10px] font-bold px-1 py-0.5 rounded',
-              yesCount > 0 ? 'text-green-700' : 'text-gray-300'
-            )}>
-              😄{yesCount}
-            </span>
-            <span className={cn(
-              'text-[10px] font-bold px-1 py-0.5 rounded',
-              maybeCount > 0 ? 'text-amber-600' : 'text-gray-300'
-            )}>
-              🤷{maybeCount}
-            </span>
-            <span className={cn(
-              'text-[10px] font-bold px-1 py-0.5 rounded',
-              noCount > 0 ? 'text-red-500' : 'text-gray-300'
-            )}>
-              😴{noCount}
-            </span>
-          </div>
+          {hasVotes ? (
+            <div className="flex items-center gap-1">
+              <span className={cn('text-[10px] font-bold px-1 py-0.5 rounded', yesCount > 0 ? 'text-green-700' : 'text-gray-300')}>
+                😄{yesCount}
+              </span>
+              <span className={cn('text-[10px] font-bold px-1 py-0.5 rounded', maybeCount > 0 ? 'text-amber-600' : 'text-gray-300')}>
+                🤷{maybeCount}
+              </span>
+              <span className={cn('text-[10px] font-bold px-1 py-0.5 rounded', noCount > 0 ? 'text-red-500' : 'text-gray-300')}>
+                😴{noCount}
+              </span>
+            </div>
+          ) : (
+            <span className="text-[10px] text-gray-400 italic">abstimmen →</span>
+          )}
         </div>
       </div>
     </Link>
+  )
+}
+
+// ── Collapsible section header ────────────────────────────────────────────────
+function SectionHeader({
+  label, count, open, onToggle,
+}: {
+  label: string; count: number; open: boolean; onToggle: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      className="w-full flex items-center justify-between px-1 mb-2 group"
+    >
+      <span className="text-[11px] font-bold uppercase tracking-wider text-amber-900/70">
+        {label} <span className="text-amber-900/40">({count})</span>
+      </span>
+      {open
+        ? <ChevronUp className="w-3.5 h-3.5 text-amber-900/40" strokeWidth={2.5} />
+        : <ChevronDown className="w-3.5 h-3.5 text-amber-900/40" strokeWidth={2.5} />}
+    </button>
   )
 }
 
@@ -106,37 +136,77 @@ function sortByYesVotes(list: ActivityWithVotes[]): ActivityWithVotes[] {
 }
 
 export default function AusflugPinwand({ activities, tripId }: AusflugPinwandProps) {
-  const confirmed = sortByYesVotes(activities.filter(a => a.status === 'confirmed'))
-  const ideas = sortByYesVotes(activities.filter(a => a.status === 'idea'))
+  const today = new Date().toISOString().slice(0, 10)
+
+  const past = sortByYesVotes(
+    activities.filter(a => a.activity_date && a.activity_date < today)
+  )
+  const active = activities.filter(a => !a.activity_date || a.activity_date >= today)
+  const confirmed = sortByYesVotes(active.filter(a => a.status === 'confirmed'))
+  const ideas = sortByYesVotes(active.filter(a => a.status === 'idea'))
+
+  const [showConfirmed, setShowConfirmed] = useState(true)
+  const [showIdeas, setShowIdeas] = useState(true)
+  const [showPast, setShowPast] = useState(false)
 
   return (
     <div className="rounded-[16px] p-3 min-h-[200px]" style={{ background: '#c8b89a' }}>
       {activities.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 text-center">
           <span className="text-[48px] block mb-3">🗺️</span>
-          <p className="text-[15px] font-bold text-amber-900 mb-1">Noch keine Ausfluege</p>
+          <p className="text-[15px] font-bold text-amber-900 mb-1">Noch keine Ausflüge</p>
           <p className="text-[13px] text-amber-800/70">Schlage den ersten Ausflug vor!</p>
         </div>
       ) : (
         <div className="space-y-4">
+          {/* Confirmed */}
           {confirmed.length > 0 && (
             <div>
-              <p className="text-[11px] font-bold uppercase tracking-wider text-amber-900/70 mb-2 px-1">
-                📌 Bestatigt
-              </p>
-              <div className="grid grid-cols-2 gap-3">
-                {confirmed.map(a => <AusflugZettel key={a.id} activity={a} tripId={tripId} />)}
-              </div>
+              <SectionHeader
+                label="📌 Bestätigt"
+                count={confirmed.length}
+                open={showConfirmed}
+                onToggle={() => setShowConfirmed(v => !v)}
+              />
+              {showConfirmed && (
+                <div className="grid grid-cols-2 gap-3">
+                  {confirmed.map(a => <AusflugZettel key={a.id} activity={a} tripId={tripId} />)}
+                </div>
+              )}
             </div>
           )}
+
+          {/* Ideas */}
           {ideas.length > 0 && (
-            <div className={confirmed.length > 0 ? 'mt-4' : ''}>
-              <p className="text-[11px] font-bold uppercase tracking-wider text-amber-900/70 mb-2 px-1">
-                💡 Ideen · abstimmen!
-              </p>
-              <div className="grid grid-cols-2 gap-3">
-                {ideas.map(a => <AusflugZettel key={a.id} activity={a} tripId={tripId} />)}
-              </div>
+            <div>
+              <SectionHeader
+                label="💡 Ideen · abstimmen!"
+                count={ideas.length}
+                open={showIdeas}
+                onToggle={() => setShowIdeas(v => !v)}
+              />
+              {showIdeas && (
+                <div className="grid grid-cols-2 gap-3">
+                  {ideas.map(a => <AusflugZettel key={a.id} activity={a} tripId={tripId} />)}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Past / Gemacht */}
+          {past.length > 0 && (
+            <div>
+              <SectionHeader
+                label="✅ Gemacht"
+                count={past.length}
+                open={showPast}
+                onToggle={() => setShowPast(v => !v)}
+              />
+              {showPast && (
+                <div className="grid grid-cols-2 gap-3 opacity-70">
+                  {past.map(a => <AusflugZettel key={a.id} activity={a} tripId={tripId} />)}
+                </div>
+              )}
             </div>
           )}
         </div>

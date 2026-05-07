@@ -40,6 +40,8 @@ export default async function EssenPage({ params }: { params: Promise<{ tripId: 
       ...raw,
       creator_name: participantMap.get(raw.created_by_participant_id as string) ?? 'Unbekannt',
       vote_count: ideaVotes.filter((v: { vote: string }) => v.vote === 'yes').length,
+      maybe_count: ideaVotes.filter((v: { vote: string }) => v.vote === 'maybe').length,
+      no_count: ideaVotes.filter((v: { vote: string }) => v.vote === 'no').length,
       my_vote_value: myParticipantId
         ? (ideaVotes.find((v: { participant_id: string }) => v.participant_id === myParticipantId)?.vote ?? null)
         : null,
@@ -63,8 +65,8 @@ export default async function EssenPage({ params }: { params: Promise<{ tripId: 
         tables={['trip_meal_ideas', 'trip_meal_votes', 'trip_meal_slots']}
       />
       <TripSubNav tripId={tripId} variant="planen" tabs={[
-        { href: '/planen',   label: '✈️ Ausflüge' },
         { href: '/essen',    label: '🍽️ Essen' },
+        { href: '/planen',   label: '✈️ Ausflüge' },
         { href: '/kalender', label: '📅 Kalender' },
       ]} />
       <HydrationBoundary state={dehydrate(queryClient)}>

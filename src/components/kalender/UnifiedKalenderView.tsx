@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import Link from 'next/link'
-import { Plus } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { cn } from '@/lib/utils'
 import { queryKeys } from '@/lib/query/queryKeys'
@@ -10,7 +10,7 @@ import dynamic from 'next/dynamic'
 import type { ActivityWithVotes, MealIdea, MealSlot } from '@/types/app'
 
 const SlotPickerSheet = dynamic(() => import('@/components/essen/SlotPickerSheet'), { ssr: false })
-const AddActivitySheet = dynamic(() => import('@/components/activities/AddActivitySheet'), { ssr: false })
+const ActivityAssignSheet = dynamic(() => import('./ActivityAssignSheet'), { ssr: false })
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -54,7 +54,7 @@ interface UnifiedKalenderViewProps {
   isActive: boolean
 }
 
-interface ActiveSlot {
+interface ActiveMealSlot {
   date: string
   type: 'lunch' | 'dinner'
 }
@@ -66,13 +66,12 @@ export default function UnifiedKalenderView({
   initialActivities,
   tripStartDate,
   tripEndDate,
-  myParticipantId,
   isActive,
 }: UnifiedKalenderViewProps) {
+  const router = useRouter()
   const queryClient = useQueryClient()
-  const [activeSlot, setActiveSlot] = useState<ActiveSlot | null>(null)
-  const [showAddSheet, setShowAddSheet] = useState(false)
-  const [addForDate, setAddForDate] = useState<string | null>(null)
+  const [activeMealSlot, setActiveMealSlot] = useState<ActiveMealSlot | null>(null)
+  const [activeActivityDate, setActiveActivityDate] = useState<string | null>(null)
 
   const { data: mealsData } = useQuery({
     queryKey: queryKeys.meals.byTrip(tripId),
@@ -86,14 +85,8 @@ export default function UnifiedKalenderView({
     queryClient.invalidateQueries({ queryKey: queryKeys.meals.byTrip(tripId) })
   }
 
-  const handleAddActivity = async (data: object) => {
-    const res = await fetch(`/api/trips/${tripId}/activities`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    })
-    if (!res.ok) throw new Error()
-    queryClient.invalidateQueries({ queryKey: queryKeys.activities.byTrip(tripId) })
+  const handleActivityRefresh = () => {
+    router.refresh()
   }
 
   const dates = generateDateRange(tripStartDate, tripEndDate)
@@ -193,7 +186,6 @@ export default function UnifiedKalenderView({
                     </span>
                   )}
                 </div>
-
                 {/* Completion dots */}
                 <div className="flex items-center gap-1">
                   <span className={cn('w-2 h-2 rounded-full', hasLunch ? 'bg-amber-400' : 'bg-muted-foreground/20')} title="Mittag" />
@@ -211,47 +203,31 @@ export default function UnifiedKalenderView({
                     idea={lunchIdea}
                     isActive={isActive}
                     tripId={tripId}
-                    onClick={() => setActiveSlot({ date: iso, type: 'lunch' })}
+                    onClick={() => setActiveMealSlot({ date: iso, type: 'lunch' })}
                   />
                   <MealPill
                     label="Abend"
                     idea={dinnerIdea}
                     isActive={isActive}
                     tripId={tripId}
-                    onClick={() => setActiveSlot({ date: iso, type: 'dinner' })}
+                    onClick={() => setActiveMealSlot({ date: iso, type: 'dinner' })}
                   />
                 </div>
 
                 {/* Right: Ausflüge */}
                 <div className="p-2 space-y-1.5">
-                  {dayActivities.length === 0 ? (
-                    isActive ? (
-                      <button
-                        type="button"
-                        onClick={() => { setAddForDate(iso); setShowAddSheet(true) }}
-                        className="w-full flex items-center justify-center gap-1 border border-dashed border-muted-foreground/30 rounded-[10px] px-2 py-3 text-[11px] text-muted-foreground/50 hover:border-primary/40 hover:text-primary transition-colors"
-                      >
-                        <Plus className="w-3 h-3" strokeWidth={2.5} />
-                        Ausflug
-                      </button>
-                    ) : (
-                      <p className="text-[11px] text-muted-foreground/40 italic text-center py-2">—</p>
-                    )
-                  ) : (
-                    <>
-                      {dayActivities.map(a => (
-                        <ActivityPill key={a.id} activity={a} tripId={tripId} />
-                      ))}
-                      {isActive && (
-                        <button
-                          type="button"
-                          onClick={() => { setAddForDate(iso); setShowAddSheet(true) }}
-                          className="w-full flex items-center justify-center gap-1 border border-dashed border-muted-foreground/20 rounded-[10px] px-2 py-1 text-[10px] text-muted-foreground/40 hover:border-primary/40 hover:text-primary transition-colors"
-                        >
-                          <Plus className="w-2.5 h-2.5" strokeWidth={2.5} />
-                        </button>
-                      )}
-                    </>
+                  {dayActivities.map(a => (
+                    <ActivityPill key={a.id} activity={a} tripId={tripId} />
+                  ))}
+                  {/* Belegen button — always show if active */}
+                  {isActive && (
+                    <button
+                      type="button"
+                      onClick={() => setActiveActivityDate(iso)}
+                      className="w-full flex items-center justify-center gap-1 border border-dashed border-muted-foreground/30 rounded-[10px] px-2 py-2 text-[11px] text-muted-foreground/60 hover:border-primary/40 hover:text-primary transition-colors"
+                    >
+                      {dayActivities.length > 0 ? '+ belegen' : '+ Ausflug belegen'}
+                    </button>
                   )}
                 </div>
               </div>
@@ -275,28 +251,27 @@ export default function UnifiedKalenderView({
       </div>
 
       {/* Meal slot picker */}
-      {activeSlot && (
+      {activeMealSlot && (
         <SlotPickerSheet
           tripId={tripId}
-          slotDate={activeSlot.date}
-          slotType={activeSlot.type}
+          slotDate={activeMealSlot.date}
+          slotType={activeMealSlot.type}
           ideas={ideas}
-          currentMealId={getSlot(activeSlot.date, activeSlot.type)?.meal_idea_id ?? null}
-          onClose={() => setActiveSlot(null)}
+          currentMealId={getSlot(activeMealSlot.date, activeMealSlot.type)?.meal_idea_id ?? null}
+          onClose={() => setActiveMealSlot(null)}
           onRefresh={handleMealRefresh}
         />
       )}
 
-      {/* Add activity sheet */}
-      {showAddSheet && (
-        <AddActivitySheet
+      {/* Activity assign sheet */}
+      {activeActivityDate && (
+        <ActivityAssignSheet
           tripId={tripId}
-          myParticipantId={myParticipantId}
-          tripStartDate={tripStartDate}
-          tripEndDate={tripEndDate}
-          defaultDate={addForDate}
-          onClose={() => { setShowAddSheet(false); setAddForDate(null) }}
-          onAdd={handleAddActivity}
+          slotDate={activeActivityDate}
+          activities={initialActivities}
+          currentActivityIds={(activitiesByDate.get(activeActivityDate) ?? []).map(a => a.id)}
+          onClose={() => setActiveActivityDate(null)}
+          onRefresh={handleActivityRefresh}
         />
       )}
     </>
@@ -306,11 +281,7 @@ export default function UnifiedKalenderView({
 // ── Sub-components ─────────────────────────────────────────────────────────
 
 function MealPill({
-  label,
-  idea,
-  isActive,
-  tripId,
-  onClick,
+  label, idea, isActive, tripId, onClick,
 }: {
   label: string
   idea: MealIdea | undefined
@@ -352,8 +323,7 @@ function MealPill({
 }
 
 function ActivityPill({
-  activity,
-  tripId,
+  activity, tripId,
 }: {
   activity: ActivityWithVotes
   tripId: string

@@ -23,11 +23,12 @@ interface MealCommentsProps {
   mealId: string
   tripId: string
   myParticipantId: string
+  myName: string
   initialComments: MealComment[]
 }
 
 export default function MealComments({
-  mealId, tripId, myParticipantId, initialComments,
+  mealId, tripId, myParticipantId, myName, initialComments,
 }: MealCommentsProps) {
   const [comments, setComments] = useState<MealComment[]>(initialComments)
   const [text, setText] = useState('')
@@ -42,8 +43,21 @@ export default function MealComments({
   const handleSend = async () => {
     const content = text.trim()
     if (!content || sending) return
-    setSending(true)
+
+    // Optimistic insert — show comment immediately
+    const tempId = `temp-${Date.now()}`
+    const optimistic: MealComment = {
+      id: tempId,
+      meal_idea_id: mealId,
+      participant_id: myParticipantId,
+      participant_name: myName,
+      content,
+      created_at: new Date().toISOString(),
+    }
+    setComments(prev => [...prev, optimistic])
     setText('')
+    setSending(true)
+
     try {
       const res = await fetch(`/api/trips/${tripId}/meals/${mealId}/comments`, {
         method: 'POST',
@@ -52,9 +66,11 @@ export default function MealComments({
       })
       if (!res.ok) throw new Error()
       const newComment: MealComment = await res.json()
-      setComments(prev => [...prev, newComment])
+      // Replace optimistic with real
+      setComments(prev => prev.map(c => c.id === tempId ? newComment : c))
     } catch {
       toast.error('Kommentar konnte nicht gesendet werden')
+      setComments(prev => prev.filter(c => c.id !== tempId))
       setText(content)
     } finally {
       setSending(false)
@@ -71,7 +87,7 @@ export default function MealComments({
         body: JSON.stringify({ commentId }),
       })
     } catch {
-      toast.error('Fehler beim Loschen')
+      toast.error('Fehler beim Löschen')
     }
   }
 
@@ -111,8 +127,9 @@ export default function MealComments({
             </div>
             {group.items.map(comment => {
               const isMe = comment.participant_id === myParticipantId
+              const isPending = comment.id.startsWith('temp-')
               return (
-                <div key={comment.id} className={cn('flex gap-2 mb-2', isMe ? 'flex-row-reverse' : 'flex-row')}>
+                <div key={comment.id} className={cn('flex gap-2 mb-2', isMe ? 'flex-row-reverse' : 'flex-row', isPending && 'opacity-60')}>
                   {!isMe && (
                     <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-[11px] font-bold text-primary flex-shrink-0 mt-auto mb-0.5">
                       {comment.participant_name.charAt(0).toUpperCase()}
@@ -125,7 +142,7 @@ export default function MealComments({
                       </span>
                     )}
                     <div className="flex items-end gap-1.5">
-                      {isMe && (
+                      {isMe && !isPending && (
                         <button
                           type="button"
                           onClick={() => handleDelete(comment.id)}
@@ -145,7 +162,7 @@ export default function MealComments({
                           'text-[10px] block mt-1',
                           isMe ? 'text-primary-foreground/60 text-right' : 'text-muted-foreground'
                         )}>
-                          {formatTime(comment.created_at)}
+                          {isPending ? 'Senden…' : formatTime(comment.created_at)}
                         </span>
                       </div>
                     </div>
