@@ -12,9 +12,10 @@ import { fetchers } from '@/lib/query/fetchers'
 interface TripBottomNavProps {
   tripId: string
   isEnded: boolean
+  showFacts?: boolean
 }
 
-export default function TripBottomNav({ tripId, isEnded }: TripBottomNavProps) {
+export default function TripBottomNav({ tripId, isEnded, showFacts = false }: TripBottomNavProps) {
   const pathname = usePathname()
   const queryClient = useQueryClient()
   const base = `/trips/${tripId}`
@@ -85,7 +86,7 @@ export default function TripBottomNav({ tripId, isEnded }: TripBottomNavProps) {
       color: { fg: 'var(--section-facts)', bg: 'var(--section-facts-muted)' },
       onPrefetch: undefined as (() => void) | undefined,
     },
-  ]
+  ].filter(tab => tab.href !== `${base}/facts` || showFacts)
 
   return (
     <>

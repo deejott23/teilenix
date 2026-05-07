@@ -223,6 +223,17 @@ export default async function FactsPage({ params }: { params: Promise<{ tripId: 
     db.from('trip_activity_comments').select('participant_id').eq('trip_id', tripId),
   ])
 
+  // Guard: ReiseBlatt nur ab Tag 3 einer aktiven Reise
+  if (trip?.status === 'active') {
+    const startDate = (trip as unknown as { start_date: string | null }).start_date
+    if (!startDate) redirect(`/trips/${tripId}`)
+    const start = new Date(startDate + 'T00:00:00')
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const daysSinceStart = Math.floor((today.getTime() - start.getTime()) / 86_400_000)
+    if (daysSinceStart < 2) redirect(`/trips/${tripId}`)
+  }
+
   const allParticipants = (participantsRaw ?? []) as TripParticipant[]
   // Full map for name lookups (expenses can be paid by group-members or guests)
   const participantMap = new Map(allParticipants.map(p => [p.id, p]))
