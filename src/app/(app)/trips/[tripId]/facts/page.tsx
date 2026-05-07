@@ -223,8 +223,11 @@ export default async function FactsPage({ params }: { params: Promise<{ tripId: 
     db.from('trip_activity_comments').select('participant_id').eq('trip_id', tripId),
   ])
 
-  const participants = ((participantsRaw ?? []) as TripParticipant[]).filter(p => !p.is_group && !p.group_id)
-  const participantMap = new Map(participants.map(p => [p.id, p]))
+  const allParticipants = (participantsRaw ?? []) as TripParticipant[]
+  // Full map for name lookups (expenses can be paid by group-members or guests)
+  const participantMap = new Map(allParticipants.map(p => [p.id, p]))
+  // Only real individuals for proposal/vote rankings
+  const participants = allParticipants.filter(p => !p.is_group && !p.group_id)
 
   // ── Expenses ────────────────────────────────────────────────────────────────
   type Expense = { id: string; amount_cents: number; paid_by_participant_id: string; category: string }
