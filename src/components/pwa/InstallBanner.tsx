@@ -88,7 +88,7 @@ export default function InstallBanner() {
       >
         <div
           className="rounded-[18px] p-3.5 flex items-center gap-3"
-          style={{ background: 'linear-gradient(135deg, #1b5c58 0%, #144442 100%)' }}
+          style={{ background: 'linear-gradient(135deg, #1E6FD9 0%, #1859B5 100%)' }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img

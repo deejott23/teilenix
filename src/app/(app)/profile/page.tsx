@@ -30,7 +30,7 @@ export default async function ProfilePage() {
     <div className="space-y-6">
 
       {/* Header */}
-      <div className="-mx-4 -mt-7 mb-2 px-6 pt-8 pb-6 rounded-b-3xl" style={{ background: 'linear-gradient(150deg, #1b5c58 0%, #144442 100%)' }}>
+      <div className="-mx-4 -mt-7 mb-2 px-6 pt-8 pb-6 rounded-b-3xl" style={{ background: 'linear-gradient(150deg, #1E6FD9 0%, #1859B5 100%)' }}>
         <div className="flex items-center gap-4">
           <Avatar className="w-14 h-14" style={{ outline: '2px solid rgba(255,255,255,0.25)', outlineOffset: '2px' }}>
             <AvatarImage src={avatarUrl} />
