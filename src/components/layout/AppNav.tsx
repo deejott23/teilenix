@@ -12,9 +12,9 @@ interface AppNavProps {
 }
 
 const navItems = [
-  { href: '/dashboard', label: 'Reisen',  spriteName: 'trip' as string | undefined,  icon: undefined as React.ComponentType<{ className?: string; strokeWidth?: number }> | undefined },
+  { href: '/dashboard', label: 'Reisen',  spriteName: 'trip' as string | undefined,  icon: undefined as React.ComponentType<{ className?: string; strokeWidth?: number; style?: React.CSSProperties }> | undefined },
   { href: '/profile',   label: 'Profil',  spriteName: 'user',   icon: undefined },
-  { href: '/help',      label: 'Hilfe',   spriteName: undefined, icon: HelpCircle as React.ComponentType<{ className?: string; strokeWidth?: number }> },
+  { href: '/help',      label: 'Hilfe',   spriteName: undefined, icon: HelpCircle as React.ComponentType<{ className?: string; strokeWidth?: number; style?: React.CSSProperties }> },
 ]
 
 export default function AppNav({ needsOnboarding }: AppNavProps) {

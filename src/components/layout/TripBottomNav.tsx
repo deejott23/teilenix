@@ -34,7 +34,7 @@ export default function TripBottomNav({ tripId, isEnded }: TripBottomNavProps) {
     queryClient.prefetchQuery({ queryKey: queryKeys.meals.byTrip(tripId), queryFn: () => fetchers.meals(tripId), staleTime: 30_000 })
   }
 
-  type LucideComp = React.ComponentType<{ className?: string; strokeWidth?: number }>
+  type LucideComp = React.ComponentType<{ className?: string; strokeWidth?: number; style?: React.CSSProperties }>
   const tabs = [
     {
       href: base,
