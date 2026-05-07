@@ -38,7 +38,7 @@ export default async function LoginPage() {
       desc: 'Am Ende der Reise: wer hat wie viel ausgegeben, welche Kategorie war am teuersten?',
     },
     {
-      icon: 'group', color: '#1b5c58', bg: 'rgba(27,92,88,0.25)',
+      icon: 'group', color: '#1E6FD9', bg: 'rgba(30,111,217,0.15)',
       title: 'Gruppen & Familien',
       desc: 'Familie Müller, Familie Schmidt — jede Gruppe zahlt ihren eigenen Anteil, fair und transparent.',
     },
@@ -184,7 +184,7 @@ function MiniMockup() {
 
       {/* Saldo-Karte */}
       <div className="rounded-[14px] p-4" style={{
-        background: 'linear-gradient(135deg, #1b5c58 0%, #144442 100%)',
+        background: 'linear-gradient(135deg, #1E6FD9 0%, #1859B5 100%)',
         border: '1px solid rgba(27,92,88,0.5)',
       }}>
         <p className="text-[9px] font-bold uppercase tracking-widest mb-1" style={{ color: 'rgba(255,255,255,0.45)' }}>

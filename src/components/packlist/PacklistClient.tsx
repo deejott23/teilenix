@@ -23,7 +23,7 @@ interface PacklistClientProps {
 
 type TabKey = 'bringing' | 'group_need'
 
-const AV_COLORS = ['#1b5c58', '#2d8a84', '#4ab5ae', '#c47a1e', '#6b4fa0', '#2d7a4f']
+const AV_COLORS = ['#1E6FD9', '#2d8a84', '#4ab5ae', '#c47a1e', '#6b4fa0', '#2d7a4f']
 function avColor(id: string) {
   let h = 0; for (const c of id) h = (h * 31 + c.charCodeAt(0)) & 0xffff
   return AV_COLORS[h % AV_COLORS.length]
@@ -667,7 +667,7 @@ export default function PacklistClient({
                     className="h-full rounded-full transition-all duration-500"
                     style={{
                       width: `${bringItems.length > 0 ? Math.round((bringItems.filter(i => i.checked).length / bringItems.length) * 100) : 0}%`,
-                      background: bringItems.every(i => i.checked) ? '#2d7a4f' : '#1b5c58',
+                      background: bringItems.every(i => i.checked) ? '#2d7a4f' : '#1E6FD9',
                     }}
                   />
                 </div>

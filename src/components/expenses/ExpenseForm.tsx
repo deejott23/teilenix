@@ -513,7 +513,7 @@ export default function ExpenseForm({
 
           {/* Multi-Zahler-Beträge — nur in erweitert + >1 Zahler */}
           {showAdvanced && payerIds.length > 1 && (() => {
-            const PAYER_COLORS = ['#1b5c58', '#2d8a84', '#4ab5ae', '#7dd1cc', '#b2e8e5']
+            const PAYER_COLORS = ['#1E6FD9', '#2d8a84', '#4ab5ae', '#7dd1cc', '#b2e8e5']
             const remainder = totalCents - payerTotal
             return (
               <div className="mt-3 space-y-2">
