@@ -401,12 +401,12 @@ function GroupNeedRow({
                 <div className="flex items-center gap-1.5">
                   <button type="button" onClick={() => setEditing(true)}
                     className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-primary transition-colors">
-                    <Pencil className="w-3 h-3" strokeWidth={2} />
+                    <Icon name="edit" size={12} />
                     Titel bearbeiten
                   </button>
                   <button type="button" onClick={handleDelete}
                     className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-destructive transition-colors ml-3">
-                    <Trash2 className="w-3 h-3" strokeWidth={2} />
+                    <Icon name="delete" size={12} />
                     Löschen
                   </button>
                 </div>
