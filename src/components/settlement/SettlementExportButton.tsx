@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { Download, Share2 } from 'lucide-react'
+import { Download } from 'lucide-react'
+import { Icon } from '@/components/ui/icon'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { formatCurrency } from '@/lib/formatting'
@@ -93,7 +94,7 @@ export default function SettlementExportButton({ tripName, settlement }: Settlem
         className="flex-1 gap-2"
         onClick={handleShare}
       >
-        <Share2 className="w-4 h-4" />
+        <Icon name="share" size={16} />
         Teilen
       </Button>
       <Button

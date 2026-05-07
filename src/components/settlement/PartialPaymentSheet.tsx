@@ -4,7 +4,8 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { Plus, X } from 'lucide-react'
+import { X } from 'lucide-react'
+import { Icon } from '@/components/ui/icon'
 import { cn } from '@/lib/utils'
 import { todayISO } from '@/lib/formatting'
 import { queryKeys } from '@/lib/query/queryKeys'
@@ -78,7 +79,7 @@ export default function PartialPaymentSheet({ tripId, participants }: PartialPay
         onClick={() => setOpen(true)}
         className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary/8 text-primary text-[13px] font-semibold border border-primary/20 hover:bg-primary/12 active:scale-95 transition-all"
       >
-        <Plus className="w-4 h-4" strokeWidth={2.5} />
+        <Icon name="add" size={16} />
         Teilzahlung erfassen
       </button>
 

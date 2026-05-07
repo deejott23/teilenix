@@ -10,9 +10,9 @@ const TODO_ITEMS = [
       { done: true,  text: 'SVG-Sprite /public/icons.svg bereitgestellt (24 Icons)' },
       { done: true,  text: 'Icon-Komponente src/components/ui/icon.tsx erstellt' },
       { done: true,  text: 'CategoryIcon auf SVG-Icons umgestellt' },
-      { done: false, text: 'AppNav (Desktop): Lucide-Icons für Reisen/Profil/Hilfe → Custom Icons (trip, user, bell)' },
-      { done: false, text: 'TripBottomNav: Lucide-Icons → Custom Icons (expense, calendar, trip, settle, bell)' },
-      { done: false, text: 'TripBottomNav: Home-Tab Icon → custom trip/suitcase' },
+      { done: true,  text: 'AppNav (Desktop): Lucide-Icons für Reisen/Profil/Hilfe → Custom Icons (trip, user, bell)' },
+      { done: true,  text: 'TripBottomNav: Lucide-Icons → Custom Icons (expense, calendar, trip, settle, bell)' },
+      { done: true,  text: 'TripBottomNav: Home-Tab Icon → custom trip/suitcase' },
     ],
   },
   {
@@ -20,7 +20,7 @@ const TODO_ITEMS = [
     status: 'offen',
     items: [
       { done: false, text: 'Alle primären CTAs: Border-Radius anpassen (r-sm=8px statt rounded-2xl)' },
-      { done: false, text: 'FAB (Float-Action-Button) auf Petrol-Schatten updaten: shadow-[0_4px_12px_rgba(27,92,88,.3)]' },
+      { done: true,  text: 'FAB (Float-Action-Button) auf Petrol-Schatten updaten: shadow-[0_4px_12px_rgba(27,92,88,.3)]' },
       { done: false, text: 'Sekundärer Button: bg-primary/10 text-primary statt aktuelles variant="outline"' },
       { done: false, text: 'Danger-Button: bg-[#EF4444] statt bg-destructive (Einheitlichkeit)' },
       { done: false, text: 'Button-Hover-States durchgehend prüfen (primary-700 #144442 als Hover)' },
@@ -32,7 +32,7 @@ const TODO_ITEMS = [
     items: [
       { done: true,  text: 'CategoryIcon: Emoji → farbige SVG-Icons nach Designspec' },
       { done: false, text: 'ExpenseCard: Kategorie-Icon-Farbe im Listenelement sichtbar machen (expense-icon food/hotel/transport/activity)' },
-      { done: false, text: 'ExpenseForm: Kategorie-Auswahl als Chips mit Icons (statt Emoji-Text-Combo)' },
+      { done: true,  text: 'ExpenseForm: Kategorie-Auswahl als Chips mit Icons (statt Emoji-Text-Combo)' },
       { done: false, text: 'Bezahlt-Badge: chip success mit Icon #paid statt grünem Text' },
       { done: false, text: 'Zahlungsstatus-Chips (Offen/Bezahlt) in ExpenseCard → chip warn / chip success' },
     ],
@@ -44,23 +44,23 @@ const TODO_ITEMS = [
       { done: false, text: 'TripCard: Status-Badge (Aktiv/Fertig) als Chip statt custom Span' },
       { done: false, text: 'TripCard: Icon-Bereich mit custom #trip Icon' },
       { done: false, text: 'BalanceSummaryCard: Stat-Grid (3 Kacheln) Typografie angleichen (l/v-Klassen)' },
-      { done: false, text: 'Dashboard-Header: share|pa Wordmark mit korrektem Font-Weight' },
+      { done: true,  text: 'Dashboard-Header: share|pa Wordmark mit korrektem Font-Weight' },
     ],
   },
   {
     section: 'Abrechnung / Settlement',
     status: 'offen',
     items: [
-      { done: false, text: 'SettlementCard: Transfer-Zeilen mit #settle Icon + chip-Styling' },
+      { done: true,  text: 'SettlementCard: Transfer-Zeilen mit #settle Icon + chip-Styling' },
       { done: false, text: 'Saldo-Zeilen: Positiv = chip success mit #paid Icon, Negativ = chip danger mit #balance Icon' },
-      { done: false, text: 'Teilzahlungen erfassen: Button mit #add Icon' },
+      { done: true,  text: 'Teilzahlungen erfassen: Button mit #add Icon' },
     ],
   },
   {
     section: 'Formulare & Inputs',
     status: 'offen',
     items: [
-      { done: false, text: 'Input focus-ring: 3px ring rgba(27,92,88,.12) statt aktuell' },
+      { done: true,  text: 'Input focus-ring: 3px ring rgba(27,92,88,.12) statt aktuell' },
       { done: false, text: 'Select/Dropdown: Chevron-Right Icon aus Sprite (statt Lucide ChevronDown)' },
       { done: false, text: 'Datepicker-Trigger: calendar Icon aus Sprite' },
       { done: false, text: 'Form-Labels: font-size 12px font-weight 500 color muted-foreground (konsistent)' },
@@ -70,8 +70,8 @@ const TODO_ITEMS = [
     section: 'Packliste',
     status: 'offen',
     items: [
-      { done: false, text: 'Packlist-Item: Edit-Icon aus Sprite (#edit) statt Pencil (Lucide)' },
-      { done: false, text: 'Packlist-Item: Delete-Icon aus Sprite (#delete) statt Trash2 (Lucide)' },
+      { done: true,  text: 'Packlist-Item: Edit-Icon aus Sprite (#edit) statt Pencil (Lucide)' },
+      { done: true,  text: 'Packlist-Item: Delete-Icon aus Sprite (#delete) statt Trash2 (Lucide)' },
       { done: false, text: 'Progress-Bar: bereits auf Petrol (#1b5c58), aber grüner Abschluss-State prüfen' },
       { done: true,  text: 'Progress-Bar Farben: #1b5c58 / #2d7a4f — erledigt' },
     ],
@@ -80,7 +80,7 @@ const TODO_ITEMS = [
     section: 'Planen (Ausflüge & Essen)',
     status: 'offen',
     items: [
-      { done: false, text: 'Ausflug-Karte: Location-Icon aus Sprite (#location)' },
+      { done: true,  text: 'Ausflug-Karte: Location-Icon aus Sprite (#location)' },
       { done: false, text: 'Ausflug-Karte: Datum mit Calendar-Icon aus Sprite (#calendar)' },
       { done: false, text: 'Essen-Karte: cat-food Icon statt Emoji' },
       { done: false, text: 'Voting-Buttons: konsistente Chip-Größe und Abstände' },
@@ -91,7 +91,7 @@ const TODO_ITEMS = [
     status: 'offen',
     items: [
       { done: false, text: 'Settings-Navigations-Kacheln: #settings, #group, #expense Icons aus Sprite' },
-      { done: false, text: 'Invite-Panel: #share Icon statt Lucide Share2' },
+      { done: true,  text: 'Invite-Panel: #share Icon statt Lucide Share2' },
       { done: false, text: 'Kategorie-Liste: Custom Icons pro Kategorie (cat-food etc.)' },
     ],
   },
@@ -110,7 +110,7 @@ const TODO_ITEMS = [
     status: 'offen',
     items: [
       { done: false, text: 'Login-Page: Hero-Gradient auf korrektes Petrol (oklch-Werte prüfen)' },
-      { done: false, text: 'Login-Page: Feature-Pills Styling nach Chip-Konzept' },
+      { done: true,  text: 'Login-Page: Feature-Pills Styling nach Chip-Konzept' },
       { done: false, text: 'Google-Sign-In-Button: Icon + Styling angleichen' },
     ],
   },

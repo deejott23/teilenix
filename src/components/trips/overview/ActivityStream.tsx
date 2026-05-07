@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { ChevronRight } from 'lucide-react'
+import { Icon } from '@/components/ui/icon'
 import { formatCurrency } from '@/lib/formatting'
 import { cn } from '@/lib/utils'
 import { activityTypeEmoji } from '@/lib/activities'
@@ -126,7 +126,7 @@ export default async function ActivityStream({ tripId }: { tripId: string }) {
                 event.rightVariant === 'checked' ? 'text-green-600' : 'text-muted-foreground'
               )}>
                 {event.rightVariant === 'arrow'
-                  ? <ChevronRight className="w-4 h-4" strokeWidth={2} />
+                  ? <Icon name="chevron-right" size={16} />
                   : event.rightText}
               </div>
             </Link>

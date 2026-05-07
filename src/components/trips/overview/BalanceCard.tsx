@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { ChevronRight } from 'lucide-react'
+import { Icon } from '@/components/ui/icon'
 import { computeSettlement } from '@/lib/settlement'
 import { formatCurrency } from '@/lib/formatting'
 import { cn } from '@/lib/utils'
@@ -70,7 +70,7 @@ export default async function BalanceCard({
         <div className="text-[14px] font-bold text-foreground">{formatCurrency(settlement.totalSpentCents)}</div>
         <div className="text-[11px] text-muted-foreground mt-0.5">{realExpenseCount} Ausgaben gesamt</div>
       </div>
-      <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+      <Icon name="chevron-right" size={16} className="text-muted-foreground flex-shrink-0" />
     </Link>
   )
 }

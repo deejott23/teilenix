@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import GoogleSignInButton from '@/components/auth/GoogleSignInButton'
+import { Icon } from '@/components/ui/icon'
 
 export default async function LoginPage() {
   const supabase = await createClient()
@@ -108,20 +109,20 @@ export default async function LoginPage() {
               {/* Feature pills */}
               <div className="flex flex-wrap gap-2 mt-10">
                 {[
-                  { emoji: '✈️', text: 'Reisen planen' },
-                  { emoji: '💸', text: 'Ausgaben teilen' },
-                  { emoji: '🤝', text: 'Fair abrechnen' },
+                  { icon: 'trip' as const,    text: 'Reisen planen' },
+                  { icon: 'expense' as const, text: 'Ausgaben teilen' },
+                  { icon: 'settle' as const,  text: 'Fair abrechnen' },
                 ].map(f => (
                   <div
                     key={f.text}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-full text-[12px] font-medium"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium"
                     style={{
                       background: 'oklch(1 0 0 / 0.06)',
                       border: '1px solid oklch(1 0 0 / 0.08)',
                       color: 'oklch(1 0 0 / 0.55)',
                     }}
                   >
-                    <span>{f.emoji}</span>
+                    <Icon name={f.icon} size={13} />
                     {f.text}
                   </div>
                 ))}

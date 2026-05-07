@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { Pencil, Check, X } from 'lucide-react'
+import { Check, X } from 'lucide-react'
+import { Icon } from '@/components/ui/icon'
 import { Input } from '@/components/ui/input'
 
 export default function ProfileNameEditor({ displayName }: { displayName: string }) {
@@ -78,7 +79,7 @@ export default function ProfileNameEditor({ displayName }: { displayName: string
         className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground/40 hover:text-primary hover:bg-primary/8 transition-colors opacity-0 group-hover:opacity-100"
         title="Name bearbeiten"
       >
-        <Pencil className="w-3.5 h-3.5" strokeWidth={2} />
+        <Icon name="edit" size={14} />
       </button>
     </div>
   )

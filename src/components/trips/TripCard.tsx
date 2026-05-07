@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useQueryClient } from '@tanstack/react-query'
-import { ArrowRight, Calendar } from 'lucide-react'
+import { Icon } from '@/components/ui/icon'
 import { formatDate } from '@/lib/formatting'
 import { queryKeys } from '@/lib/query/queryKeys'
 import { fetchers } from '@/lib/query/fetchers'
@@ -68,20 +68,21 @@ export default function TripCard({ trip }: TripCardProps) {
           </div>
           {dateRange && (
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground/70">
-              <Calendar className="w-3 h-3" strokeWidth={2} />
+              <Icon name="calendar" size={12} />
               {dateRange}
             </div>
           )}
         </div>
 
-        <ArrowRight
+        <Icon
+          name="chevron-right"
+          size={16}
           className={cn(
-            'w-4 h-4 flex-shrink-0 transition-all',
+            'flex-shrink-0 transition-all',
             active
               ? 'text-muted-foreground/30 group-hover:text-primary group-hover:translate-x-0.5'
               : 'text-muted-foreground/20 group-hover:text-muted-foreground/50'
           )}
-          strokeWidth={2}
         />
       </div>
     </Link>

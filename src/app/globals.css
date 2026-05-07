@@ -192,6 +192,15 @@
     scrollbar-width: none;
     &::-webkit-scrollbar { display: none; }
   }
+
+  /* Input focus ring — petrol glow */
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(27, 92, 88, 0.12);
+    border-color: var(--primary) !important;
+  }
 }
 
 /* ── View Transitions ─────────────────────────────────────────────────────── */

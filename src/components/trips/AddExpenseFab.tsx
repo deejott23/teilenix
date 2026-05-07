@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Plus } from 'lucide-react'
+import { Icon } from '@/components/ui/icon'
 
 interface AddExpenseFabProps {
   tripId: string
@@ -26,10 +26,11 @@ export default function AddExpenseFab({ tripId }: AddExpenseFabProps) {
   return (
     <Link
       href={`/trips/${tripId}/expenses/new`}
-      className="fixed bottom-[84px] right-4 md:bottom-6 md:right-6 z-40 flex items-center gap-2 bg-primary text-primary-foreground pl-4 pr-5 py-3.5 rounded-2xl shadow-lg shadow-primary/35 hover:bg-primary/90 active:scale-95 transition-all font-semibold text-[14px]"
+      className="fixed bottom-[84px] right-4 md:bottom-6 md:right-6 z-40 flex items-center gap-2 bg-primary text-primary-foreground pl-4 pr-5 py-3.5 rounded-2xl hover:bg-primary/90 active:scale-95 transition-all font-semibold text-[14px]"
+      style={{ boxShadow: '0 4px 12px rgba(27,92,88,.3), 0 12px 24px rgba(27,92,88,.2)' }}
       aria-label="Ausgabe hinzufügen"
     >
-      <Plus className="w-5 h-5" strokeWidth={2.5} />
+      <Icon name="add" size={20} />
       Ausgabe
     </Link>
   )

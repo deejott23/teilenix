@@ -1,6 +1,7 @@
 import Link from 'next/link'
-import { MessageCircle, ExternalLink, Check } from 'lucide-react'
+import { MessageCircle, ExternalLink } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { Icon } from '@/components/ui/icon'
 import { activityTypeEmoji, activityTypeGradient, formatDepartureTime } from '@/lib/activities'
 import { formatCurrency } from '@/lib/formatting'
 import VoteButtons from './VoteButtons'
@@ -58,7 +59,7 @@ export default function ActivityCard({
               <h3 className="font-bold text-[14px] leading-tight text-foreground">{activity.title}</h3>
               {isConfirmed ? (
                 <span className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-green-100 text-green-700 flex-shrink-0 mt-0.5">
-                  <Check className="w-2.5 h-2.5" strokeWidth={3} />
+                  <Icon name="paid" size={10} />
                   Fest
                 </span>
               ) : (
@@ -78,7 +79,10 @@ export default function ActivityCard({
                 <span className="text-[11px] text-muted-foreground">~{formatCurrency(activity.cost_per_person_cents)}/P</span>
               )}
               {activity.meeting_point && (
-                <span className="text-[11px] text-muted-foreground">📍 {activity.meeting_point}</span>
+                <span className="flex items-center gap-0.5 text-[11px] text-muted-foreground">
+                  <Icon name="location" size={11} />
+                  {activity.meeting_point}
+                </span>
               )}
               {!dateStr && !activity.departure_time && !activity.cost_per_person_cents && !activity.meeting_point && (
                 <span className="text-[11px] text-muted-foreground">von {activity.creator_name}</span>

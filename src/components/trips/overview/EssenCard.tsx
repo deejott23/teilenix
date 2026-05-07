@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { ChevronRight, Flame } from 'lucide-react'
+import { Flame } from 'lucide-react'
+import { Icon } from '@/components/ui/icon'
 
 export default async function EssenCard({ tripId }: { tripId: string }) {
   const supabase = await createClient()
@@ -57,7 +58,7 @@ export default async function EssenCard({ tripId }: { tripId: string }) {
           🍽️ Essen
         </h2>
         <Link href={`/trips/${tripId}/essen`} className="text-[12px] font-bold text-primary flex items-center gap-0.5">
-          Alle <ChevronRight className="w-3 h-3" strokeWidth={2.5} />
+          Alle <Icon name="chevron-right" size={12} />
         </Link>
       </div>
 

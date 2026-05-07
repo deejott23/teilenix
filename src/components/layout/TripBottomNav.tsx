@@ -3,8 +3,9 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useQueryClient } from '@tanstack/react-query'
-import { Home, Calendar, ClipboardList, Wallet, Newspaper } from 'lucide-react'
+import { ClipboardList, Newspaper } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { Icon as SpriteIcon } from '@/components/ui/icon'
 import { queryKeys } from '@/lib/query/queryKeys'
 import { fetchers } from '@/lib/query/fetchers'
 
@@ -33,50 +34,56 @@ export default function TripBottomNav({ tripId, isEnded }: TripBottomNavProps) {
     queryClient.prefetchQuery({ queryKey: queryKeys.meals.byTrip(tripId), queryFn: () => fetchers.meals(tripId), staleTime: 30_000 })
   }
 
+  type LucideComp = React.ComponentType<{ className?: string; strokeWidth?: number }>
   const tabs = [
     {
       href: base,
       label: 'Home',
-      icon: Home,
+      spriteName: 'trip' as string | undefined,
+      icon: undefined as LucideComp | undefined,
       isActive: pathname === base,
       color: { fg: 'var(--section-listen)', bg: 'var(--section-listen-muted)' },
-      onPrefetch: undefined,
+      onPrefetch: undefined as (() => void) | undefined,
     },
     {
       href: `${base}/expenses`,
       label: 'Geld',
-      icon: Wallet,
+      spriteName: 'expense' as string | undefined,
+      icon: undefined as LucideComp | undefined,
       isActive:
         pathname.startsWith(`${base}/expenses`) ||
         pathname.startsWith(`${base}/stats`) ||
         pathname.startsWith(`${base}/settlement`),
       dot: isEnded,
       color: { fg: 'var(--section-geld)', bg: 'var(--section-geld-muted)' },
-      onPrefetch: prefetchExpenses,
+      onPrefetch: prefetchExpenses as (() => void) | undefined,
     },
     {
       href: `${base}/planen`,
       label: 'Planen',
-      icon: Calendar,
+      spriteName: 'calendar' as string | undefined,
+      icon: undefined as LucideComp | undefined,
       isActive: pathname.startsWith(`${base}/planen`) || pathname.startsWith(`${base}/essen`),
       color: { fg: 'var(--section-planen)', bg: 'var(--section-planen-muted)' },
-      onPrefetch: prefetchPlanen,
+      onPrefetch: prefetchPlanen as (() => void) | undefined,
     },
     {
       href: `${base}/packlist`,
       label: 'Listen',
-      icon: ClipboardList,
+      spriteName: undefined as string | undefined,
+      icon: ClipboardList as LucideComp,
       isActive: pathname.startsWith(`${base}/packlist`) || pathname.startsWith(`${base}/einkauf`) || pathname.startsWith(`${base}/listen`),
       color: { fg: 'var(--section-listen)', bg: 'var(--section-listen-muted)' },
-      onPrefetch: prefetchLists,
+      onPrefetch: prefetchLists as (() => void) | undefined,
     },
     {
       href: `${base}/facts`,
       label: 'ReiseBlatt',
-      icon: Newspaper,
+      spriteName: undefined as string | undefined,
+      icon: Newspaper as LucideComp,
       isActive: pathname.startsWith(`${base}/facts`),
       color: { fg: 'var(--section-facts)', bg: 'var(--section-facts-muted)' },
-      onPrefetch: undefined,
+      onPrefetch: undefined as (() => void) | undefined,
     },
   ]
 
@@ -85,7 +92,7 @@ export default function TripBottomNav({ tripId, isEnded }: TripBottomNavProps) {
       {/* Mobile bottom bar */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-card/95 backdrop-blur-md border-t border-border">
         <div className="flex items-center justify-around h-16 px-2 max-w-md mx-auto">
-          {tabs.map(({ href, label, icon: Icon, isActive, dot, color, onPrefetch }) => (
+          {tabs.map(({ href, label, spriteName, icon: LucideIcon, isActive, dot, color, onPrefetch }) => (
             <Link
               key={href}
               href={href}
@@ -96,11 +103,10 @@ export default function TripBottomNav({ tripId, isEnded }: TripBottomNavProps) {
                 className="w-8 h-8 flex items-center justify-center rounded-xl transition-colors"
                 style={isActive ? { background: color.bg } : undefined}
               >
-                <Icon
-                  className={cn('w-[18px] h-[18px] transition-colors', !isActive && 'text-muted-foreground')}
-                  style={isActive ? { color: color.fg } : undefined}
-                  strokeWidth={isActive ? 2.2 : 1.7}
-                />
+                {spriteName
+                  ? <SpriteIcon name={spriteName} size={18} className={cn('transition-colors', !isActive && 'text-muted-foreground')} style={isActive ? { color: color.fg } : undefined} />
+                  : LucideIcon && <LucideIcon className={cn('w-[18px] h-[18px] transition-colors', !isActive && 'text-muted-foreground')} style={isActive ? { color: color.fg } : undefined} strokeWidth={isActive ? 2.2 : 1.7} />
+                }
                 {dot && (
                   <span className="absolute top-1 right-1 w-2 h-2 bg-amber-400 rounded-full ring-2 ring-card" />
                 )}
@@ -129,7 +135,10 @@ export default function TripBottomNav({ tripId, isEnded }: TripBottomNavProps) {
             )}
             style={tab.isActive ? { background: tab.color.fg } : undefined}
           >
-            <tab.icon className="w-4 h-4" strokeWidth={tab.isActive ? 2.2 : 1.7} />
+            {tab.spriteName
+              ? <SpriteIcon name={tab.spriteName} size={16} />
+              : tab.icon && <tab.icon className="w-4 h-4" strokeWidth={tab.isActive ? 2.2 : 1.7} />
+            }
             {tab.label}
             {tab.dot && !tab.isActive && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0" />}
           </Link>

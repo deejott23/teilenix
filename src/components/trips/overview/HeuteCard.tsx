@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { ChevronRight, Calendar } from 'lucide-react'
+import { Icon } from '@/components/ui/icon'
 import { activityTypeEmoji } from '@/lib/activities'
 import type { ActivityType } from '@/types/app'
 
@@ -64,9 +64,9 @@ export default async function HeuteCard({ tripId }: { tripId: string }) {
           href={`/trips/${tripId}/planen`}
           className="flex items-center gap-1 text-[12px] font-bold text-primary"
         >
-          <Calendar className="w-3.5 h-3.5" strokeWidth={2} />
+          <Icon name="calendar" size={14} />
           Kalender
-          <ChevronRight className="w-3 h-3" strokeWidth={2.5} />
+          <Icon name="chevron-right" size={12} />
         </Link>
       </div>
 

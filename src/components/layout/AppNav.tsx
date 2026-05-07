@@ -2,8 +2,9 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Plane, UserCircle, HelpCircle } from 'lucide-react'
+import { HelpCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { Icon } from '@/components/ui/icon'
 
 interface AppNavProps {
   userId: string
@@ -11,9 +12,9 @@ interface AppNavProps {
 }
 
 const navItems = [
-  { href: '/dashboard', label: 'Reisen',  icon: Plane       },
-  { href: '/profile',   label: 'Profil',  icon: UserCircle  },
-  { href: '/help',      label: 'Hilfe',   icon: HelpCircle  },
+  { href: '/dashboard', label: 'Reisen',  spriteName: 'trip' as string | undefined,  icon: undefined as React.ComponentType<{ className?: string; strokeWidth?: number }> | undefined },
+  { href: '/profile',   label: 'Profil',  spriteName: 'user',   icon: undefined },
+  { href: '/help',      label: 'Hilfe',   spriteName: undefined, icon: HelpCircle as React.ComponentType<{ className?: string; strokeWidth?: number }> },
 ]
 
 export default function AppNav({ needsOnboarding }: AppNavProps) {
@@ -27,7 +28,7 @@ export default function AppNav({ needsOnboarding }: AppNavProps) {
       {/* ── Mobile bottom bar ── */}
       <nav className={`fixed bottom-0 left-0 right-0 z-50 md:hidden bg-card/95 backdrop-blur-md border-t border-border${isOnTripPage ? ' hidden' : ''}`}>
         <div className="flex items-center justify-around h-16 px-2 max-w-md mx-auto">
-          {navItems.map(({ href, label, icon: Icon }) => {
+          {navItems.map(({ href, label, spriteName, icon: LucideIcon }) => {
             const active = pathname === href || pathname.startsWith(`${href}/`)
             return (
               <Link
@@ -39,10 +40,10 @@ export default function AppNav({ needsOnboarding }: AppNavProps) {
                   'w-8 h-8 flex items-center justify-center rounded-xl transition-colors',
                   active ? 'bg-primary' : 'bg-transparent'
                 )}>
-                  <Icon
-                    className={cn('w-4.5 h-4.5 transition-colors', active ? 'text-primary-foreground' : 'text-muted-foreground')}
-                    strokeWidth={active ? 2.2 : 1.7}
-                  />
+                  {spriteName
+                    ? <Icon name={spriteName} size={18} className={cn('transition-colors', active ? 'text-primary-foreground' : 'text-muted-foreground')} />
+                    : LucideIcon && <LucideIcon className={cn('w-4.5 h-4.5 transition-colors', active ? 'text-primary-foreground' : 'text-muted-foreground')} strokeWidth={active ? 2.2 : 1.7} />
+                  }
                 </div>
                 <span className={cn('text-[10px] font-bold tracking-wide transition-colors', active ? 'text-primary' : 'text-muted-foreground')}>
                   {label}
@@ -67,7 +68,7 @@ export default function AppNav({ needsOnboarding }: AppNavProps) {
         </Link>
 
         <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-          {navItems.map(({ href, label, icon: Icon }) => {
+          {navItems.map(({ href, label, spriteName, icon: LucideIcon }) => {
             const active = pathname === href || pathname.startsWith(`${href}/`)
             return (
               <Link
@@ -78,7 +79,10 @@ export default function AppNav({ needsOnboarding }: AppNavProps) {
                   active ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                 )}
               >
-                <Icon className="w-4.5 h-4.5" strokeWidth={active ? 2.2 : 1.8} />
+                {spriteName
+                  ? <Icon name={spriteName} size={18} />
+                  : LucideIcon && <LucideIcon className="w-4.5 h-4.5" strokeWidth={active ? 2.2 : 1.8} />
+                }
                 {label}
                 {href === '/profile' && needsOnboarding && (
                   <span className="ml-auto w-2 h-2 bg-destructive rounded-full" />

@@ -3,9 +3,9 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Trash2, Pencil } from 'lucide-react'
 import { toast } from 'sonner'
 import CategoryIcon from './CategoryIcon'
+import { Icon } from '@/components/ui/icon'
 import { formatCurrency, categoryLabels } from '@/lib/formatting'
 import type { ExpenseWithSplits, TripParticipant } from '@/types/app'
 import { cn } from '@/lib/utils'
@@ -82,7 +82,7 @@ export default function ExpenseCard({ expense, myParticipantId, tripId, canEdit,
         {canEdit && (
           <button onClick={handleDelete} disabled={deleting}
             className="p-1.5 text-green-700/30 hover:text-destructive rounded-lg hover:bg-destructive/8 transition-colors">
-            <Trash2 className="w-4 h-4" strokeWidth={1.8} />
+            <Icon name="delete" size={16} />
           </button>
         )}
       </div>
@@ -120,14 +120,14 @@ export default function ExpenseCard({ expense, myParticipantId, tripId, canEdit,
             onClick={e => e.stopPropagation()}
             className="p-1.5 text-muted-foreground/30 hover:text-primary rounded-lg hover:bg-primary/8 transition-colors"
           >
-            <Pencil className="w-4 h-4" strokeWidth={1.8} />
+            <Icon name="edit" size={16} />
           </Link>
           <button
             onClick={handleDelete}
             disabled={deleting}
             className="p-1.5 text-muted-foreground/30 hover:text-destructive rounded-lg hover:bg-destructive/8 transition-colors"
           >
-            <Trash2 className="w-4 h-4" strokeWidth={1.8} />
+            <Icon name="delete" size={16} />
           </button>
         </div>
       )}

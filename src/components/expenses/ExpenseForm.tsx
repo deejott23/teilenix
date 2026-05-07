@@ -12,6 +12,7 @@ import { ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import SplitOverrideEditor from './SplitOverrideEditor'
+import CategoryIcon from './CategoryIcon'
 import { categoryLabels, categoryEmoji, parseToCents, formatCurrency, todayISO } from '@/lib/formatting'
 import type { TripParticipant, ExpenseSplitInput, ExpenseFormData } from '@/types/app'
 import type { ExpenseCategory } from '@/types/app'
@@ -431,15 +432,17 @@ export default function ExpenseForm({
           <div className="flex flex-wrap gap-2">
             {standardVisible.map(cat => (
               <button key={cat} type="button" onClick={() => pickCategory(cat)} title={getStandardLabel(cat)}
-                className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0 transition-[colors,transform] duration-100 active:scale-90 ${
-                  selectedCategory === cat ? 'bg-primary text-primary-foreground shadow-sm scale-105' : 'bg-muted text-foreground hover:bg-muted/80'
+                className={`relative flex-shrink-0 rounded-xl transition-[transform,box-shadow] duration-100 active:scale-90 ${
+                  selectedCategory === cat ? 'scale-105 ring-2 ring-primary ring-offset-1' : 'hover:scale-105'
                 }`}
-              >{getStandardEmoji(cat)}</button>
+              >
+                <CategoryIcon category={cat} size="sm" />
+              </button>
             ))}
             {enabledCustom.map(cat => (
               <button key={cat.key} type="button" onClick={() => pickCategory(cat.key)} title={cat.label}
-                className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0 transition-[colors,transform] duration-100 active:scale-90 ${
-                  selectedCategory === cat.key ? 'bg-primary text-primary-foreground shadow-sm scale-105' : 'bg-muted text-foreground hover:bg-muted/80'
+                className={`w-8 h-8 rounded-xl flex items-center justify-center text-base flex-shrink-0 bg-muted transition-[colors,transform] duration-100 active:scale-90 ${
+                  selectedCategory === cat.key ? 'ring-2 ring-primary ring-offset-1 scale-105' : 'hover:bg-muted/80'
                 }`}
               >{cat.emoji}</button>
             ))}

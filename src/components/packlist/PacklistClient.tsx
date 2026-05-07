@@ -6,7 +6,8 @@ import { usePacklist } from '@/hooks/usePacklist'
 import { queryKeys } from '@/lib/query/queryKeys'
 import TripSubNav from '@/components/layout/TripSubNav'
 import { toast } from 'sonner'
-import { Plus, Minus, Trash2, Pencil, Check, X, ChevronDown, Users } from 'lucide-react'
+import { Plus, Minus, Check, X, ChevronDown, Users } from 'lucide-react'
+import { Icon } from '@/components/ui/icon'
 import { cn } from '@/lib/utils'
 import type { PacklistItem, PacklistItemType, PacklistClaim, TripParticipant } from '@/types/app'
 
@@ -181,11 +182,11 @@ function BringingRow({
         <div className="flex items-center gap-0.5 flex-shrink-0">
           <button type="button" onClick={() => setEditing(true)}
             className="p-1.5 text-muted-foreground/40 hover:text-primary rounded-lg transition-colors">
-            <Pencil className="w-3 h-3" strokeWidth={2} />
+            <Icon name="edit" size={14} />
           </button>
           <button type="button" onClick={handleDelete}
             className="p-1.5 text-muted-foreground/40 hover:text-destructive rounded-lg transition-colors">
-            <Trash2 className="w-3 h-3" strokeWidth={2} />
+            <Icon name="delete" size={14} />
           </button>
         </div>
       )}

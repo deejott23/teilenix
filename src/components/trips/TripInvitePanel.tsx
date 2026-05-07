@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { Copy, Check, Mail, MessageCircle } from 'lucide-react'
+import { Copy, Check, MessageCircle } from 'lucide-react'
+import { Icon } from '@/components/ui/icon'
 import { toast } from 'sonner'
 
 interface TripInvitePanelProps {
@@ -54,7 +55,7 @@ export default function TripInvitePanel({ inviteCode, tripName }: TripInvitePane
           href={`mailto:?subject=${emailSubject}&body=${emailBody}`}
           className="flex items-center justify-center gap-2 bg-sky-50 hover:bg-sky-100 rounded-2xl px-3 py-2.5 text-sm font-semibold text-sky-700 transition-colors"
         >
-          <Mail className="w-4 h-4" strokeWidth={2} />
+          <Icon name="share" size={16} />
           Per E-Mail
         </a>
         <a

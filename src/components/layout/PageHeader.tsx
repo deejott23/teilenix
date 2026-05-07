@@ -1,6 +1,6 @@
-import { ChevronLeft } from 'lucide-react'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
+import { Icon } from '@/components/ui/icon'
 
 interface PageHeaderProps {
   title: string
@@ -18,7 +18,7 @@ export default function PageHeader({ title, subtitle, backHref, action, classNam
           href={backHref}
           className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-xl bg-white card-shadow text-muted-foreground hover:text-foreground transition-colors"
         >
-          <ChevronLeft className="w-5 h-5" strokeWidth={2} />
+          <Icon name="back" size={20} />
         </Link>
       )}
       <div className="flex-1 min-w-0">

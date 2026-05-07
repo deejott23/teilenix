@@ -1,5 +1,5 @@
-import { ArrowRight } from 'lucide-react'
 import { formatCurrency } from '@/lib/formatting'
+import { Icon } from '@/components/ui/icon'
 import type { SettlementTransfer } from '@/types/app'
 
 interface SettlementTransferListProps {
@@ -42,7 +42,7 @@ export default function SettlementTransferList({ transfers }: SettlementTransfer
                   {formatCurrency(transfer.amountCents)}
                 </p>
               </div>
-              <ArrowRight className="w-5 h-5 text-muted-foreground/40" />
+              <Icon name="settle" size={20} className="text-muted-foreground/40" />
             </div>
 
             {/* To participant */}

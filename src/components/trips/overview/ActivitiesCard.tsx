@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { ChevronRight } from 'lucide-react'
+import { Icon } from '@/components/ui/icon'
 import { formatDate } from '@/lib/formatting'
 import { activityTypeEmoji } from '@/lib/activities'
 import type { ActivityType } from '@/types/app'
@@ -52,7 +52,7 @@ export default async function ActivitiesCard({ tripId }: { tripId: string }) {
           ✈️ Ausflüge · {allActivities.length} gesamt
         </h2>
         <Link href={`/trips/${tripId}/planen`} className="text-[12px] font-bold text-primary flex items-center gap-0.5">
-          Alle <ChevronRight className="w-3 h-3" strokeWidth={2.5} />
+          Alle <Icon name="chevron-right" size={12} />
         </Link>
       </div>
 
@@ -89,7 +89,7 @@ export default async function ActivitiesCard({ tripId }: { tripId: string }) {
             <span className="text-[12px] font-bold text-amber-700 flex-1">
               💡 {ideaCount} {ideaCount === 1 ? 'Idee wartet' : 'Ideen warten'} auf deine Stimme
             </span>
-            <ChevronRight className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" strokeWidth={2.5} />
+            <Icon name="chevron-right" size={14} className="text-amber-500 flex-shrink-0" />
           </Link>
         ) : (
           <div className="mx-4 mb-3.5 mt-2 px-3 py-2.5 bg-green-50 rounded-[12px] border border-green-100 flex items-center gap-2">
