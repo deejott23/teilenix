@@ -40,6 +40,18 @@ export default async function TripOverviewPage({
 
   const myParticipantId = meRaw?.id ?? ''
 
+  const isActive = trip.status === 'active'
+  const showFacts = (() => {
+    if (!isActive) return true
+    const startDate = (trip as unknown as { start_date: string | null }).start_date
+    if (!startDate) return false
+    const start = new Date(startDate + 'T00:00:00')
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const daysSinceStart = Math.floor((today.getTime() - start.getTime()) / 86_400_000)
+    return daysSinceStart >= 2
+  })()
+
   return (
     <div className="space-y-3">
       <RealtimeQueryRefresher tripId={tripId} tables={['expenses', 'packlist_items', 'activities', 'shopping_items']} />
@@ -70,10 +82,12 @@ export default async function TripOverviewPage({
         <PacklistShoppingCards tripId={tripId} myParticipantId={myParticipantId} />
       </Suspense>
 
-      {/* ReiseBlatt Facts Card */}
-      <Suspense fallback={<FactsCardSkeleton />}>
-        <FactsCard tripId={tripId} />
-      </Suspense>
+      {/* ReiseBlatt Facts Card — erst ab Tag 3 einer aktiven Reise */}
+      {showFacts && (
+        <Suspense fallback={<FactsCardSkeleton />}>
+          <FactsCard tripId={tripId} />
+        </Suspense>
+      )}
 
       {/* Aktivitäts-Stream — streamt zuletzt */}
       <Suspense fallback={<ActivityStreamSkeleton />}>
