@@ -67,6 +67,11 @@ export default async function TripOverviewPage({
         <BalanceCard tripId={tripId} myParticipantId={myParticipantId} />
       </Suspense>
 
+      {/* Packliste + Einkauf — direkt unter der Ausgabenübersicht */}
+      <Suspense fallback={<PacklistShoppingCardsSkeleton />}>
+        <PacklistShoppingCards tripId={tripId} myParticipantId={myParticipantId} />
+      </Suspense>
+
       {/* Ausflüge Card — streamt nach Activities-Query */}
       <Suspense fallback={<ActivitiesCardSkeleton />}>
         <ActivitiesCard tripId={tripId} />
@@ -75,11 +80,6 @@ export default async function TripOverviewPage({
       {/* Essen Card — streamt nach Meal-Queries */}
       <Suspense fallback={<EssenCardSkeleton />}>
         <EssenCard tripId={tripId} />
-      </Suspense>
-
-      {/* Packliste + Einkauf — streamt parallel */}
-      <Suspense fallback={<PacklistShoppingCardsSkeleton />}>
-        <PacklistShoppingCards tripId={tripId} myParticipantId={myParticipantId} />
       </Suspense>
 
       {/* ReiseBlatt Facts Card — erst ab Tag 3 einer aktiven Reise */}

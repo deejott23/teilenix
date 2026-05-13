@@ -5,6 +5,7 @@ import { formatCurrency } from '@/lib/formatting'
 import { cn } from '@/lib/utils'
 import { activityTypeEmoji } from '@/lib/activities'
 import type { ActivityType } from '@/types/app'
+import ActivityStreamCollapsible from './ActivityStreamCollapsible'
 
 type DotColor = 'green' | 'teal' | 'blue' | 'amber' | 'purple'
 type ActivityEvent = {
@@ -96,44 +97,39 @@ export default async function ActivityStream({ tripId }: { tripId: string }) {
     })
   }
 
-  const sortedEvents = events.sort((a, b) => b.timestamp.localeCompare(a.timestamp)).slice(0, 8)
+  const sortedEvents = events.sort((a, b) => b.timestamp.localeCompare(a.timestamp)).slice(0, 5)
 
   return (
-    <div className="bg-card rounded-[18px] card-shadow border border-border overflow-hidden">
-      <div className="flex items-center justify-between px-4 pt-4 pb-2">
-        <h2 className="text-[14px] font-bold text-foreground">Letzte Aktivität</h2>
-      </div>
+    <ActivityStreamCollapsible count={sortedEvents.length}>
       {sortedEvents.length === 0 ? (
-        <div className="px-4 pb-4 text-[13px] text-muted-foreground">Noch keine Aktivitäten.</div>
+        <div className="px-4 py-4 text-[13px] text-muted-foreground">Noch keine Aktivitäten.</div>
       ) : (
-        <div className="divide-y divide-border">
-          {sortedEvents.map(event => (
-            <Link key={event.id} href={event.href}
-              className="flex items-center gap-2.5 px-4 py-2.5 hover:bg-muted/40 active:bg-muted transition-colors"
-            >
-              <span className={cn('w-2 h-2 rounded-full flex-shrink-0', dotColors[event.dotColor])} />
-              <span className={cn('w-8 h-8 rounded-[10px] flex items-center justify-center text-[15px] flex-shrink-0', iconBgs[event.dotColor])}>
-                {event.emoji}
-              </span>
-              <div className="flex-1 min-w-0">
-                <div className="text-[13px] font-semibold text-foreground truncate">{event.title}</div>
-                <div className="text-[11px] text-muted-foreground mt-0.5">
-                  {event.subtitle} · {formatRelativeTime(event.timestamp)}
-                </div>
+        sortedEvents.map(event => (
+          <Link key={event.id} href={event.href}
+            className="flex items-center gap-2.5 px-4 py-2.5 hover:bg-muted/40 active:bg-muted transition-colors"
+          >
+            <span className={cn('w-2 h-2 rounded-full flex-shrink-0', dotColors[event.dotColor])} />
+            <span className={cn('w-8 h-8 rounded-[10px] flex items-center justify-center text-[15px] flex-shrink-0', iconBgs[event.dotColor])}>
+              {event.emoji}
+            </span>
+            <div className="flex-1 min-w-0">
+              <div className="text-[13px] font-semibold text-foreground truncate">{event.title}</div>
+              <div className="text-[11px] text-muted-foreground mt-0.5">
+                {event.subtitle} · {formatRelativeTime(event.timestamp)}
               </div>
-              <div className={cn('text-[13px] font-bold flex-shrink-0',
-                event.rightVariant === 'amount' ? 'text-foreground' :
-                event.rightVariant === 'checked' ? 'text-green-600' : 'text-muted-foreground'
-              )}>
-                {event.rightVariant === 'arrow'
-                  ? <Icon name="chevron-right" size={16} />
-                  : event.rightText}
-              </div>
-            </Link>
-          ))}
-        </div>
+            </div>
+            <div className={cn('text-[13px] font-bold flex-shrink-0',
+              event.rightVariant === 'amount' ? 'text-foreground' :
+              event.rightVariant === 'checked' ? 'text-green-600' : 'text-muted-foreground'
+            )}>
+              {event.rightVariant === 'arrow'
+                ? <Icon name="chevron-right" size={16} />
+                : event.rightText}
+            </div>
+          </Link>
+        ))
       )}
-    </div>
+    </ActivityStreamCollapsible>
   )
 }
 

@@ -4,8 +4,9 @@ import { getUser } from '@/lib/supabase/user'
 import TripBottomNav from '@/components/layout/TripBottomNav'
 import AddExpenseFab from '@/components/trips/AddExpenseFab'
 import TripEmojiPicker from '@/components/trips/TripEmojiPicker'
-import { ChevronLeft, Settings } from 'lucide-react'
+import { Settings } from 'lucide-react'
 import Link from 'next/link'
+import TripBackButton from '@/components/layout/TripBackButton'
 import Image from 'next/image'
 import { pickFallbackEmoji } from '@/lib/tripEmojis'
 import { formatDate } from '@/lib/formatting'
@@ -87,14 +88,8 @@ export default async function TripLayout({
         )}
 
         <div className="flex items-center gap-2.5 relative">
-          {/* Back to dashboard */}
-          <Link
-            href="/dashboard"
-            className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-xl transition-colors"
-            style={{ background: 'rgba(255,255,255,0.15)', color: '#fff' }}
-          >
-            <ChevronLeft className="w-5 h-5" strokeWidth={2} />
-          </Link>
+          {/* Back button — Dashboard → /trips, sonst → Trip-Dashboard */}
+          <TripBackButton tripId={tripId} />
 
           {/* Emoji badge */}
           <TripEmojiPicker
