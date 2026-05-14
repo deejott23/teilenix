@@ -22,7 +22,7 @@ export default function MagicLinkForm() {
     })
     setLoading(false)
     if (error) {
-      setError('E-Mail konnte nicht gesendet werden. Bitte versuche es erneut.')
+      setError(error.message || 'E-Mail konnte nicht gesendet werden. Bitte versuche es erneut.')
     } else {
       setSent(true)
     }
