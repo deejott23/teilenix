@@ -25,7 +25,8 @@ export async function GET(request: NextRequest) {
             (user.user_metadata?.name as string | undefined) ??
             user.email?.split('@')[0] ??
             ''
-          await supabase.rpc('auto_setup_user', {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          await (supabase.rpc as any)('auto_setup_user', {
             p_user_id: user.id,
             p_email: user.email ?? '',
             p_full_name: displayName,
