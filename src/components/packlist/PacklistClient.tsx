@@ -171,11 +171,6 @@ function BringingRow({
             {item.title}
           </span>
         )}
-        {!editing && (
-          <span className="text-[10px] text-muted-foreground/60 ml-0 block leading-none mt-0.5">
-            {item.creator_name}
-          </span>
-        )}
       </div>
 
       {isMyItem && isActive && !editing && (
@@ -354,9 +349,6 @@ function GroupNeedRow({
         {/* Title */}
         <div className="flex-1 min-w-0">
           <span className="text-[13px] font-semibold text-foreground">{item.title}</span>
-          <span className="text-[10px] text-muted-foreground/60 block leading-none mt-0.5">
-            {item.creator_name}
-          </span>
         </div>
 
         {/* Progress indicator */}
