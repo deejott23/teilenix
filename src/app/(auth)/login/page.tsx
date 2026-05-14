@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import GoogleSignInButton from '@/components/auth/GoogleSignInButton'
+import MagicLinkForm from '@/components/auth/MagicLinkForm'
 import { Icon } from '@/components/ui/icon'
 
 // ── Typ-Alias für Sprite-Icon-Namen ──────────────────────────────────────────
@@ -110,8 +111,14 @@ export default async function LoginPage() {
             share|pa ist die Kommandozentrale für entspannte Gruppenreisen.
           </p>
 
-          <div className="flex flex-col items-center md:items-start gap-3">
+          <div className="flex flex-col items-center md:items-start gap-3 w-full max-w-sm mx-auto md:mx-0">
             <GoogleSignInButton />
+            <div className="flex items-center gap-3 w-full">
+              <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.1)' }} />
+              <span className="text-[11px] font-medium" style={{ color: 'rgba(255,255,255,0.25)' }}>oder per E-Mail</span>
+              <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.1)' }} />
+            </div>
+            <MagicLinkForm />
             <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.22)' }}>
               Kostenlos · Keine Kreditkarte · Sofort loslegen
             </p>
