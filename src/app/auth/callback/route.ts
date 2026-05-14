@@ -25,11 +25,10 @@ export async function GET(request: NextRequest) {
             (user.user_metadata?.name as string | undefined) ??
             user.email?.split('@')[0] ??
             ''
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          await (supabase.rpc as any)('auto_setup_user', {
-            p_user_id: user.id,
+          await supabase.rpc('auto_setup_user', {
+            p_display_name: displayName,
             p_email: user.email ?? '',
-            p_full_name: displayName,
+            p_avatar_url: (user.user_metadata?.avatar_url as string | undefined) ?? '',
           })
         }
       }
