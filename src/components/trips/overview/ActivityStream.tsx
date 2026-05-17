@@ -36,25 +36,30 @@ const iconBgs: Record<DotColor, string> = {
 export default async function ActivityStream({ tripId }: { tripId: string }) {
   const supabase = await createClient()
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const db = supabase as any
+
   const [
     { data: participantsRaw },
     { data: expensesRaw },
     { data: activitiesRaw },
     { data: packlistRaw },
     { data: shoppingRaw },
+    { data: commentsRaw },
   ] = await Promise.all([
     supabase.from('trip_participants').select('id, name').eq('trip_id', tripId),
     supabase.from('expenses').select('id, title, amount_cents, paid_by_participant_id, created_at')
       .eq('trip_id', tripId).order('created_at', { ascending: false }).limit(5),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (supabase as any).from('trip_activities')
+    db.from('trip_activities')
       .select('id, title, activity_type, cover_emoji, created_by_participant_id, created_at')
       .eq('trip_id', tripId).order('created_at', { ascending: false }).limit(3),
     supabase.from('packlist_items').select('id, title, item_type, created_by_participant_id, created_at')
       .eq('trip_id', tripId).order('created_at', { ascending: false }).limit(3),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (supabase as any).from('shopping_items').select('id, title, is_bought, created_at')
+    db.from('shopping_items').select('id, title, is_bought, created_at')
       .eq('trip_id', tripId).order('created_at', { ascending: false }).limit(3),
+    db.from('trip_activity_comments')
+      .select('id, content, participant_id, created_at, activity_id, trip_activities(title, activity_type, cover_emoji)')
+      .eq('trip_id', tripId).order('created_at', { ascending: false }).limit(5),
   ])
 
   const participantMap = new Map(((participantsRaw ?? []) as { id: string; name: string }[]).map(p => [p.id, p.name]))
@@ -96,8 +101,22 @@ export default async function ActivityStream({ tripId }: { tripId: string }) {
       href: `/trips/${tripId}/einkauf`, timestamp: s.created_at, dotColor: 'amber',
     })
   }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  for (const c of (commentsRaw ?? []) as any[]) {
+    const act = c.trip_activities
+    const actEmoji = act?.cover_emoji ?? activityTypeEmoji[act?.activity_type as ActivityType] ?? '✈️'
+    const preview = (c.content as string).length > 45 ? c.content.slice(0, 45) + '…' : c.content
+    events.push({
+      id: `cmt-${c.id}`, emoji: actEmoji,
+      title: act?.title ?? 'Ausflug',
+      subtitle: `${participantMap.get(c.participant_id) ?? '?'}: „${preview}"`,
+      rightText: null, rightVariant: 'arrow',
+      href: `/trips/${tripId}/planen/${c.activity_id}`,
+      timestamp: c.created_at, dotColor: 'purple',
+    })
+  }
 
-  const sortedEvents = events.sort((a, b) => b.timestamp.localeCompare(a.timestamp)).slice(0, 5)
+  const sortedEvents = events.sort((a, b) => b.timestamp.localeCompare(a.timestamp)).slice(0, 8)
 
   return (
     <ActivityStreamCollapsible count={sortedEvents.length}>
