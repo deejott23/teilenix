@@ -4,6 +4,8 @@ import PacklistClient from '@/components/packlist/PacklistClient'
 import RealtimeQueryRefresher from '@/components/realtime/RealtimeQueryRefresher'
 import { HydrationBoundary, QueryClient, dehydrate } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/query/queryKeys'
+import { getUser } from '@/lib/supabase/user'
+import { getTrip } from '@/lib/supabase/trips'
 import type { PacklistItem, TripParticipant } from '@/types/app'
 
 export default async function PacklistPage({
@@ -13,34 +15,35 @@ export default async function PacklistPage({
 }) {
   const { tripId } = await params
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getUser()
   if (!user) redirect('/login')
 
-  const [{ data: trip }, { data: participantsRaw }, { data: itemsRaw }] = await Promise.all([
-    supabase.from('trips').select('status').eq('id', tripId).single(),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const db = supabase as any
+
+  // Single round-trip: items with embedded checks + claims (no waterfall)
+  const [trip, { data: participantsRaw }, { data: itemsRaw }] = await Promise.all([
+    getTrip(tripId),
     supabase.from('trip_participants').select('id, name, user_id, group_id, is_group').eq('trip_id', tripId),
-    supabase.from('packlist_items').select('*').eq('trip_id', tripId).order('created_at', { ascending: true }),
+    db.from('packlist_items')
+      .select('*, packlist_checks(item_id, participant_id), packlist_claims(id, item_id, participant_id, quantity_claimed)')
+      .eq('trip_id', tripId)
+      .order('created_at', { ascending: true }),
   ])
 
   const participants = (participantsRaw ?? []) as TripParticipant[]
   const participantMap = new Map(participants.map(p => [p.id, p.name]))
 
-  const itemIds = (itemsRaw ?? []).map((i: { id: string }) => i.id)
-
-  // Fetch checks + claims only if there are items
-  const [checksRaw, claimsRaw] = itemIds.length > 0
-    ? await Promise.all([
-        supabase.from('packlist_checks').select('item_id, participant_id').in('item_id', itemIds),
-        supabase.from('packlist_claims').select('id, item_id, participant_id, quantity_claimed').in('item_id', itemIds),
-      ])
-    : [{ data: [] }, { data: [] }]
-
   // My participant IDs for this trip (could be multiple if user has group assignments)
   const myParticipantIds = participants.filter(p => p.user_id === user.id).map(p => p.id)
+
+  // checks + claims are embedded in each item — no second round-trip
   const checkedItemIds = new Set(
-    (checksRaw.data ?? [])
-      .filter((c: { participant_id: string }) => myParticipantIds.includes(c.participant_id))
-      .map((c: { item_id: string }) => c.item_id)
+    (itemsRaw ?? []).flatMap((i: any) =>
+      (i.packlist_checks ?? [])
+        .filter((c: { participant_id: string }) => myParticipantIds.includes(c.participant_id))
+        .map((c: { item_id: string }) => c.item_id)
+    )
   )
 
   // My main participant (non-group)
@@ -49,7 +52,7 @@ export default async function PacklistPage({
   const myGroupId = me?.group_id ?? null
   const myGroupName = myGroupId ? (participantMap.get(myGroupId) ?? null) : null
 
-  const items: PacklistItem[] = (itemsRaw ?? []).map((raw: Record<string, unknown>) => ({
+  const items: PacklistItem[] = (itemsRaw ?? []).map((raw: any) => ({
     id:                        raw.id as string,
     trip_id:                   raw.trip_id as string,
     created_by_participant_id: raw.created_by_participant_id as string,
@@ -60,8 +63,7 @@ export default async function PacklistPage({
     created_at:                raw.created_at as string,
     checked:                   checkedItemIds.has(raw.id as string),
     creator_name:              participantMap.get(raw.created_by_participant_id as string) ?? 'Unbekannt',
-    claims: (claimsRaw.data ?? [])
-      .filter((c: Record<string, unknown>) => c.item_id === raw.id)
+    claims: (raw.packlist_claims ?? [])
       .map((c: Record<string, unknown>) => ({
         id:               c.id as string,
         item_id:          c.item_id as string,

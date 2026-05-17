@@ -6,6 +6,8 @@ import RealtimeQueryRefresher from '@/components/realtime/RealtimeQueryRefresher
 import RealtimePageRefresher from '@/components/realtime/RealtimePageRefresher'
 import UnifiedKalenderView from '@/components/kalender/UnifiedKalenderView'
 import { queryKeys } from '@/lib/query/queryKeys'
+import { getUser } from '@/lib/supabase/user'
+import { getTrip } from '@/lib/supabase/trips'
 import type { ActivityWithVotes, MealIdea, MealSlot, TripParticipant } from '@/types/app'
 
 const PLANEN_TABS = [
@@ -17,27 +19,28 @@ const PLANEN_TABS = [
 export default async function KalenderPage({ params }: { params: Promise<{ tripId: string }> }) {
   const { tripId } = await params
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getUser()
   if (!user) redirect('/login')
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const db = supabase as any
 
+  // Single round-trip: activities + meals with embedded votes (no waterfall)
   const [
-    { data: trip },
+    trip,
     { data: participantsRaw },
     { data: activitiesRaw },
     { data: ideasRaw },
     { data: slotsRaw },
   ] = await Promise.all([
-    supabase.from('trips').select('status, start_date, end_date').eq('id', tripId).single(),
+    getTrip(tripId),
     supabase.from('trip_participants').select('id, name, user_id, is_group, shares, group_id').eq('trip_id', tripId),
     db.from('trip_activities')
-      .select('id, trip_id, created_by_participant_id, title, activity_type, description, link, activity_date, departure_time, duration_label, meeting_point, cost_per_person_cents, status, cover_emoji, created_at, updated_at')
+      .select('id, trip_id, created_by_participant_id, title, activity_type, description, link, activity_date, departure_time, duration_label, meeting_point, cost_per_person_cents, status, cover_emoji, created_at, updated_at, trip_activity_votes(id, activity_id, participant_id, vote, created_at)')
       .eq('trip_id', tripId)
       .order('activity_date', { ascending: true, nullsFirst: false })
       .order('departure_time', { ascending: true, nullsFirst: false }),
-    db.from('trip_meal_ideas').select('*').eq('trip_id', tripId).order('created_at', { ascending: false }),
+    db.from('trip_meal_ideas').select('*, trip_meal_votes(*)').eq('trip_id', tripId).order('created_at', { ascending: false }),
     db.from('trip_meal_slots').select('*').eq('trip_id', tripId).order('slot_date', { ascending: true }),
   ])
 
@@ -46,35 +49,25 @@ export default async function KalenderPage({ params }: { params: Promise<{ tripI
   const me = participants.find(p => p.user_id === user.id && !p.is_group)
   const myParticipantId = me?.id ?? ''
 
-  // Build activities with votes
-  const activityIds = (activitiesRaw ?? []).map((a: { id: string }) => a.id)
-  const { data: votesRaw } = activityIds.length > 0
-    ? await db.from('trip_activity_votes').select('id, activity_id, participant_id, vote, created_at').in('activity_id', activityIds)
-    : { data: [] }
-
+  // Activities: votes embedded, no second round-trip
   const activities: ActivityWithVotes[] = (activitiesRaw ?? []).map((raw: Record<string, unknown>) => ({
     ...raw,
-    votes: (votesRaw ?? []).filter((v: { activity_id: string }) => v.activity_id === raw.id),
+    votes: (raw.trip_activity_votes as Array<{ id: string; activity_id: string; participant_id: string; vote: string; created_at: string }>) ?? [],
     creator_name: participantMap.get(raw.created_by_participant_id as string) ?? 'Unbekannt',
     comment_count: 0,
   })) as ActivityWithVotes[]
 
-  // Build meals
-  const ideaIds = (ideasRaw ?? []).map((i: { id: string }) => i.id)
-  const { data: mealVotesRaw } = ideaIds.length > 0
-    ? await db.from('trip_meal_votes').select('*').in('meal_idea_id', ideaIds)
-    : { data: [] }
-
+  // Meals: votes embedded, no second round-trip
   const ideas: MealIdea[] = (ideasRaw ?? []).map((raw: Record<string, unknown>) => {
-    const ideaVotes = (mealVotesRaw ?? []).filter((v: { meal_idea_id: string }) => v.meal_idea_id === raw.id)
+    const ideaVotes = (raw.trip_meal_votes as Array<{ participant_id: string; vote: string; meal_idea_id: string }>) ?? []
     return {
       ...raw,
       creator_name: participantMap.get(raw.created_by_participant_id as string) ?? 'Unbekannt',
-      vote_count: ideaVotes.filter((v: { vote: string }) => v.vote === 'yes').length,
-      maybe_count: ideaVotes.filter((v: { vote: string }) => v.vote === 'maybe').length,
-      no_count: ideaVotes.filter((v: { vote: string }) => v.vote === 'no').length,
+      vote_count: ideaVotes.filter(v => v.vote === 'yes').length,
+      maybe_count: ideaVotes.filter(v => v.vote === 'maybe').length,
+      no_count: ideaVotes.filter(v => v.vote === 'no').length,
       my_vote_value: myParticipantId
-        ? (ideaVotes.find((v: { participant_id: string }) => v.participant_id === myParticipantId)?.vote ?? null)
+        ? (ideaVotes.find(v => v.participant_id === myParticipantId)?.vote ?? null)
         : null,
     } as MealIdea
   })

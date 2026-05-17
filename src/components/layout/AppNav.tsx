@@ -2,9 +2,11 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { HelpCircle } from 'lucide-react'
+import { HelpCircle, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Icon } from '@/components/ui/icon'
+import { APP_VERSION, CHANGELOG } from '@/lib/version'
+import { useState } from 'react'
 
 interface AppNavProps {
   userId: string
@@ -19,6 +21,7 @@ const navItems = [
 
 export default function AppNav({ needsOnboarding }: AppNavProps) {
   const pathname = usePathname()
+  const [showChangelog, setShowChangelog] = useState(false)
 
   // Trip pages have their own bottom nav
   const isOnTripPage = pathname.startsWith('/trips/')
@@ -93,9 +96,55 @@ export default function AppNav({ needsOnboarding }: AppNavProps) {
         </nav>
 
         <div className="px-5 py-4 border-t border-border">
-          <p className="text-[11px] text-muted-foreground/40 font-medium">share|pa v1.0</p>
+          <button
+            type="button"
+            onClick={() => setShowChangelog(true)}
+            className="text-[11px] text-muted-foreground/40 font-medium hover:text-muted-foreground transition-colors"
+          >
+            share|pa v{APP_VERSION}
+          </button>
         </div>
       </aside>
+
+      {/* ── Changelog dialog ── */}
+      {showChangelog && (
+        <div className="fixed inset-0 z-[200] flex items-end md:items-center justify-center">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowChangelog(false)} />
+          <div className="relative bg-card rounded-t-[24px] md:rounded-[20px] w-full max-w-sm mx-auto shadow-2xl max-h-[80vh] overflow-y-auto">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-border sticky top-0 bg-card">
+              <div>
+                <p className="text-[15px] font-bold text-foreground">Release Notes</p>
+                <p className="text-[12px] text-muted-foreground">share|pa v{APP_VERSION}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowChangelog(false)}
+                className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <X className="w-4 h-4" strokeWidth={2} />
+              </button>
+            </div>
+            <div className="px-5 py-4 space-y-5">
+              {CHANGELOG.map(entry => (
+                <div key={entry.version}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-[13px] font-bold text-foreground">v{entry.version}</span>
+                    <span className="text-[11px] text-muted-foreground">{entry.date}</span>
+                  </div>
+                  <ul className="space-y-1">
+                    {entry.changes.map((c, i) => (
+                      <li key={i} className="flex items-start gap-2 text-[12px] text-muted-foreground">
+                        <span className="text-primary font-bold mt-0.5">·</span>
+                        <span>{c}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }

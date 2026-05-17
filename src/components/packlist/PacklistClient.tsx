@@ -559,6 +559,22 @@ export default function PacklistClient({
 
   const myParticipantName = participants.find(p => p.id === myParticipantId)?.name ?? ''
 
+  const handleClaimedCheck = useCallback(async (itemId: string, currentlyChecked: boolean) => {
+    const key = queryKeys.packlist.byTrip(tripId)
+    const prev = queryClient.getQueryData<PacklistItem[]>(key)
+    queryClient.setQueryData<PacklistItem[]>(key, current =>
+      current?.map(i => i.id === itemId ? { ...i, checked: !currentlyChecked } : i) ?? []
+    )
+    try {
+      await fetch(`/api/trips/${tripId}/packlist/${itemId}/check`, { method: 'POST' })
+    } catch {
+      if (prev) queryClient.setQueryData(key, prev)
+      toast.error('Fehler')
+    } finally {
+      queryClient.invalidateQueries({ queryKey: key })
+    }
+  }, [queryClient, tripId])
+
   const handleAdd = useCallback(async (item_type: PacklistItemType, title: string) => {
     const key = queryKeys.packlist.byTrip(tripId)
     const prev = queryClient.getQueryData<PacklistItem[]>(key)
@@ -730,16 +746,17 @@ export default function PacklistClient({
                 {myClaimedNeedItems.map(item => {
                   const myClaim = item.claims.find(c => c.participant_id === myParticipantId)!
                   return (
-                    <div key={item.id} className="flex items-center gap-2.5 px-3.5 py-2.5 border-b border-border last:border-0">
-                      <span className="text-[16px] flex-shrink-0">🛍️</span>
+                    <div key={item.id} className={cn('flex items-center gap-2.5 px-3.5 py-2.5 border-b border-border last:border-0', item.checked && 'opacity-60')}>
+                      <Checkbox checked={item.checked} onToggle={() => handleClaimedCheck(item.id, item.checked)} />
                       <div className="flex-1 min-w-0">
-                        <span className="text-[13px] font-semibold text-foreground">{item.title}</span>
+                        <span className={cn('text-[13px] font-semibold text-foreground', item.checked && 'line-through')}>
+                          {item.title}
+                        </span>
                         <span className="text-[10px] text-muted-foreground/60 block leading-none mt-0.5">
                           {myClaim.quantity_claimed > 1 ? `${myClaim.quantity_claimed}× zugesagt` : 'Zugesagt'}
                           {myGroupName ? ` · ${myGroupName}` : ''}
                         </span>
                       </div>
-                      <span className="text-[11px] font-bold text-green-700 flex-shrink-0">✓</span>
                     </div>
                   )
                 })}

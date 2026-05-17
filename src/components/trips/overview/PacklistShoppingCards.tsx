@@ -25,10 +25,10 @@ export default async function PacklistShoppingCards({
         .from('packlist_checks')
         .select('item_id')
         .in('item_id', packlistItemIds)
-        .eq('participant_id', myParticipantId)
     : { data: [] }
 
-  const checkedCount = (checksRaw ?? []).length
+  // Count distinct items that have been checked by any participant
+  const checkedCount = new Set((checksRaw ?? []).map((c: { item_id: string }) => c.item_id)).size
   const packlistPct = packlistTotal > 0 ? Math.round((checkedCount / packlistTotal) * 100) : 0
 
   const allShoppingItems = (shoppingAllRaw ?? []) as { id: string; is_bought: boolean }[]

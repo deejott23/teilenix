@@ -127,6 +127,38 @@ export function useUpdateShoppingQty(tripId: string) {
   })
 }
 
+// ── Mutation: Artikel bearbeiten (Titel + Kategorie) ─────────────────────────
+
+export function useUpdateShoppingItem(tripId: string) {
+  const queryClient = useQueryClient()
+  const key = queryKeys.shopping.byTrip(tripId)
+
+  return useMutation({
+    mutationFn: ({ id, title, category, quantity }: { id: string; title: string; category: string; quantity: number }) =>
+      fetch(`/api/trips/${tripId}/shopping/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, category, quantity }),
+      }).then(r => { if (!r.ok) throw new Error() }),
+
+    onMutate: async ({ id, title, category, quantity }) => {
+      await queryClient.cancelQueries({ queryKey: key })
+      const previous = queryClient.getQueryData<ShoppingItem[]>(key)
+      queryClient.setQueryData<ShoppingItem[]>(key, old =>
+        (old ?? []).map(i => i.id === id ? { ...i, title, category, quantity } : i)
+      )
+      return { previous }
+    },
+
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.previous) queryClient.setQueryData(key, ctx.previous)
+      toast.error('Fehler beim Speichern')
+    },
+
+    onSettled: () => queryClient.invalidateQueries({ queryKey: key }),
+  })
+}
+
 // ── Mutation: Artikel löschen ────────────────────────────────────────────────
 
 export function useDeleteShoppingItem(tripId: string) {

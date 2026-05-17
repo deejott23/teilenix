@@ -5,21 +5,24 @@ import TripSubNav from '@/components/layout/TripSubNav'
 import RealtimeQueryRefresher from '@/components/realtime/RealtimeQueryRefresher'
 import EssenClient from '@/components/essen/EssenClient'
 import { queryKeys } from '@/lib/query/queryKeys'
+import { getUser } from '@/lib/supabase/user'
+import { getTrip } from '@/lib/supabase/trips'
 import type { MealIdea, MealSlot, TripParticipant } from '@/types/app'
 
 export default async function EssenPage({ params }: { params: Promise<{ tripId: string }> }) {
   const { tripId } = await params
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getUser()
   if (!user) redirect('/login')
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const db = supabase as any
 
-  const [{ data: trip }, { data: participantsRaw }, { data: ideasRaw }, { data: slotsRaw }] = await Promise.all([
-    supabase.from('trips').select('*').eq('id', tripId).single(),
-    supabase.from('trip_participants').select('*').eq('trip_id', tripId),
-    db.from('trip_meal_ideas').select('*').eq('trip_id', tripId).order('created_at', { ascending: false }),
+  // Single round-trip: ideas with embedded votes (no waterfall)
+  const [trip, { data: participantsRaw }, { data: ideasRaw }, { data: slotsRaw }] = await Promise.all([
+    getTrip(tripId),
+    supabase.from('trip_participants').select('id, name, user_id, is_group, shares, group_id').eq('trip_id', tripId),
+    db.from('trip_meal_ideas').select('*, trip_meal_votes(*)').eq('trip_id', tripId).order('created_at', { ascending: false }),
     db.from('trip_meal_slots').select('*').eq('trip_id', tripId).order('slot_date', { ascending: true }),
   ])
 
@@ -29,21 +32,17 @@ export default async function EssenPage({ params }: { params: Promise<{ tripId: 
   const me = participants.find(p => p.user_id === user.id && !p.is_group)
   const myParticipantId = me?.id ?? ''
 
-  const ideaIds = (ideasRaw ?? []).map((i: { id: string }) => i.id)
-  const { data: votesRaw } = ideaIds.length > 0
-    ? await db.from('trip_meal_votes').select('*').in('meal_idea_id', ideaIds)
-    : { data: [] }
-
+  // Votes embedded — no second round-trip
   const ideas: MealIdea[] = (ideasRaw ?? []).map((raw: Record<string, unknown>) => {
-    const ideaVotes = (votesRaw ?? []).filter((v: { meal_idea_id: string }) => v.meal_idea_id === raw.id)
+    const ideaVotes = (raw.trip_meal_votes as Array<{ participant_id: string; vote: string }>) ?? []
     return {
       ...raw,
       creator_name: participantMap.get(raw.created_by_participant_id as string) ?? 'Unbekannt',
-      vote_count: ideaVotes.filter((v: { vote: string }) => v.vote === 'yes').length,
-      maybe_count: ideaVotes.filter((v: { vote: string }) => v.vote === 'maybe').length,
-      no_count: ideaVotes.filter((v: { vote: string }) => v.vote === 'no').length,
+      vote_count: ideaVotes.filter(v => v.vote === 'yes').length,
+      maybe_count: ideaVotes.filter(v => v.vote === 'maybe').length,
+      no_count: ideaVotes.filter(v => v.vote === 'no').length,
       my_vote_value: myParticipantId
-        ? (ideaVotes.find((v: { participant_id: string }) => v.participant_id === myParticipantId)?.vote ?? null)
+        ? (ideaVotes.find(v => v.participant_id === myParticipantId)?.vote ?? null)
         : null,
     } as MealIdea
   })

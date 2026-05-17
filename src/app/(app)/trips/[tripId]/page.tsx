@@ -1,5 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
+import { getUser } from '@/lib/supabase/user'
+import { getTrip } from '@/lib/supabase/trips'
 import { Suspense } from 'react'
 import RealtimeQueryRefresher from '@/components/realtime/RealtimeQueryRefresher'
 import RealtimePageRefresher from '@/components/realtime/RealtimePageRefresher'
@@ -19,24 +21,16 @@ export default async function TripOverviewPage({
   const { tripId } = await params
 
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getUser()
   if (!user) redirect('/login')
 
-  // Nur das Trip-Objekt und den eigenen Teilnehmer sofort laden (kritischer Pfad)
-  const { data: trip } = await supabase
-    .from('trips')
-    .select('*')
-    .eq('id', tripId)
-    .maybeSingle()
+  // Trip + participant in parallel; trip is cached with layout via React cache()
+  const [trip, { data: meRaw }] = await Promise.all([
+    getTrip(tripId),
+    supabase.from('trip_participants').select('id').eq('trip_id', tripId).eq('user_id', user.id).maybeSingle(),
+  ])
 
   if (!trip) notFound()
-
-  const { data: meRaw } = await supabase
-    .from('trip_participants')
-    .select('id')
-    .eq('trip_id', tripId)
-    .eq('user_id', user.id)
-    .maybeSingle()
 
   const myParticipantId = meRaw?.id ?? ''
 

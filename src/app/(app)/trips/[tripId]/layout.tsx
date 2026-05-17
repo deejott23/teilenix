@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import { getUser } from '@/lib/supabase/user'
+import { getTrip } from '@/lib/supabase/trips'
 import TripBottomNav from '@/components/layout/TripBottomNav'
 import AddExpenseFab from '@/components/trips/AddExpenseFab'
 import TripEmojiPicker from '@/components/trips/TripEmojiPicker'
@@ -23,13 +24,9 @@ export default async function TripLayout({
   const user = await getUser()
   const supabase = await createClient()
 
-  // Fetch trip data and participant status in parallel
-  const [{ data: trip }, { data: myParticipant }] = await Promise.all([
-    supabase
-      .from('trips')
-      .select('id, status, name, cover_emoji, cover_image_url, start_date, end_date')
-      .eq('id', tripId)
-      .maybeSingle(),
+  // Fetch trip data and participant status in parallel (trip is cached with React cache())
+  const [trip, { data: myParticipant }] = await Promise.all([
+    getTrip(tripId),
     supabase
       .from('trip_participants')
       .select('id')

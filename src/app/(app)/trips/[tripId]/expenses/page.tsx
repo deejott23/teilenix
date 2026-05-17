@@ -1,5 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { getUser } from '@/lib/supabase/user'
+import { getTrip } from '@/lib/supabase/trips'
 import Link from 'next/link'
 import { Plus } from 'lucide-react'
 import ExpenseList from '@/components/expenses/ExpenseList'
@@ -16,16 +18,16 @@ export default async function ExpensesPage({
 }) {
   const { tripId } = await params
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getUser()
   if (!user) redirect('/login')
 
-  // Single round-trip: participants + expenses with splits joined
-  const [{ data: participantsRaw }, { data: expensesRaw }] = await Promise.all([
+  // Single round-trip: participants + expenses with splits joined + trip (cached)
+  const [{ data: participantsRaw }, { data: expensesRaw }, trip] = await Promise.all([
     supabase.from('trip_participants').select('id, name, shares, user_id, group_id, is_group').eq('trip_id', tripId),
     (supabase as any).from('expenses').select('*, expense_splits(*)').eq('trip_id', tripId)
       .order('expense_date', { ascending: false })
       .order('created_at', { ascending: false }),
-    supabase.from('trips').select('status').eq('id', tripId).single(),
+    getTrip(tripId),
   ])
 
   const participants = (participantsRaw ?? []) as TripParticipant[]
@@ -41,9 +43,6 @@ export default async function ExpensesPage({
       })),
       participant: participantMap.get(e.paid_by_participant_id) ?? { id: e.paid_by_participant_id, name: 'Unbekannt', shares: 1 },
     })) as unknown as ExpenseWithSplits[]
-
-  // Fetch trip status (needed for UI) — already in the Promise.all above via index 2
-  const { data: trip } = await supabase.from('trips').select('status').eq('id', tripId).maybeSingle()
 
   const queryClient = new QueryClient()
   queryClient.setQueryData(queryKeys.expenses.withSplits(tripId), expenses)

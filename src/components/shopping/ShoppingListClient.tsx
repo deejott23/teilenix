@@ -1,12 +1,13 @@
 'use client'
-import { useState, useRef } from 'react'
-import { Plus, Minus, Trash2, ChevronDown, ChevronUp, ShoppingCart } from 'lucide-react'
+import { useState, useRef, useCallback } from 'react'
+import { Plus, Minus, Trash2, ChevronDown, ChevronUp, ShoppingCart, Check, X, Pencil } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
   useShopping,
   useAddShoppingItem,
   useToggleShoppingBought,
   useUpdateShoppingQty,
+  useUpdateShoppingItem,
   useDeleteShoppingItem,
   useClearBoughtItems,
 } from '@/hooks/useShopping'
@@ -59,12 +60,12 @@ export default function ShoppingListClient({
   tripId: string
   initialItems: ShoppingItem[]
 }) {
-  // TanStack Query — liefert immer den aktuellen Stand (inkl. Realtime-Updates)
   const { data: items = initialItems } = useShopping(tripId, initialItems)
 
   const addItem       = useAddShoppingItem(tripId)
   const toggleBought  = useToggleShoppingBought(tripId)
   const updateQty     = useUpdateShoppingQty(tripId)
+  const updateItem    = useUpdateShoppingItem(tripId)
   const deleteItem    = useDeleteShoppingItem(tripId)
   const clearBought   = useClearBoughtItems(tripId)
 
@@ -73,10 +74,19 @@ export default function ShoppingListClient({
   const [showBought, setShowBought] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
+  // ── Edit state ──────────────────────────────────────
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editTitle, setEditTitle] = useState('')
+  const [editQty, setEditQty] = useState(1)
+  const editInputRef = useRef<HTMLInputElement>(null)
+
+  // ── Delete confirm state ────────────────────────────
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+  const confirmTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   const activeItems = items.filter(i => !i.is_bought)
   const boughtItems = items.filter(i => i.is_bought)
 
-  // Group active items by category
   const grouped = activeItems.reduce<Record<string, ShoppingItem[]>>((acc, item) => {
     const cat = item.category
     if (!acc[cat]) acc[cat] = []
@@ -84,7 +94,6 @@ export default function ShoppingListClient({
     return acc
   }, {})
 
-  // Sort categories by CATEGORIES order, then 'Sonstiges' last
   const sortedCategories = Object.keys(grouped).sort((a, b) => {
     const ai = CATEGORIES.findIndex(c => c.name === a)
     const bi = CATEGORIES.findIndex(c => c.name === b)
@@ -113,6 +122,176 @@ export default function ShoppingListClient({
     if (e.key === 'Enter') handleAdd()
   }
 
+  // ── Edit handlers ──────────────────────────────────
+  const startEdit = useCallback((item: ShoppingItem) => {
+    setEditingId(item.id)
+    setEditTitle(item.title)
+    setEditQty(item.quantity)
+    setConfirmDeleteId(null)
+    setTimeout(() => editInputRef.current?.focus(), 50)
+  }, [])
+
+  const cancelEdit = () => {
+    setEditingId(null)
+  }
+
+  const saveEdit = () => {
+    if (!editingId) return
+    const title = editTitle.trim()
+    if (!title) return
+    updateItem.mutate({ id: editingId, title, category: detectCategory(title), quantity: editQty })
+    setEditingId(null)
+  }
+
+  const handleEditKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') saveEdit()
+    if (e.key === 'Escape') cancelEdit()
+  }
+
+  // ── Delete handlers ─────────────────────────────────
+  const handleDeleteClick = (id: string) => {
+    if (confirmDeleteId === id) {
+      // Second click: confirm delete
+      deleteItem.mutate(id)
+      setConfirmDeleteId(null)
+      if (confirmTimerRef.current) clearTimeout(confirmTimerRef.current)
+    } else {
+      // First click: ask confirmation
+      setConfirmDeleteId(id)
+      setEditingId(null)
+      if (confirmTimerRef.current) clearTimeout(confirmTimerRef.current)
+      confirmTimerRef.current = setTimeout(() => setConfirmDeleteId(null), 3000)
+    }
+  }
+
+  // ── Item row renderer ───────────────────────────────
+  const renderActiveItem = (item: ShoppingItem) => {
+    const isEditing = editingId === item.id
+    const isPendingDelete = confirmDeleteId === item.id
+
+    if (isEditing) {
+      return (
+        <div key={item.id} className="px-4 py-3 space-y-2 bg-primary/5">
+          <input
+            ref={editInputRef}
+            type="text"
+            value={editTitle}
+            onChange={e => setEditTitle(e.target.value)}
+            onKeyDown={handleEditKeyDown}
+            maxLength={100}
+            className="w-full px-3 py-2 rounded-[10px] bg-card border border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary text-[14px] font-medium"
+          />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1">
+              <span className="text-[12px] text-muted-foreground font-semibold mr-1">Menge:</span>
+              <button
+                type="button"
+                onClick={() => setEditQty(q => Math.max(1, q - 1))}
+                className="w-6 h-6 rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:bg-muted/80 active:scale-90 transition-all"
+              >
+                <Minus className="w-2.5 h-2.5" strokeWidth={2.5} />
+              </button>
+              <span className="w-5 text-center text-[13px] font-bold text-foreground">{editQty}</span>
+              <button
+                type="button"
+                onClick={() => setEditQty(q => Math.min(99, q + 1))}
+                className="w-6 h-6 rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:bg-muted/80 active:scale-90 transition-all"
+              >
+                <Plus className="w-2.5 h-2.5" strokeWidth={2.5} />
+              </button>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={cancelEdit}
+                className="flex items-center gap-1 px-3 py-1.5 rounded-[10px] bg-muted text-muted-foreground text-[12px] font-semibold hover:bg-muted/80 active:scale-95 transition-all"
+              >
+                <X className="w-3 h-3" strokeWidth={2.5} />
+                Abbrechen
+              </button>
+              <button
+                type="button"
+                onClick={saveEdit}
+                disabled={!editTitle.trim()}
+                className="flex items-center gap-1 px-3 py-1.5 rounded-[10px] bg-primary text-white text-[12px] font-semibold active:scale-95 transition-all disabled:opacity-50"
+              >
+                <Check className="w-3 h-3" strokeWidth={2.5} />
+                Speichern
+              </button>
+            </div>
+          </div>
+        </div>
+      )
+    }
+
+    return (
+      <div key={item.id} className="flex items-center gap-3 px-4 py-3">
+        {/* Checkbox */}
+        <button
+          type="button"
+          onClick={() => toggleBought.mutate({ id: item.id, is_bought: !item.is_bought })}
+          className="w-5 h-5 rounded-[6px] border-2 border-border flex-shrink-0 flex items-center justify-center hover:border-primary transition-colors active:scale-90"
+        />
+        {/* Title — tap to edit */}
+        <button
+          type="button"
+          onClick={() => startEdit(item)}
+          className="flex-1 flex items-center gap-1.5 text-left group"
+        >
+          <span className="text-[14px] font-medium text-foreground leading-tight">
+            {item.title}
+          </span>
+          <Pencil className="w-3 h-3 text-muted-foreground/40 opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity flex-shrink-0" strokeWidth={2} />
+        </button>
+        {/* Qty stepper */}
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => updateQty.mutate({ id: item.id, quantity: Math.max(1, item.quantity - 1) })}
+            className="w-6 h-6 rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:bg-muted/80 active:scale-90 transition-all"
+          >
+            <Minus className="w-2.5 h-2.5" strokeWidth={2.5} />
+          </button>
+          <span className="w-5 text-center text-[13px] font-bold text-foreground">{item.quantity}</span>
+          <button
+            type="button"
+            onClick={() => updateQty.mutate({ id: item.id, quantity: Math.min(99, item.quantity + 1) })}
+            className="w-6 h-6 rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:bg-muted/80 active:scale-90 transition-all"
+          >
+            <Plus className="w-2.5 h-2.5" strokeWidth={2.5} />
+          </button>
+        </div>
+        {/* Delete (two-step confirm) */}
+        {isPendingDelete ? (
+          <div className="flex items-center gap-1 flex-shrink-0">
+            <button
+              type="button"
+              onClick={() => setConfirmDeleteId(null)}
+              className="h-7 px-2 rounded-lg bg-muted text-muted-foreground text-[11px] font-semibold active:scale-90 transition-all"
+            >
+              Nein
+            </button>
+            <button
+              type="button"
+              onClick={() => handleDeleteClick(item.id)}
+              className="h-7 px-2 rounded-lg bg-destructive text-white text-[11px] font-bold active:scale-90 transition-all"
+            >
+              Ja, löschen
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => handleDeleteClick(item.id)}
+            className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground/50 hover:text-destructive hover:bg-destructive/10 active:scale-90 transition-all flex-shrink-0"
+          >
+            <Trash2 className="w-3.5 h-3.5" strokeWidth={2} />
+          </button>
+        )}
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-4 pb-[90px]">
 
@@ -131,7 +310,6 @@ export default function ShoppingListClient({
           />
         </div>
         <div className="flex items-center justify-between">
-          {/* Qty stepper */}
           <div className="flex items-center gap-2">
             <span className="text-[12px] text-muted-foreground font-semibold">Menge:</span>
             <div className="flex items-center gap-1">
@@ -179,53 +357,12 @@ export default function ShoppingListClient({
       {/* ── Active items by category ── */}
       {sortedCategories.map(category => (
         <div key={category} className="space-y-1">
-          {/* Category header */}
           <div className="flex items-center gap-1.5 px-1">
             <span className="text-[14px]">{getCategoryEmoji(category)}</span>
             <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wide">{category}</span>
           </div>
-          {/* Items */}
           <div className="bg-card rounded-[18px] card-shadow border border-border divide-y divide-border overflow-hidden">
-            {grouped[category].map(item => (
-              <div key={item.id} className="flex items-center gap-3 px-4 py-3">
-                {/* Checkbox */}
-                <button
-                  type="button"
-                  onClick={() => toggleBought.mutate({ id: item.id, is_bought: !item.is_bought })}
-                  className="w-5 h-5 rounded-[6px] border-2 border-border flex-shrink-0 flex items-center justify-center hover:border-primary transition-colors active:scale-90"
-                />
-                {/* Title */}
-                <span className="flex-1 text-[14px] font-medium text-foreground leading-tight">
-                  {item.title}
-                </span>
-                {/* Qty stepper */}
-                <div className="flex items-center gap-1">
-                  <button
-                    type="button"
-                    onClick={() => updateQty.mutate({ id: item.id, quantity: Math.max(1, item.quantity - 1) })}
-                    className="w-6 h-6 rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:bg-muted/80 active:scale-90 transition-all"
-                  >
-                    <Minus className="w-2.5 h-2.5" strokeWidth={2.5} />
-                  </button>
-                  <span className="w-5 text-center text-[13px] font-bold text-foreground">{item.quantity}</span>
-                  <button
-                    type="button"
-                    onClick={() => updateQty.mutate({ id: item.id, quantity: Math.min(99, item.quantity + 1) })}
-                    className="w-6 h-6 rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:bg-muted/80 active:scale-90 transition-all"
-                  >
-                    <Plus className="w-2.5 h-2.5" strokeWidth={2.5} />
-                  </button>
-                </div>
-                {/* Delete */}
-                <button
-                  type="button"
-                  onClick={() => deleteItem.mutate(item.id)}
-                  className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground/50 hover:text-destructive hover:bg-destructive/10 active:scale-90 transition-all flex-shrink-0"
-                >
-                  <Trash2 className="w-3.5 h-3.5" strokeWidth={2} />
-                </button>
-              </div>
-            ))}
+            {grouped[category].map(item => renderActiveItem(item))}
           </div>
         </div>
       ))}
@@ -254,7 +391,6 @@ export default function ShoppingListClient({
               <div className="bg-card rounded-[18px] border border-border divide-y divide-border overflow-hidden opacity-60">
                 {boughtItems.map(item => (
                   <div key={item.id} className="flex items-center gap-3 px-4 py-3">
-                    {/* Checked checkbox */}
                     <button
                       type="button"
                       onClick={() => toggleBought.mutate({ id: item.id, is_bought: false })}
@@ -270,8 +406,13 @@ export default function ShoppingListClient({
                     <span className="text-[12px] text-muted-foreground">×{item.quantity}</span>
                     <button
                       type="button"
-                      onClick={() => deleteItem.mutate(item.id)}
-                      className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground/40 hover:text-destructive hover:bg-destructive/10 active:scale-90 transition-all flex-shrink-0"
+                      onClick={() => handleDeleteClick(item.id)}
+                      className={cn(
+                        'w-7 h-7 rounded-lg flex items-center justify-center active:scale-90 transition-all flex-shrink-0',
+                        confirmDeleteId === item.id
+                          ? 'bg-destructive text-white'
+                          : 'text-muted-foreground/40 hover:text-destructive hover:bg-destructive/10'
+                      )}
                     >
                       <Trash2 className="w-3.5 h-3.5" strokeWidth={2} />
                     </button>

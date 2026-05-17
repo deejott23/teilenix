@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { getUser } from '@/lib/supabase/user'
 import Link from 'next/link'
 import { ChevronRight } from 'lucide-react'
 import { formatCurrency, categoryLabels } from '@/lib/formatting'
@@ -195,7 +196,7 @@ function CtaBanner({ tripId }: { tripId: string }) {
 export default async function FactsPage({ params }: { params: Promise<{ tripId: string }> }) {
   const { tripId } = await params
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getUser()
   if (!user) redirect('/login')
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -219,7 +220,7 @@ export default async function FactsPage({ params }: { params: Promise<{ tripId: 
     db.from('trip_activity_votes').select('activity_id, participant_id, vote').eq('trip_id', tripId),
     db.from('trip_meal_ideas').select('id, title, emoji, created_by_participant_id').eq('trip_id', tripId),
     db.from('trip_meal_votes').select('meal_idea_id, participant_id').eq('trip_id', tripId),
-    supabase.from('packlist_items').select('id').eq('trip_id', tripId),
+    (supabase as any).from('packlist_items').select('id, packlist_checks(item_id)').eq('trip_id', tripId),
     db.from('trip_activity_comments').select('participant_id').eq('trip_id', tripId),
   ])
 
@@ -298,13 +299,11 @@ export default async function FactsPage({ params }: { params: Promise<{ tripId: 
   const topMeal = mealIdeas.map(m => ({ ...m, votes: mealVoteCounts.get(m.id) ?? 0 })).sort((a, b) => b.votes - a.votes)[0]
 
   // ── Packlist ────────────────────────────────────────────────────────────────
+  // packlist_checks are embedded — no second round-trip
   const packlistTotal = (packlistRaw ?? []).length
-  let packlistChecked = 0
-  if (packlistTotal > 0) {
-    const ids = (packlistRaw ?? []).map((r: { id: string }) => r.id)
-    const { data: checksRaw } = await supabase.from('packlist_checks').select('item_id').in('item_id', ids)
-    packlistChecked = new Set((checksRaw ?? []).map((c: { item_id: string }) => c.item_id)).size
-  }
+  const packlistChecked = new Set(
+    (packlistRaw ?? []).flatMap((i: any) => (i.packlist_checks ?? []).map((c: any) => c.item_id))
+  ).size
   const packlistPct = packlistTotal > 0 ? Math.round((packlistChecked / packlistTotal) * 100) : 0
 
   // ── Compound stats ──────────────────────────────────────────────────────────

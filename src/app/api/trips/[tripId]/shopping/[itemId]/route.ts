@@ -6,6 +6,7 @@ const patchSchema = z.object({
   quantity: z.number().int().min(1).optional(),
   is_bought: z.boolean().optional(),
   category: z.string().optional(),
+  title: z.string().min(1).max(100).optional(),
 })
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ tripId: string; itemId: string }> }) {

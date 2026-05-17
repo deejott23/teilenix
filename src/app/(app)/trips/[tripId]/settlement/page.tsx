@@ -1,5 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { getUser } from '@/lib/supabase/user'
+import { getTrip } from '@/lib/supabase/trips'
 import GeldSubNav from '@/components/layout/GeldSubNav'
 import { computeSettlement, computeGroupBreakdowns } from '@/lib/settlement'
 import SettlementTransferList from '@/components/settlement/SettlementTransferList'
@@ -20,35 +22,27 @@ export default async function SettlementPage({
 }) {
   const { tripId } = await params
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getUser()
   if (!user) redirect('/login')
 
-  // Fetch trip, participants, and expenses in parallel
-  const [{ data: trip }, { data: participantsRaw }, { data: expensesRaw }] = await Promise.all([
-    supabase.from('trips').select('id, name, status, created_by').eq('id', tripId).single(),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const db = supabase as any
+
+  // Single round-trip: expenses with embedded splits + trip cached (no waterfall)
+  const [trip, { data: participantsRaw }, { data: expensesRaw }] = await Promise.all([
+    getTrip(tripId),
     supabase.from('trip_participants').select('*').eq('trip_id', tripId).order('joined_at', { ascending: true }),
-    supabase.from('expenses').select('*').eq('trip_id', tripId),
+    db.from('expenses').select('*, expense_splits(*)').eq('trip_id', tripId),
   ])
 
   const participants = (participantsRaw ?? []) as TripParticipant[]
   const participantMap = new Map(participants.map(p => [p.id, p]))
 
-  const expenseIds = ((expensesRaw ?? []) as { id: string }[]).map(e => e.id)
-  const { data: splitsRaw } = expenseIds.length > 0
-    ? await supabase.from('expense_splits').select('*').in('expense_id', expenseIds)
-    : { data: [] }
-
-  const splitsByExpense = new Map<string, unknown[]>()
-  ;((splitsRaw ?? []) as { expense_id: string }[]).forEach(s => {
-    const arr = splitsByExpense.get(s.expense_id) ?? []
-    arr.push(s)
-    splitsByExpense.set(s.expense_id, arr)
-  })
-
-  const expenses = ((expensesRaw ?? []) as { id: string; paid_by_participant_id: string }[])
+  // expense_splits are embedded — no second round-trip
+  const expenses = ((expensesRaw ?? []) as { id: string; paid_by_participant_id: string; expense_splits: { participant_id: string }[] }[])
     .map(e => ({
       ...e,
-      expense_splits: ((splitsByExpense.get(e.id) ?? []) as { participant_id: string }[]).map(s => ({
+      expense_splits: (e.expense_splits ?? []).map(s => ({
         ...s,
         participant: participantMap.get(s.participant_id) ?? { id: s.participant_id, name: 'Unbekannt', shares: 1 },
       })),
