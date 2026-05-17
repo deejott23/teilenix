@@ -10,26 +10,21 @@ export default async function PacklistShoppingCards({
 }) {
   const supabase = await createClient()
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const db = supabase as any
+
   const [{ data: packlistAllRaw }, { data: shoppingAllRaw }] = await Promise.all([
-    supabase.from('packlist_items').select('id').eq('trip_id', tripId),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (supabase as any).from('shopping_items').select('id, is_bought').eq('trip_id', tripId),
+    // Embed claims to count "vergeben" items in one query (no waterfall)
+    db.from('packlist_items').select('id, packlist_claims(item_id)').eq('trip_id', tripId),
+    db.from('shopping_items').select('id, is_bought').eq('trip_id', tripId),
   ])
 
-  const allPacklistItems = (packlistAllRaw ?? []) as { id: string }[]
+  const allPacklistItems = (packlistAllRaw ?? []) as { id: string; packlist_claims: { item_id: string }[] }[]
   const packlistTotal = allPacklistItems.length
 
-  const packlistItemIds = allPacklistItems.map(i => i.id)
-  const { data: checksRaw } = packlistItemIds.length > 0
-    ? await supabase
-        .from('packlist_checks')
-        .select('item_id')
-        .in('item_id', packlistItemIds)
-    : { data: [] }
-
-  // Count distinct items that have been checked by any participant
-  const checkedCount = new Set((checksRaw ?? []).map((c: { item_id: string }) => c.item_id)).size
-  const packlistPct = packlistTotal > 0 ? Math.round((checkedCount / packlistTotal) * 100) : 0
+  // Count items that have been claimed (vergeben) by at least one participant
+  const claimedCount = allPacklistItems.filter(i => i.packlist_claims && i.packlist_claims.length > 0).length
+  const packlistPct = packlistTotal > 0 ? Math.round((claimedCount / packlistTotal) * 100) : 0
 
   const allShoppingItems = (shoppingAllRaw ?? []) as { id: string; is_bought: boolean }[]
   const shoppingOpenCount = allShoppingItems.filter(s => !s.is_bought).length
@@ -43,7 +38,7 @@ export default async function PacklistShoppingCards({
         <div className="text-[22px] mb-2">🎒</div>
         <div className="text-[11px] font-bold text-muted-foreground uppercase tracking-wide mb-1">Packliste</div>
         <div className="text-[20px] font-black text-foreground tracking-tight mb-2">
-          {checkedCount}/{packlistTotal}
+          {claimedCount}/{packlistTotal}
         </div>
         <div className="h-1.5 bg-muted rounded-full overflow-hidden">
           <div className="h-full bg-primary rounded-full" style={{ width: `${packlistPct}%` }} />
