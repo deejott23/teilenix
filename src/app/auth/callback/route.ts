@@ -26,9 +26,9 @@ export async function GET(request: NextRequest) {
             user.email?.split('@')[0] ??
             ''
           await supabase.rpc('auto_setup_user', {
-            p_display_name: displayName,
+            p_full_name: displayName,
             p_email: user.email ?? '',
-            p_avatar_url: (user.user_metadata?.avatar_url as string | undefined) ?? '',
+            p_user_id: user.id,
           })
         }
       }

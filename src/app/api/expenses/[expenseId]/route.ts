@@ -47,7 +47,7 @@ export async function PATCH(
     p_expense_date:            expenseDate ?? new Date().toISOString().split('T')[0],
     p_split_mode:              splitMode ?? 'proportional',
     p_splits:                  splits.map(s => ({ participant_id: s.participantId, shares: s.shares })),
-    p_paid_by_participant_id:  paidByParticipantId ?? null,
+    p_paid_by_participant_id:  paidByParticipantId ?? undefined,
   })
 
   if (error) {

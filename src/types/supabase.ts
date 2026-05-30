@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.4"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       expense_splits: {
@@ -964,6 +989,7 @@ export type Database = {
           id: string
           invite_code: string
           name: string
+          show_packlist: boolean
           start_date: string | null
           status: Database["public"]["Enums"]["trip_status"]
           updated_at: string
@@ -980,6 +1006,7 @@ export type Database = {
           id?: string
           invite_code: string
           name: string
+          show_packlist?: boolean
           start_date?: string | null
           status?: Database["public"]["Enums"]["trip_status"]
           updated_at?: string
@@ -996,6 +1023,7 @@ export type Database = {
           id?: string
           invite_code?: string
           name?: string
+          show_packlist?: boolean
           start_date?: string | null
           status?: Database["public"]["Enums"]["trip_status"]
           updated_at?: string
@@ -1218,6 +1246,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       expense_category: [

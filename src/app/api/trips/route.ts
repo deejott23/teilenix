@@ -18,8 +18,8 @@ export async function POST(request: NextRequest) {
   // Use SECURITY DEFINER RPC: creates trip + adds creator as first participant
   const { data: tripId, error } = await supabase.rpc('create_trip_with_participant', {
     p_name: name,
-    p_start_date: startDate ?? null,
-    p_end_date: endDate ?? null,
+    p_start_date: startDate ?? undefined,
+    p_end_date: endDate ?? undefined,
   })
 
   if (error) {

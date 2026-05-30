@@ -138,6 +138,229 @@ export type Database = {
           },
         ]
       }
+      feedback_comments: {
+        Row: {
+          category: string | null
+          comment: string
+          created_at: string
+          detail_text: string | null
+          developer_note: string | null
+          feature_label: string | null
+          id: string
+          page_path: string
+          status: string
+          tester_email: string
+          tester_name: string | null
+        }
+        Insert: {
+          category?: string | null
+          comment: string
+          created_at?: string
+          detail_text?: string | null
+          developer_note?: string | null
+          feature_label?: string | null
+          id?: string
+          page_path: string
+          status?: string
+          tester_email: string
+          tester_name?: string | null
+        }
+        Update: {
+          category?: string | null
+          comment?: string
+          created_at?: string
+          detail_text?: string | null
+          developer_note?: string | null
+          feature_label?: string | null
+          id?: string
+          page_path?: string
+          status?: string
+          tester_email?: string
+          tester_name?: string | null
+        }
+        Relationships: []
+      }
+      feedback_likes: {
+        Row: {
+          created_at: string
+          feedback_id: string
+          id: string
+          tester_email: string
+        }
+        Insert: {
+          created_at?: string
+          feedback_id: string
+          id?: string
+          tester_email: string
+        }
+        Update: {
+          created_at?: string
+          feedback_id?: string
+          id?: string
+          tester_email?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_likes_feedback_id_fkey"
+            columns: ["feedback_id"]
+            isOneToOne: false
+            referencedRelation: "feedback_comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          participant_id: string | null
+          thread_id: string
+          trip_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          participant_id?: string | null
+          thread_id: string
+          trip_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          participant_id?: string | null
+          thread_id?: string
+          trip_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_messages_participant_id_fkey"
+            columns: ["participant_id"]
+            isOneToOne: false
+            referencedRelation: "trip_participants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_messages_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "group_threads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_messages_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_threads: {
+        Row: {
+          created_at: string
+          created_by_participant_id: string | null
+          id: string
+          linked_emoji: string | null
+          linked_id: string | null
+          linked_subtitle: string | null
+          linked_title: string | null
+          linked_type: string | null
+          title: string
+          trip_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by_participant_id?: string | null
+          id?: string
+          linked_emoji?: string | null
+          linked_id?: string | null
+          linked_subtitle?: string | null
+          linked_title?: string | null
+          linked_type?: string | null
+          title: string
+          trip_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by_participant_id?: string | null
+          id?: string
+          linked_emoji?: string | null
+          linked_id?: string | null
+          linked_subtitle?: string | null
+          linked_title?: string | null
+          linked_type?: string | null
+          title?: string
+          trip_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_threads_created_by_participant_id_fkey"
+            columns: ["created_by_participant_id"]
+            isOneToOne: false
+            referencedRelation: "trip_participants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_threads_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      message_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          id: string
+          message_id: string
+          participant_id: string
+          trip_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          id?: string
+          message_id: string
+          participant_id: string
+          trip_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          message_id?: string
+          participant_id?: string
+          trip_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_reactions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "group_messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_reactions_participant_id_fkey"
+            columns: ["participant_id"]
+            isOneToOne: false
+            referencedRelation: "trip_participants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_reactions_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       packlist_checks: {
         Row: {
           created_at: string
@@ -298,6 +521,378 @@ export type Database = {
         }
         Relationships: []
       }
+      shopping_items: {
+        Row: {
+          added_by_participant_id: string | null
+          bought_at: string | null
+          category: string
+          created_at: string
+          id: string
+          is_bought: boolean
+          quantity: number
+          title: string
+          trip_id: string
+        }
+        Insert: {
+          added_by_participant_id?: string | null
+          bought_at?: string | null
+          category?: string
+          created_at?: string
+          id?: string
+          is_bought?: boolean
+          quantity?: number
+          title: string
+          trip_id: string
+        }
+        Update: {
+          added_by_participant_id?: string | null
+          bought_at?: string | null
+          category?: string
+          created_at?: string
+          id?: string
+          is_bought?: boolean
+          quantity?: number
+          title?: string
+          trip_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shopping_items_added_by_participant_id_fkey"
+            columns: ["added_by_participant_id"]
+            isOneToOne: false
+            referencedRelation: "trip_participants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shopping_items_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trip_activities: {
+        Row: {
+          activity_date: string | null
+          activity_type: string
+          cost_per_person_cents: number | null
+          cover_emoji: string | null
+          created_at: string
+          created_by_participant_id: string
+          departure_time: string | null
+          description: string | null
+          duration_label: string | null
+          id: string
+          link: string | null
+          meeting_point: string | null
+          status: string
+          title: string
+          trip_id: string
+          updated_at: string
+        }
+        Insert: {
+          activity_date?: string | null
+          activity_type?: string
+          cost_per_person_cents?: number | null
+          cover_emoji?: string | null
+          created_at?: string
+          created_by_participant_id: string
+          departure_time?: string | null
+          description?: string | null
+          duration_label?: string | null
+          id?: string
+          link?: string | null
+          meeting_point?: string | null
+          status?: string
+          title: string
+          trip_id: string
+          updated_at?: string
+        }
+        Update: {
+          activity_date?: string | null
+          activity_type?: string
+          cost_per_person_cents?: number | null
+          cover_emoji?: string | null
+          created_at?: string
+          created_by_participant_id?: string
+          departure_time?: string | null
+          description?: string | null
+          duration_label?: string | null
+          id?: string
+          link?: string | null
+          meeting_point?: string | null
+          status?: string
+          title?: string
+          trip_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_activities_created_by_participant_id_fkey"
+            columns: ["created_by_participant_id"]
+            isOneToOne: false
+            referencedRelation: "trip_participants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_activities_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trip_activity_comments: {
+        Row: {
+          activity_id: string
+          content: string
+          created_at: string
+          id: string
+          participant_id: string
+        }
+        Insert: {
+          activity_id: string
+          content: string
+          created_at?: string
+          id?: string
+          participant_id: string
+        }
+        Update: {
+          activity_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          participant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_activity_comments_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "trip_activities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_activity_comments_participant_id_fkey"
+            columns: ["participant_id"]
+            isOneToOne: false
+            referencedRelation: "trip_participants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trip_activity_votes: {
+        Row: {
+          activity_id: string
+          created_at: string
+          id: string
+          participant_id: string
+          vote: string
+        }
+        Insert: {
+          activity_id: string
+          created_at?: string
+          id?: string
+          participant_id: string
+          vote: string
+        }
+        Update: {
+          activity_id?: string
+          created_at?: string
+          id?: string
+          participant_id?: string
+          vote?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_activity_votes_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "trip_activities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_activity_votes_participant_id_fkey"
+            columns: ["participant_id"]
+            isOneToOne: false
+            referencedRelation: "trip_participants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trip_meal_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          meal_idea_id: string
+          participant_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          meal_idea_id: string
+          participant_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          meal_idea_id?: string
+          participant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_meal_comments_meal_idea_id_fkey"
+            columns: ["meal_idea_id"]
+            isOneToOne: false
+            referencedRelation: "trip_meal_ideas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_meal_comments_participant_id_fkey"
+            columns: ["participant_id"]
+            isOneToOne: false
+            referencedRelation: "trip_participants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trip_meal_ideas: {
+        Row: {
+          created_at: string
+          created_by_participant_id: string
+          description: string | null
+          emoji: string
+          id: string
+          link: string | null
+          tags: string[]
+          title: string
+          trip_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by_participant_id: string
+          description?: string | null
+          emoji?: string
+          id?: string
+          link?: string | null
+          tags?: string[]
+          title: string
+          trip_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by_participant_id?: string
+          description?: string | null
+          emoji?: string
+          id?: string
+          link?: string | null
+          tags?: string[]
+          title?: string
+          trip_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_meal_ideas_created_by_participant_id_fkey"
+            columns: ["created_by_participant_id"]
+            isOneToOne: false
+            referencedRelation: "trip_participants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_meal_ideas_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trip_meal_slots: {
+        Row: {
+          id: string
+          meal_idea_id: string | null
+          slot_date: string
+          slot_type: string
+          trip_id: string
+        }
+        Insert: {
+          id?: string
+          meal_idea_id?: string | null
+          slot_date: string
+          slot_type: string
+          trip_id: string
+        }
+        Update: {
+          id?: string
+          meal_idea_id?: string | null
+          slot_date?: string
+          slot_type?: string
+          trip_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_meal_slots_meal_idea_id_fkey"
+            columns: ["meal_idea_id"]
+            isOneToOne: false
+            referencedRelation: "trip_meal_ideas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_meal_slots_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trip_meal_votes: {
+        Row: {
+          created_at: string
+          id: string
+          meal_idea_id: string
+          participant_id: string
+          vote: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          meal_idea_id: string
+          participant_id: string
+          vote?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          meal_idea_id?: string
+          participant_id?: string
+          vote?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_meal_votes_meal_idea_id_fkey"
+            columns: ["meal_idea_id"]
+            isOneToOne: false
+            referencedRelation: "trip_meal_ideas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_meal_votes_participant_id_fkey"
+            columns: ["participant_id"]
+            isOneToOne: false
+            referencedRelation: "trip_participants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       trip_participant_members: {
         Row: {
           added_at: string
@@ -381,42 +976,6 @@ export type Database = {
           },
         ]
       }
-      feedback_comments: {
-        Row: {
-          id: string
-          created_at: string
-          page_path: string
-          feature_label: string | null
-          comment: string
-          tester_email: string
-          tester_name: string | null
-          status: string
-          developer_note: string | null
-        }
-        Insert: {
-          id?: string
-          created_at?: string
-          page_path: string
-          feature_label?: string | null
-          comment: string
-          tester_email: string
-          tester_name?: string | null
-          status?: string
-          developer_note?: string | null
-        }
-        Update: {
-          id?: string
-          created_at?: string
-          page_path?: string
-          feature_label?: string | null
-          comment?: string
-          tester_email?: string
-          tester_name?: string | null
-          status?: string
-          developer_note?: string | null
-        }
-        Relationships: []
-      }
       trips: {
         Row: {
           cover_emoji: string | null
@@ -430,6 +989,7 @@ export type Database = {
           id: string
           invite_code: string
           name: string
+          show_packlist: boolean
           start_date: string | null
           status: Database["public"]["Enums"]["trip_status"]
           updated_at: string
@@ -446,6 +1006,7 @@ export type Database = {
           id?: string
           invite_code: string
           name: string
+          show_packlist?: boolean
           start_date?: string | null
           status?: Database["public"]["Enums"]["trip_status"]
           updated_at?: string
@@ -462,6 +1023,7 @@ export type Database = {
           id?: string
           invite_code?: string
           name?: string
+          show_packlist?: boolean
           start_date?: string | null
           status?: Database["public"]["Enums"]["trip_status"]
           updated_at?: string
@@ -482,7 +1044,7 @@ export type Database = {
     }
     Functions: {
       auto_setup_user: {
-        Args: { p_avatar_url: string; p_display_name: string; p_email: string }
+        Args: { p_email: string; p_full_name: string; p_user_id: string }
         Returns: undefined
       }
       create_expense_with_splits: {
@@ -492,7 +1054,7 @@ export type Database = {
           p_currency: string
           p_description: string
           p_expense_date: string
-          p_paid_by_participant_id: string | null
+          p_paid_by_participant_id: string
           p_split_mode: string
           p_splits: Json
           p_title: string
@@ -501,7 +1063,7 @@ export type Database = {
         Returns: string
       }
       create_trip_with_participant: {
-        Args: { p_end_date?: string | null; p_name: string; p_start_date?: string | null }
+        Args: { p_end_date?: string; p_name: string; p_start_date?: string }
         Returns: string
       }
       get_trip_by_invite_code: {
@@ -527,7 +1089,7 @@ export type Database = {
           p_description: string
           p_expense_date: string
           p_expense_id: string
-          p_paid_by_participant_id?: string | null
+          p_paid_by_participant_id?: string
           p_split_mode: string
           p_splits: Json
           p_title: string
