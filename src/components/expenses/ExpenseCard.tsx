@@ -1,9 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { toast } from 'sonner'
+import { useQueryClient } from '@tanstack/react-query'
+import { queryKeys } from '@/lib/query/queryKeys'
 import CategoryIcon from './CategoryIcon'
 import { Icon } from '@/components/ui/icon'
 import { formatCurrency, categoryLabels } from '@/lib/formatting'
@@ -19,7 +20,7 @@ interface ExpenseCardProps {
 }
 
 export default function ExpenseCard({ expense, myParticipantId, tripId, canEdit, participantMap }: ExpenseCardProps) {
-  const router = useRouter()
+  const queryClient = useQueryClient()
   const [deleting, setDeleting] = useState(false)
 
   const myParticipantSplit = expense.expense_splits.find(s => s.participant_id === myParticipantId)
@@ -50,7 +51,7 @@ export default function ExpenseCard({ expense, myParticipantId, tripId, canEdit,
       const res = await fetch(`/api/expenses/${expense.id}`, { method: 'DELETE' })
       if (!res.ok) throw new Error()
       toast.success('Ausgabe gelöscht')
-      router.refresh()
+      queryClient.invalidateQueries({ queryKey: queryKeys.expenses.withSplits(tripId) })
     } catch {
       toast.error('Fehler beim Löschen')
     } finally {

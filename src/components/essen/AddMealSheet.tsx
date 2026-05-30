@@ -6,17 +6,27 @@ import { cn } from '@/lib/utils'
 const FOOD_EMOJIS = ['🍝', '🥗', '🥩', '🍕', '🍔', '🌮', '🥘', '🍲', '🥞', '🍗', '🍜', '🍣', '🥙', '🫕', '🥪']
 const TAGS = ['vegetarisch', 'vegan', 'schnell', 'aufwändig', 'süß', 'herzhaft']
 
+interface MealInitialValues {
+  emoji: string
+  title: string
+  description: string | null
+  tags: string[]
+  link: string | null
+}
+
 interface AddMealSheetProps {
+  initialValues?: MealInitialValues
   onClose: () => void
   onAdd: (data: object) => Promise<void>
 }
 
-export default function AddMealSheet({ onClose, onAdd }: AddMealSheetProps) {
-  const [emoji, setEmoji] = useState('🍽️')
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [tags, setTags] = useState<string[]>([])
-  const [link, setLink] = useState('')
+export default function AddMealSheet({ initialValues, onClose, onAdd }: AddMealSheetProps) {
+  const isEdit = !!initialValues
+  const [emoji, setEmoji] = useState(initialValues?.emoji ?? '🍽️')
+  const [title, setTitle] = useState(initialValues?.title ?? '')
+  const [description, setDescription] = useState(initialValues?.description ?? '')
+  const [tags, setTags] = useState<string[]>(initialValues?.tags ?? [])
+  const [link, setLink] = useState(initialValues?.link ?? '')
   const [submitting, setSubmitting] = useState(false)
 
   const toggleTag = (tag: string) => {
@@ -54,7 +64,7 @@ export default function AddMealSheet({ onClose, onAdd }: AddMealSheetProps) {
 
         {/* Header */}
         <div className="flex items-center justify-between px-5 pb-3 pt-1">
-          <h2 className="text-[17px] font-bold text-foreground">Essens-Idee vorschlagen</h2>
+          <h2 className="text-[17px] font-bold text-foreground">{isEdit ? 'Essens-Idee bearbeiten' : 'Essens-Idee vorschlagen'}</h2>
           <button
             type="button"
             onClick={onClose}
@@ -173,7 +183,7 @@ export default function AddMealSheet({ onClose, onAdd }: AddMealSheetProps) {
                 : 'bg-amber-500 text-white hover:bg-amber-600'
             )}
           >
-            {submitting ? 'Wird hinzugefügt…' : 'Idee vorschlagen 🍽️'}
+            {submitting ? (isEdit ? 'Wird gespeichert…' : 'Wird hinzugefügt…') : (isEdit ? 'Speichern' : 'Idee vorschlagen 🍽️')}
           </button>
         </form>
       </div>

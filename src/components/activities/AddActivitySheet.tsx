@@ -29,30 +29,51 @@ function toISODate(d: Date): string {
 
 const WEEKDAY_SHORT = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa']
 
+interface ActivityInitialValues {
+  title: string
+  activity_type: ActivityType
+  description: string | null
+  link: string | null
+  departure_time: string | null
+  duration_label: string | null
+  meeting_point: string | null
+  cost_per_person_cents: number | null
+  activity_date: string | null
+}
+
 interface AddActivitySheetProps {
   tripId: string
   myParticipantId: string
   tripStartDate: string | null
   tripEndDate: string | null
   defaultDate?: string | null
+  initialValues?: ActivityInitialValues
   onClose: () => void
   onAdd: (data: object) => Promise<void>
 }
 
 export default function AddActivitySheet({
-  tripStartDate, tripEndDate, defaultDate, onClose, onAdd,
+  tripStartDate, tripEndDate, defaultDate, initialValues, onClose, onAdd,
 }: AddActivitySheetProps) {
-  const [title, setTitle] = useState('')
-  const [activityType, setActivityType] = useState<ActivityType>('activity')
-  const [selectedDate, setSelectedDate] = useState<string | null>(defaultDate ?? null)
-  const [description, setDescription] = useState('')
-  const [link, setLink] = useState('')
-  const [departureTime, setDepartureTime] = useState('')
-  const [durationLabel, setDurationLabel] = useState<string | null>(null)
-  const [meetingPoint, setMeetingPoint] = useState('')
-  const [costEuros, setCostEuros] = useState('')
+  const isEdit = !!initialValues
+  const [title, setTitle] = useState(initialValues?.title ?? '')
+  const [activityType, setActivityType] = useState<ActivityType>(initialValues?.activity_type ?? 'activity')
+  const [selectedDate, setSelectedDate] = useState<string | null>(initialValues?.activity_date ?? defaultDate ?? null)
+  const [description, setDescription] = useState(initialValues?.description ?? '')
+  const [link, setLink] = useState(initialValues?.link ?? '')
+  const [departureTime, setDepartureTime] = useState(initialValues?.departure_time ?? '')
+  const [durationLabel, setDurationLabel] = useState<string | null>(initialValues?.duration_label ?? null)
+  const [meetingPoint, setMeetingPoint] = useState(initialValues?.meeting_point ?? '')
+  const [costEuros, setCostEuros] = useState(
+    initialValues?.cost_per_person_cents != null
+      ? (initialValues.cost_per_person_cents / 100).toFixed(2)
+      : ''
+  )
   const [submitting, setSubmitting] = useState(false)
-  const [showDetails, setShowDetails] = useState(false)
+  const [showDetails, setShowDetails] = useState(isEdit && !!(
+    initialValues?.departure_time || initialValues?.duration_label ||
+    initialValues?.meeting_point || initialValues?.cost_per_person_cents != null
+  ))
 
   const tripDates = generateDateRange(tripStartDate, tripEndDate)
 
@@ -93,7 +114,7 @@ export default function AddActivitySheet({
 
         {/* Header */}
         <div className="flex items-center justify-between px-5 pb-3 pt-1">
-          <h2 className="text-[17px] font-bold text-foreground">Ausflug vorschlagen</h2>
+          <h2 className="text-[17px] font-bold text-foreground">{isEdit ? 'Ausflug bearbeiten' : 'Ausflug vorschlagen'}</h2>
           <button
             type="button"
             onClick={onClose}
@@ -314,7 +335,7 @@ export default function AddActivitySheet({
                 : 'bg-primary text-white hover:bg-primary/90'
             )}
           >
-            {submitting ? 'Wird vorgeschlagen…' : 'Ausflug vorschlagen 🗺️'}
+            {submitting ? (isEdit ? 'Wird gespeichert…' : 'Wird vorgeschlagen…') : (isEdit ? 'Speichern' : 'Ausflug vorschlagen 🗺️')}
           </button>
         </form>
       </div>

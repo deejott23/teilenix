@@ -3,21 +3,31 @@ import Link from 'next/link'
 import { Icon } from '@/components/ui/icon'
 import { formatDate } from '@/lib/formatting'
 import { activityTypeEmoji } from '@/lib/activities'
+import { getUser } from '@/lib/supabase/user'
 import type { ActivityType } from '@/types/app'
 
 export default async function ActivitiesCard({ tripId }: { tripId: string }) {
   const supabase = await createClient()
+  // getUser() is cached per-request — no extra network call
+  const user = await getUser()
 
-  // Run activities + current user's participant lookup in parallel
-  const [{ data: activitiesRaw }, { data: { user } }, ] = await Promise.all([
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (supabase as any)
+  // Fetch activities and user's votes in parallel (no waterfall)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const db = supabase as any
+  const [{ data: activitiesRaw }, { data: myVotesRaw }] = await Promise.all([
+    db
       .from('trip_activities')
       .select('id, title, activity_type, cover_emoji, status, created_at, activity_date')
       .eq('trip_id', tripId)
       .order('created_at', { ascending: false })
       .limit(8),
-    supabase.auth.getUser(),
+    user
+      ? db
+          .from('trip_activity_votes')
+          .select('activity_id, trip_participants!inner(trip_id, user_id)')
+          .eq('trip_participants.trip_id', tripId)
+          .eq('trip_participants.user_id', user.id)
+      : Promise.resolve({ data: [] }),
   ])
 
   const allActivities = (activitiesRaw ?? []) as {
@@ -25,17 +35,7 @@ export default async function ActivitiesCard({ tripId }: { tripId: string }) {
     status: string; created_at: string; activity_date: string | null
   }[]
 
-  // Single query: get voted activity IDs for this user in this trip via join
-  let votedActivityIds: string[] = []
-  if (user) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: myVotes } = await (supabase as any)
-      .from('trip_activity_votes')
-      .select('activity_id, trip_participants!inner(trip_id, user_id)')
-      .eq('trip_participants.trip_id', tripId)
-      .eq('trip_participants.user_id', user.id)
-    votedActivityIds = (myVotes ?? []).map((v: { activity_id: string }) => v.activity_id)
-  }
+  const votedActivityIds = ((myVotesRaw ?? []) as { activity_id: string }[]).map(v => v.activity_id)
 
   const confirmedActivities = allActivities.filter(a => a.status === 'confirmed' || a.activity_date).slice(0, 2)
   const ideaActivities = allActivities.filter(a => a.status === 'idea' && !a.activity_date)

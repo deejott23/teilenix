@@ -4,6 +4,7 @@ import { Icon } from '@/components/ui/icon'
 import { formatCurrency } from '@/lib/formatting'
 import { cn } from '@/lib/utils'
 import { activityTypeEmoji } from '@/lib/activities'
+import { getParticipants } from '@/lib/supabase/trips'
 import type { ActivityType } from '@/types/app'
 import ActivityStreamCollapsible from './ActivityStreamCollapsible'
 
@@ -40,14 +41,14 @@ export default async function ActivityStream({ tripId }: { tripId: string }) {
   const db = supabase as any
 
   const [
-    { data: participantsRaw },
+    participants,
     { data: expensesRaw },
     { data: activitiesRaw },
     { data: packlistRaw },
     { data: shoppingRaw },
     { data: commentsRaw },
   ] = await Promise.all([
-    supabase.from('trip_participants').select('id, name').eq('trip_id', tripId),
+    getParticipants(tripId),
     supabase.from('expenses').select('id, title, amount_cents, paid_by_participant_id, created_at')
       .eq('trip_id', tripId).order('created_at', { ascending: false }).limit(5),
     db.from('trip_activities')
@@ -62,7 +63,7 @@ export default async function ActivityStream({ tripId }: { tripId: string }) {
       .eq('trip_id', tripId).order('created_at', { ascending: false }).limit(5),
   ])
 
-  const participantMap = new Map(((participantsRaw ?? []) as { id: string; name: string }[]).map(p => [p.id, p.name]))
+  const participantMap = new Map(participants.map(p => [p.id, p.name]))
   const events: ActivityEvent[] = []
 
   for (const e of (expensesRaw ?? []) as { id: string; title: string; amount_cents: number; paid_by_participant_id: string; created_at: string }[]) {

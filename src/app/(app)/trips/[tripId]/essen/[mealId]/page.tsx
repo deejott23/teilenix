@@ -176,6 +176,13 @@ export default async function MealDetailPage({
           myParticipantId={myParticipantId}
           initialVotes={votes}
           isMyMeal={idea.created_by_participant_id === myParticipantId}
+          initialData={{
+            emoji: idea.emoji as string,
+            title: idea.title as string,
+            description: (idea.description as string | null) ?? null,
+            tags: (idea.tags as string[]) ?? [],
+            link: (idea.link as string | null) ?? null,
+          }}
         />
       </div>
 

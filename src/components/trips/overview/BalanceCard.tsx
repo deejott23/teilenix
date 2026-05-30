@@ -4,6 +4,7 @@ import { Icon } from '@/components/ui/icon'
 import { computeSettlement } from '@/lib/settlement'
 import { formatCurrency } from '@/lib/formatting'
 import { cn } from '@/lib/utils'
+import { getParticipants } from '@/lib/supabase/trips'
 import type { ExpenseWithSplits, TripParticipant } from '@/types/app'
 
 export default async function BalanceCard({
@@ -15,35 +16,27 @@ export default async function BalanceCard({
 }) {
   const supabase = await createClient()
 
-  const [{ data: participantsRaw }, { data: allExpensesRaw }] = await Promise.all([
-    supabase.from('trip_participants').select('*').eq('trip_id', tripId),
-    supabase.from('expenses').select('*').eq('trip_id', tripId).order('created_at', { ascending: false }),
+  // Single round-trip: participants (cached) + expenses with splits joined
+  const [participants, { data: expensesRaw }] = await Promise.all([
+    getParticipants(tripId),
+    supabase.from('expenses').select('*, expense_splits(*)').eq('trip_id', tripId)
+      .order('created_at', { ascending: false }),
   ])
 
-  const participants = (participantsRaw ?? []) as TripParticipant[]
-  const participantMap = new Map(participants.map(p => [p.id, p]))
+  const participantMap = new Map(participants.map((p: TripParticipant) => [p.id, p]))
 
-  const allExpenseIds = ((allExpensesRaw ?? []) as { id: string }[]).map(e => e.id)
-  const { data: splitsRaw } = allExpenseIds.length > 0
-    ? await supabase.from('expense_splits').select('*').in('expense_id', allExpenseIds)
-    : { data: [] }
-
-  const splitsByExpense = new Map<string, unknown[]>()
-  ;((splitsRaw ?? []) as { expense_id: string }[]).forEach(s => {
-    const arr = splitsByExpense.get(s.expense_id) ?? []
-    arr.push(s)
-    splitsByExpense.set(s.expense_id, arr)
-  })
-
-  const expenses = ((allExpensesRaw ?? []) as { id: string; paid_by_participant_id: string }[])
-    .map(e => ({
-      ...e,
-      expense_splits: ((splitsByExpense.get(e.id) ?? []) as { participant_id: string }[]).map(s => ({
-        ...s,
-        participant: participantMap.get(s.participant_id) ?? { id: s.participant_id, name: 'Unbekannt', shares: 1 },
-      })),
-      participant: participantMap.get(e.paid_by_participant_id) ?? { id: e.paid_by_participant_id, name: 'Unbekannt', shares: 1 },
-    })) as unknown as ExpenseWithSplits[]
+  const expenses = ((expensesRaw ?? []) as Array<{
+    id: string
+    paid_by_participant_id: string
+    expense_splits: Array<{ participant_id: string }>
+  }>).map(e => ({
+    ...e,
+    expense_splits: (e.expense_splits ?? []).map(s => ({
+      ...s,
+      participant: participantMap.get(s.participant_id) ?? { id: s.participant_id, name: 'Unbekannt', shares: 1 },
+    })),
+    participant: participantMap.get(e.paid_by_participant_id) ?? { id: e.paid_by_participant_id, name: 'Unbekannt', shares: 1 },
+  })) as unknown as ExpenseWithSplits[]
 
   const settlement = computeSettlement(expenses, participants)
   const myBalance = settlement.balances.find(b => b.participantId === myParticipantId)

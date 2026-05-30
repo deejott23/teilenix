@@ -18,7 +18,7 @@ export default function MagicLinkForm() {
     const next = new URLSearchParams(window.location.search).get('next') ?? '/dashboard'
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim(),
-      options: { emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}` },
+      options: { emailRedirectTo: `${window.location.origin}/auth/confirm?next=${encodeURIComponent(next)}` },
     })
     setLoading(false)
     if (error) {

@@ -211,6 +211,19 @@ export default async function ActivityDetailPage({
           isActive={isActive}
           isMyActivity={isMyActivity}
           currentStatus={activity.status}
+          tripStartDate={(trip?.start_date as string | null) ?? null}
+          tripEndDate={(trip?.end_date as string | null) ?? null}
+          initialData={{
+            title: activity.title,
+            activity_type: activity.activity_type,
+            description: activity.description ?? null,
+            link: activity.link ?? null,
+            departure_time: activity.departure_time ?? null,
+            duration_label: activity.duration_label ?? null,
+            meeting_point: activity.meeting_point ?? null,
+            cost_per_person_cents: activity.cost_per_person_cents ?? null,
+            activity_date: activity.activity_date ?? null,
+          }}
         />
       </div>
 
