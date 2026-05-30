@@ -38,18 +38,9 @@ export default async function TripLayout({
   if (!trip) notFound()
 
   const isActive = trip.status === 'active'
+  const showPacklist = (trip.show_packlist as boolean | null) ?? false
 
-  // ReiseBlatt: erst ab Tag 3 einer mehrtägigen Reise (oder nach Reiseende)
-  const showFacts = (() => {
-    if (!isActive) return true // abgeschlossene Reisen immer zeigen
-    const startDate = trip.start_date as string | null
-    if (!startDate) return false
-    const start = new Date(startDate + 'T00:00:00')
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    const daysSinceStart = Math.floor((today.getTime() - start.getTime()) / 86_400_000)
-    return daysSinceStart >= 2 // Tag 1=0, Tag 2=1, Tag 3=2
-  })()
+  const showFacts = true
   const coverEmoji = (trip.cover_emoji as string | null) ?? pickFallbackEmoji(trip.name as string)
   const coverImageUrl = (trip.cover_image_url as string | null) ?? null
   const isParticipant = !!myParticipant
@@ -125,7 +116,7 @@ export default async function TripLayout({
 
       {isActive && <AddExpenseFab tripId={tripId} />}
 
-      <TripBottomNav tripId={tripId} isEnded={!isActive} showFacts={showFacts} />
+      <TripBottomNav tripId={tripId} isEnded={!isActive} showFacts={showFacts} showPacklist={showPacklist} />
     </div>
   )
 }

@@ -3,8 +3,10 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import TripParticipantList from '@/components/trips/TripParticipantList'
 import TripCategorySettings from '@/components/trips/TripCategorySettings'
+import TripPacklistToggle from '@/components/trips/TripPacklistToggle'
+import TripDetailsEdit from '@/components/trips/TripDetailsEdit'
 import EndTripButton from '@/components/trips/EndTripButton'
-import { ChevronRight, Users, Tag, CreditCard, LogOut } from 'lucide-react'
+import { ChevronRight, Users, Tag, CreditCard, LogOut, LayoutGrid, Pencil } from 'lucide-react'
 import type { TripParticipant } from '@/types/app'
 
 const ALL_CATEGORY_KEYS = ['food','transport','accommodation','activities','shopping','health','other']
@@ -21,7 +23,7 @@ export default async function TripSettingsPage({
 
   const { data: trip } = await supabase
     .from('trips')
-    .select('id, name, status, created_by, invite_code, enabled_categories, custom_categories')
+    .select('id, name, status, created_by, invite_code, enabled_categories, custom_categories, show_packlist, start_date, end_date')
     .eq('id', tripId)
     .maybeSingle()
 
@@ -38,9 +40,12 @@ export default async function TripSettingsPage({
   const isActive = trip.status === 'active'
   const enabledCategories = (trip.enabled_categories as string[] | null) ?? ALL_CATEGORY_KEYS
   const customCategories = (trip.custom_categories as string[] | null) ?? []
+  const showPacklist = (trip.show_packlist as boolean | null) ?? false
 
   const navItems = [
+    ...(isCreator ? [{ id: 'reisedaten', icon: <Pencil className="w-4 h-4" />, label: 'Reisedaten' }] : []),
     { id: 'teilnehmer', icon: <Users className="w-4 h-4" />, label: 'Teilnehmer' },
+    { id: 'funktionen', icon: <LayoutGrid className="w-4 h-4" />, label: 'Funktionen' },
     { id: 'kategorien', icon: <Tag className="w-4 h-4" />, label: 'Kategorien' },
     { id: 'abrechnung', icon: <CreditCard className="w-4 h-4" />, label: 'Abrechnung', isLink: true },
     ...(isActive && isCreator ? [{ id: 'abschluss', icon: <LogOut className="w-4 h-4" />, label: 'Reise abschließen' }] : []),
@@ -95,6 +100,17 @@ export default async function TripSettingsPage({
         <ChevronRight className="w-4 h-4 text-muted-foreground/50 flex-shrink-0" strokeWidth={2} />
       </Link>
 
+      {isCreator && (
+        <div id="reisedaten">
+          <TripDetailsEdit
+            tripId={tripId}
+            name={trip.name as string}
+            startDate={(trip.start_date as string | null) ?? null}
+            endDate={(trip.end_date as string | null) ?? null}
+          />
+        </div>
+      )}
+
       <div id="teilnehmer">
         <TripParticipantList
           tripId={tripId}
@@ -104,6 +120,10 @@ export default async function TripSettingsPage({
           isActive={isActive}
           currentUserId={user.id}
         />
+      </div>
+
+      <div id="funktionen">
+        <TripPacklistToggle tripId={tripId} showPacklist={showPacklist} />
       </div>
 
       <div id="kategorien">
