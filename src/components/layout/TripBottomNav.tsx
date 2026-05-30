@@ -13,9 +13,10 @@ interface TripBottomNavProps {
   tripId: string
   isEnded: boolean
   showFacts?: boolean
+  showPacklist?: boolean
 }
 
-export default function TripBottomNav({ tripId, isEnded, showFacts = false }: TripBottomNavProps) {
+export default function TripBottomNav({ tripId, isEnded, showFacts = false, showPacklist = false }: TripBottomNavProps) {
   const pathname = usePathname()
   const queryClient = useQueryClient()
   const base = `/trips/${tripId}`
@@ -86,7 +87,11 @@ export default function TripBottomNav({ tripId, isEnded, showFacts = false }: Tr
       color: { fg: 'var(--section-facts)', bg: 'var(--section-facts-muted)' },
       onPrefetch: undefined as (() => void) | undefined,
     },
-  ].filter(tab => tab.href !== `${base}/facts` || showFacts)
+  ].filter(tab => {
+    if (tab.href === `${base}/facts`) return showFacts
+    if (tab.href === `${base}/packlist`) return showPacklist
+    return true
+  })
 
   return (
     <>
