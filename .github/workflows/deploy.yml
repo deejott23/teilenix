@@ -1,0 +1,65 @@
+name: Deploy to Serverprofis
+
+# Variant A: build happens here on GitHub's runners (the 1 GB server cannot build),
+# the result is synced to the server via SSH/rsync, prod deps are installed there,
+# and Passenger is restarted.
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch: {}
+
+concurrency:
+  group: deploy-master
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Next.js
+        # NEXT_PUBLIC_* values are baked into the client bundle at build time,
+        # so they must be present HERE (as repository secrets), not only on the server.
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          NODE_ENV: production
+        run: npm run build
+
+      - name: Deploy via rsync over SSH
+        uses: easingthemes/ssh-deploy@v5
+        with:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+          REMOTE_USER: ${{ secrets.REMOTE_USER }}
+          REMOTE_PORT: ${{ secrets.REMOTE_PORT }}
+          # Absolute path to the Plesk application root, e.g.
+          # /home/webaholi/public_html/web-a-holic/sharepa
+          TARGET: ${{ secrets.REMOTE_TARGET }}
+          # NO --delete on purpose: the app root also holds Plesk/Passenger files
+          # (.htaccess, php.ini, .user.ini, cgi-bin, tmp). --delete would remove them.
+          ARGS: "-rltzv"
+          # Sync the whole repo but skip what the server doesn't need / must keep.
+          # node_modules are installed remotely in SCRIPT_AFTER instead of synced.
+          SOURCE: "./"
+          EXCLUDE: "/node_modules/, /.git/, /.github/, /supabase/, /src/, /.env, /.env.local"
+          # After sync: activate the Plesk Node virtualenv, install prod deps,
+          # then trigger a Passenger restart by touching tmp/restart.txt.
+          SCRIPT_AFTER: |
+            source ${{ secrets.NODEENV_ACTIVATE_PATH }}
+            cd ${{ secrets.REMOTE_TARGET }}
+            npm ci --omit=dev
+            mkdir -p tmp
+            touch tmp/restart.txt

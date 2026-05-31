@@ -54,9 +54,7 @@ export async function processQueue(): Promise<{ succeeded: number; failed: numbe
   const queue = loadQueue()
   if (queue.length === 0) { _processing = false; return { succeeded: 0, failed: 0 } }
 
-  let succeeded = 0
-  let failed = 0
-  const remaining: QueuedRequest[] = []
+  const succeededIds = new Set<string>()
 
   for (const req of queue) {
     try {
@@ -66,37 +64,47 @@ export async function processQueue(): Promise<{ succeeded: number; failed: numbe
         body: JSON.stringify(req.body),
       })
       if (res.ok) {
-        succeeded++
-      } else {
-        // Server error — keep in queue for now, will retry later
-        remaining.push(req)
-        failed++
+        succeededIds.add(req.id)
       }
+      // Server error / non-ok: keep in queue for retry (do not mark succeeded)
     } catch {
-      // Network still unavailable
-      remaining.push(req)
-      failed++
+      // Network still unavailable — keep in queue
     }
   }
 
+  // Re-read the queue so requests enqueued DURING processing are preserved.
+  // Only remove the ones we successfully sent.
+  const current = loadQueue()
+  const remaining = current.filter(r => !succeededIds.has(r.id))
   saveQueue(remaining)
+
   _processing = false
-  return { succeeded, failed }
+  const succeeded = succeededIds.size
+  return { succeeded, failed: queue.length - succeeded }
 }
 
 /** Prevent concurrent processQueue calls (race between ExpenseForm + OfflineIndicator) */
 let _processing = false
 
-/** Register a one-time online event listener to drain the queue */
+let _listenerRegistered = false
+let _onSuccess: ((count: number) => void) | undefined
+
+/**
+ * Register a persistent online event listener that drains the queue every time
+ * the device comes back online. Safe to call multiple times — only one listener
+ * is ever attached; the latest onSuccess callback is used.
+ */
 export function registerOnlineQueueProcessor(
   onSuccess?: (count: number) => void
 ) {
   if (typeof window === 'undefined') return
 
-  const handler = async () => {
-    const { succeeded } = await processQueue()
-    if (succeeded > 0) onSuccess?.(succeeded)
-  }
+  _onSuccess = onSuccess
+  if (_listenerRegistered) return
+  _listenerRegistered = true
 
-  window.addEventListener('online', handler, { once: true })
+  window.addEventListener('online', async () => {
+    const { succeeded } = await processQueue()
+    if (succeeded > 0) _onSuccess?.(succeeded)
+  })
 }

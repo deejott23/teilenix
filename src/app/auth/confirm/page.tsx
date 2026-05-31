@@ -11,7 +11,9 @@ function ConfirmInner() {
   const [errorMsg, setErrorMsg] = useState('')
 
   const code = searchParams.get('code')
-  const next = searchParams.get('next') ?? '/dashboard'
+  const rawNext = searchParams.get('next') ?? '/dashboard'
+  // Only allow same-origin relative paths to prevent open-redirect via ?next=
+  const next = rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : '/dashboard'
 
   useEffect(() => {
     if (!code) {

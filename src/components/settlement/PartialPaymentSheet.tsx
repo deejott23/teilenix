@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { X } from 'lucide-react'
@@ -17,6 +18,7 @@ interface PartialPaymentSheetProps {
 
 export default function PartialPaymentSheet({ tripId, participants }: PartialPaymentSheetProps) {
   const queryClient = useQueryClient()
+  const router = useRouter()
   const [open, setOpen] = useState(false)
   const [fromId, setFromId] = useState('')
   const [toId, setToId] = useState('')
@@ -60,6 +62,8 @@ export default function PartialPaymentSheet({ tripId, participants }: PartialPay
       toast.success('Teilzahlung erfasst')
       handleClose()
       queryClient.invalidateQueries({ queryKey: queryKeys.expenses.withSplits(tripId) })
+      // Server-gerenderte Abrechnung & Übersicht (BalanceCard) aktualisieren
+      router.refresh()
     } catch {
       toast.error('Fehler beim Speichern')
     } finally {
