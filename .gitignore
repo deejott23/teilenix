@@ -47,6 +47,13 @@ yarn-error.log*
 .env.production.local
 # .env.example is intentionally committed
 
+# local backups & secrets — NEVER commit (contain DB dump + plaintext credentials)
+RESTORE.md
+/backups/
+*.dump
+# Only ignore .sql files in backups, not supabase/migrations/
+/backups/*.sql
+
 # vercel
 .vercel
 

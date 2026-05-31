@@ -96,8 +96,10 @@ export function computeSettlement(
 
     let distributed = 0
     expense.expense_splits.forEach((split, index) => {
-      const participant = balanceMap.get(split.participant_id)
-      if (!participant) return
+      // Resolve split target to its billable entity (group members → their group)
+      const splitParticipant = participantLookup.get(split.participant_id)
+      const billableSplitId = splitParticipant?.group_id ?? split.participant_id
+      const participant = balanceMap.get(billableSplitId)
 
       let owed: number
       if (index === expense.expense_splits.length - 1) {
@@ -106,8 +108,10 @@ export function computeSettlement(
       } else {
         owed = Math.round(expense.amount_cents * split.shares / totalShares)
       }
+      // Always advance `distributed` so the last-split remainder stays correct,
+      // even if a split targets an unknown participant.
       distributed += owed
-      participant.totalOwedCents += owed
+      if (participant) participant.totalOwedCents += owed
     })
   })
 

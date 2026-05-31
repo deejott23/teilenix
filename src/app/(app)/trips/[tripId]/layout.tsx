@@ -40,7 +40,7 @@ export default async function TripLayout({
   const isActive = trip.status === 'active'
   const showPacklist = (trip.show_packlist as boolean | null) ?? false
 
-  const showFacts = true
+  const showFacts = false
   const coverEmoji = (trip.cover_emoji as string | null) ?? pickFallbackEmoji(trip.name as string)
   const coverImageUrl = (trip.cover_image_url as string | null) ?? null
   const isParticipant = !!myParticipant

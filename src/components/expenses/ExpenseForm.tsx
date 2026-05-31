@@ -338,7 +338,10 @@ export default function ExpenseForm({
       }).catch(() => {}) // fire-and-forget
       router.push(`/trips/${tripId}/expenses`)
     } catch (e: unknown) {
-      const isNetworkError = e instanceof TypeError && e.message.toLowerCase().includes('fetch')
+      // fetch() throws a TypeError on network failure across all browsers
+      // (Chrome: "Failed to fetch", Firefox: "NetworkError...", Safari: "Load failed").
+      // Treat any TypeError, or an explicitly offline navigator, as a network error.
+      const isNetworkError = e instanceof TypeError || (typeof navigator !== 'undefined' && !navigator.onLine)
       if (isNetworkError && !isEdit) {
         // Offline: queue the expense for later sync
         enqueueRequest('/api/expenses', {

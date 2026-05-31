@@ -34,17 +34,7 @@ export default async function TripOverviewPage({
 
   const myParticipantId = meRaw?.id ?? ''
 
-  const isActive = trip.status === 'active'
-  const showFacts = (() => {
-    if (!isActive) return true
-    const startDate = (trip as unknown as { start_date: string | null }).start_date
-    if (!startDate) return false
-    const start = new Date(startDate + 'T00:00:00')
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    const daysSinceStart = Math.floor((today.getTime() - start.getTime()) / 86_400_000)
-    return daysSinceStart >= 2
-  })()
+  const showFacts = false
 
   return (
     <div className="space-y-3">

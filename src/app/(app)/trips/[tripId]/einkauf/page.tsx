@@ -3,12 +3,18 @@ import { redirect } from 'next/navigation'
 import ShoppingListClient from '@/components/shopping/ShoppingListClient'
 import TripSubNav from '@/components/layout/TripSubNav'
 import RealtimeQueryRefresher from '@/components/realtime/RealtimeQueryRefresher'
+import { getTrip } from '@/lib/supabase/trips'
+import { getUser } from '@/lib/supabase/user'
 
 export default async function EinkaufPage({ params }: { params: Promise<{ tripId: string }> }) {
   const { tripId } = await params
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getUser()
   if (!user) redirect('/login')
+
+  // Redirect if packlist feature is disabled
+  const tripMeta = await getTrip(tripId)
+  if (tripMeta && !(tripMeta.show_packlist as boolean | null)) redirect(`/trips/${tripId}`)
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const db = supabase as any

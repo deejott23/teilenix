@@ -21,6 +21,10 @@ export default async function PacklistPage({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const db = supabase as any
 
+  // Redirect if packlist feature is disabled (getTrip is cached — no extra network call)
+  const tripMeta = await getTrip(tripId)
+  if (tripMeta && !(tripMeta.show_packlist as boolean | null)) redirect(`/trips/${tripId}`)
+
   // Single round-trip: items with embedded checks + claims (no waterfall)
   const [trip, { data: participantsRaw }, { data: itemsRaw }] = await Promise.all([
     getTrip(tripId),

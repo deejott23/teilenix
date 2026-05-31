@@ -47,6 +47,7 @@ export async function PATCH(
   if (parsed.data.customCategories !== undefined) updates.custom_categories = parsed.data.customCategories
   if (parsed.data.coverEmoji !== undefined) updates.cover_emoji = parsed.data.coverEmoji
   if (parsed.data.coverImageUrl !== undefined) updates.cover_image_url = parsed.data.coverImageUrl
+  if (parsed.data.showPacklist !== undefined) updates.show_packlist = parsed.data.showPacklist
 
   const admin = createAdminClient()
 
@@ -75,7 +76,7 @@ export async function PATCH(
     .select()
     .single()
 
-  if (error || !trip) return NextResponse.json({ error: 'Aktualisierung fehlgeschlagen' }, { status: 500 })
+  if (error || !trip) return NextResponse.json({ error: error?.message ?? 'Aktualisierung fehlgeschlagen' }, { status: 500 })
 
   return NextResponse.json({ trip })
 }
