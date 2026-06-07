@@ -16,6 +16,10 @@ export default function ExpenseDetailReport({ expenses, participantMap }: Expens
 
   if (expenses.length === 0) return null
 
+  const sorted = [...expenses].sort((a, b) =>
+    (b.expense_date as string).localeCompare(a.expense_date as string)
+  )
+
   return (
     <div className="bg-card card-shadow rounded-2xl overflow-hidden">
       <button
@@ -34,7 +38,7 @@ export default function ExpenseDetailReport({ expenses, participantMap }: Expens
 
       {open && (
         <div className="border-t border-border divide-y divide-border/50">
-          {expenses.map(expense => {
+          {sorted.map(expense => {
             const totalShares = expense.expense_splits.reduce((s, sp) => s + sp.shares, 0)
             const payer = participantMap.get(expense.paid_by_participant_id)
             return (

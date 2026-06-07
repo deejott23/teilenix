@@ -3,12 +3,11 @@ import { redirect } from 'next/navigation'
 import { getUser } from '@/lib/supabase/user'
 import { getTrip } from '@/lib/supabase/trips'
 import GeldSubNav from '@/components/layout/GeldSubNav'
-import { computeSettlement, computeGroupBreakdowns } from '@/lib/settlement'
+import { computeSettlement } from '@/lib/settlement'
 import SettlementTransferList from '@/components/settlement/SettlementTransferList'
 import BalanceTable from '@/components/settlement/BalanceTable'
 import SettlementExportButton from '@/components/settlement/SettlementExportButton'
 import ExpenseDetailReport from '@/components/settlement/ExpenseDetailReport'
-import GroupMemberBreakdown from '@/components/settlement/GroupMemberBreakdown'
 import PartialPaymentSheet from '@/components/settlement/PartialPaymentSheet'
 import EndTripButton from '@/components/trips/EndTripButton'
 import { formatCurrency } from '@/lib/formatting'
@@ -50,7 +49,6 @@ export default async function SettlementPage({
     })) as unknown as ExpenseWithSplits[]
 
   const settlement = computeSettlement(expenses, participants)
-  const groupBreakdowns = computeGroupBreakdowns(expenses, participants)
   const isActive = trip?.status === 'active'
   const isCreator = trip?.created_by === user.id
 
@@ -108,16 +106,6 @@ export default async function SettlementPage({
         </h3>
         <BalanceTable balances={settlement.balances} />
       </div>
-
-      {/* Group member breakdown */}
-      {groupBreakdowns.length > 0 && (
-        <div>
-          <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-3">
-            Zahlungen je Gruppe
-          </h3>
-          <GroupMemberBreakdown breakdowns={groupBreakdowns} />
-        </div>
-      )}
 
       {/* Expense detail report — collapsible */}
       <div>

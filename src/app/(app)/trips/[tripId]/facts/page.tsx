@@ -210,7 +210,6 @@ export default async function FactsPage({ params }: { params: Promise<{ tripId: 
     { data: activityVotesRaw },
     { data: mealIdeasRaw },
     { data: mealVotesRaw },
-    { data: packlistRaw },
     { data: activityCommentsRaw },
   ] = await Promise.all([
     supabase.from('trips').select('name, status, start_date, end_date').eq('id', tripId).single(),
@@ -220,7 +219,6 @@ export default async function FactsPage({ params }: { params: Promise<{ tripId: 
     db.from('trip_activity_votes').select('activity_id, participant_id, vote').eq('trip_id', tripId),
     db.from('trip_meal_ideas').select('id, title, emoji, created_by_participant_id').eq('trip_id', tripId),
     db.from('trip_meal_votes').select('meal_idea_id, participant_id').eq('trip_id', tripId),
-    (supabase as any).from('packlist_items').select('id, packlist_checks(item_id)').eq('trip_id', tripId),
     db.from('trip_activity_comments').select('participant_id').eq('trip_id', tripId),
   ])
 
@@ -298,14 +296,6 @@ export default async function FactsPage({ params }: { params: Promise<{ tripId: 
   for (const v of mealVotes) mealVoteCounts.set(v.meal_idea_id, (mealVoteCounts.get(v.meal_idea_id) ?? 0) + 1)
   const topMeal = mealIdeas.map(m => ({ ...m, votes: mealVoteCounts.get(m.id) ?? 0 })).sort((a, b) => b.votes - a.votes)[0]
 
-  // ── Packlist ────────────────────────────────────────────────────────────────
-  // packlist_checks are embedded — no second round-trip
-  const packlistTotal = (packlistRaw ?? []).length
-  const packlistChecked = new Set(
-    (packlistRaw ?? []).flatMap((i: any) => (i.packlist_checks ?? []).map((c: any) => c.item_id))
-  ).size
-  const packlistPct = packlistTotal > 0 ? Math.round((packlistChecked / packlistTotal) * 100) : 0
-
   // ── Compound stats ──────────────────────────────────────────────────────────
   const totalVotes = activityVotes.length + mealVotes.length
   const totalIdeas = activities.length + mealIdeas.length
@@ -368,7 +358,6 @@ export default async function FactsPage({ params }: { params: Promise<{ tripId: 
               ...(totalCents > 0 ? [{ emoji: '💰', value: formatCurrency(totalCents), label: 'Ausgaben' }] : []),
               ...(totalIdeas > 0 ? [{ emoji: '💡', value: String(totalIdeas), label: 'Ideen' }] : []),
               ...(totalVotes > 0 ? [{ emoji: '🗳️', value: String(totalVotes), label: 'Votes' }] : []),
-              ...(packlistTotal > 0 ? [{ emoji: '✅', value: `${packlistPct}%`, label: 'Gepackt' }] : []),
             ]} />
           </div>
 
@@ -462,24 +451,6 @@ export default async function FactsPage({ params }: { params: Promise<{ tripId: 
               deck={`${topProposer[1]} Vorschläge eingereicht. Das Team schaut dankbar hinterher.`}
               tag="Ideenmaschine der Reise"
             />
-          )}
-
-          {/* ── Packlist ────────────────────────────── */}
-          {packlistTotal > 0 && (
-            <>
-              <SectionDivider label="Packliste & Logistik" />
-              <WideArticle
-                icon="🧳"
-                category="✅ Packliste"
-                headline={packlistPct === 100 ? 'PACKLISTE: VOLLSTÄNDIG ABGEHAKT — HISTORISCH!' : `PACKLISTE: ${packlistPct}% ERLEDIGT`}
-                deck={
-                  packlistPct === 100
-                    ? `Alle ${packlistTotal} Items eingepackt. Eine logistische Meisterleistung. Der Rest der Welt staunt.`
-                    : `${packlistChecked} von ${packlistTotal} Items abgehakt. ${packlistTotal - packlistChecked} Items warten noch. Die Redaktion hält den Atem an.`
-                }
-                tag={`${packlistChecked}/${packlistTotal} Items`}
-              />
-            </>
           )}
 
           {/* ── CTA ─────────────────────────────────── */}
