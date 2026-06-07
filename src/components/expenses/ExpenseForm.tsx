@@ -276,15 +276,21 @@ export default function ExpenseForm({
       return
     }
 
-    // Konvertiere in cent-basierte shares für die API:
-    // Fixer Betrag → shares = overrideAmountCents (in Cent)
-    // Anteil-basiert → shares = Anteil am verbleibenden Betrag (skaliert auf Cent)
+    // Shares für die API bestimmen:
+    // - Fixer Betrag → shares = overrideAmountCents (Cent-Wert)
+    // - Reine Anteil-Splits (keine Fixbeträge): originale Anteile behalten (1/2/3 bleibt 1/2/3)
+    // - Gemischter Modus (Fixbeträge + Anteile): Anteile auf verbleibende Cent skalieren,
+    //   damit settlement.ts korrekt rechnet (alle shares auf gleicher Skala)
     const totalSharesBase = shareBasedSplits.reduce((s, sp) => s + sp.shares, 0)
     const activeSplits = rawSplits.map(s => {
       if (s.overrideAmountCents != null) {
         return { participantId: s.participantId, shares: s.overrideAmountCents }
       }
-      // Wenn alle Splits fix sind (kein share-basierter übrig), fallback auf gleiche Teile
+      if (fixedSplits.length === 0) {
+        // Reine Anteil-Splits: Original-Anteile speichern (kein Cent-Scaling)
+        return { participantId: s.participantId, shares: s.shares }
+      }
+      // Gemischter Modus: auf verbleibende Cent skalieren
       if (totalSharesBase === 0 || remainingCents <= 0) {
         return { participantId: s.participantId, shares: s.shares }
       }
