@@ -130,6 +130,8 @@ export default async function SettlementPage({
       <SettlementExportButton
         tripName={(trip?.name as string) ?? 'Reise'}
         settlement={settlement}
+        expenses={expenses}
+        participants={participants}
       />
     </div>
   )
