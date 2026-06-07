@@ -9,10 +9,11 @@ import { Minus, Plus } from 'lucide-react'
 interface SplitRowProps {
   split: ExpenseSplitInput
   calcAmt: (split: ExpenseSplitInput) => number
+  pct: number
   onUpdate: (patch: Partial<ExpenseSplitInput>) => void
 }
 
-function SplitRow({ split, calcAmt, onUpdate }: SplitRowProps) {
+function SplitRow({ split, calcAmt, pct, onUpdate }: SplitRowProps) {
   const isAmountMode = split.overrideAmountCents != null
   const amt = calcAmt(split)
   const isFocused = useRef(false)
@@ -119,10 +120,15 @@ function SplitRow({ split, calcAmt, onUpdate }: SplitRowProps) {
             >
               {isAmountMode ? 'Anteil' : 'Betrag'}
             </button>
-            <span className="text-[11px] text-muted-foreground/50">·</span>
-            <span className="text-[11px] text-muted-foreground">
-              {split.shares} {split.shares > 1 ? 'Anteile' : 'Anteil'}
-            </span>
+            {!isAmountMode && (
+              <>
+                <span className="text-[11px] text-muted-foreground/50">·</span>
+                <span className="text-[11px] text-muted-foreground">
+                  {split.shares} {split.shares > 1 ? 'Anteile' : 'Anteil'}
+                  {pct > 0 && <span className="text-muted-foreground/60 ml-1">({pct}%)</span>}
+                </span>
+              </>
+            )}
           </div>
           {amt > 0 && !isAmountMode && (
             <span className="text-[12px] font-bold text-primary tabular-nums">
@@ -164,6 +170,14 @@ export default function SplitOverrideEditor({ splits, onChange, totalCents = 0 }
     return Math.round(remaining * split.shares / totalShares)
   }
 
+  const calcPct = (split: ExpenseSplitInput): number => {
+    if (!split.included) return 0
+    if (split.overrideAmountCents != null) {
+      return totalCents > 0 ? Math.round(split.overrideAmountCents / totalCents * 100) : 0
+    }
+    return totalShares > 0 ? Math.round(split.shares / totalShares * 100) : 0
+  }
+
   return (
     <div className="space-y-2">
       {splits.map((split, index) => (
@@ -171,6 +185,7 @@ export default function SplitOverrideEditor({ splits, onChange, totalCents = 0 }
           key={split.participantId}
           split={split}
           calcAmt={calcAmt}
+          pct={calcPct(split)}
           onUpdate={patch => updateSplit(index, patch)}
         />
       ))}

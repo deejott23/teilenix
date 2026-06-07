@@ -53,12 +53,19 @@ export default async function EditExpensePage({
   // Build initial splits from existing expense_splits
   type SplitRow = { participant_id: string; shares: number }
   const existingSplits = (splitsRaw ?? []) as SplitRow[]
+
+  // Normalize shares by GCD so the editor shows e.g. 3/4/4 instead of 3000/4000/4000
+  // (shares are stored as proportional cent values to support mixed fixed/share splits)
+  function gcd(a: number, b: number): number { return b === 0 ? a : gcd(b, a % b) }
+  const shareValues = existingSplits.map(s => s.shares).filter(s => s > 0)
+  const divisor = shareValues.length > 0 ? shareValues.reduce(gcd) : 1
+
   const initialSplits: ExpenseSplitInput[] = participants.map(p => {
     const s = existingSplits.find(sp => sp.participant_id === p.id)
     return {
       participantId: p.id,
       participantName: p.name,
-      shares: s?.shares ?? p.shares,
+      shares: s ? Math.max(1, Math.round(s.shares / divisor)) : (p.shares ?? 1),
       included: !!s,
     }
   })
