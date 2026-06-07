@@ -106,29 +106,40 @@ export default function SettlementExportButton({ tripName, settlement, expenses,
     ]
     const rows: string[][] = [headers]
 
-    // Expenses sorted by date, payments excluded
+    // All expenses sorted by date (including payments)
     const sorted = expenses
-      .filter(e => e.category !== 'payment')
       .sort((a, b) => a.expense_date.localeCompare(b.expense_date))
 
     for (const expense of sorted) {
+      const isPayment = expense.category === 'payment'
       const payerP = pMap.get(expense.paid_by_participant_id)
       const payerBillableId = payerP?.group_id ?? payerP?.id ?? ''
       const payerBillable = pMap.get(payerBillableId)
       let payerLabel = payerBillable?.name ?? payerP?.name ?? 'Unbekannt'
 
-      // Add co-payer names if present
-      const coPayers = expense.co_payers ?? []
-      if (coPayers.length > 0) {
-        const coNames = coPayers.map(cp => {
-          const cpP = pMap.get(cp.participant_id)
-          const cpBillable = pMap.get(cpP?.group_id ?? cpP?.id ?? '')
-          return cpBillable?.name ?? cpP?.name ?? '?'
-        }).join(', ')
-        payerLabel += ` + ${coNames}`
+      if (isPayment) {
+        // For payments: show "Von → An" so the direction is clear
+        const recipientSplit = expense.expense_splits[0]
+        if (recipientSplit) {
+          const recipientP = pMap.get(recipientSplit.participant_id)
+          const recipientBillable = pMap.get(recipientP?.group_id ?? recipientP?.id ?? '')
+          const recipientName = recipientBillable?.name ?? recipientP?.name ?? '?'
+          payerLabel = `${payerLabel} → ${recipientName}`
+        }
+      } else {
+        // Add co-payer names if present
+        const coPayers = expense.co_payers ?? []
+        if (coPayers.length > 0) {
+          const coNames = coPayers.map(cp => {
+            const cpP = pMap.get(cp.participant_id)
+            const cpBillable = pMap.get(cpP?.group_id ?? cpP?.id ?? '')
+            return cpBillable?.name ?? cpP?.name ?? '?'
+          }).join(', ')
+          payerLabel += ` + ${coNames}`
+        }
       }
 
-      const catLabel = categoryLabels[expense.category as ExpenseCategory] ?? expense.category
+      const catLabel = isPayment ? 'Zahlung' : (categoryLabels[expense.category as ExpenseCategory] ?? expense.category)
 
       // Aggregate shares per billable participant
       const totalShares = expense.expense_splits.reduce((s, sp) => s + sp.shares, 0)
@@ -168,8 +179,8 @@ export default function SettlementExportButton({ tripName, settlement, expenses,
       ])
     }
 
-    // Totals row using settlement balances
-    const totalExpenses = sorted.reduce((s, e) => s + e.amount_cents, 0)
+    // Totals row using settlement balances (payments excluded from expense total)
+    const totalExpenses = sorted.filter(e => e.category !== 'payment').reduce((s, e) => s + e.amount_cents, 0)
     const balanceMap = new Map(settlement.balances.map(b => [b.participantId, b]))
     rows.push([
       '', 'GESAMT', '', '',
